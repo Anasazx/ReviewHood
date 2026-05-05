@@ -1,0 +1,106 @@
+package tn.anasazx.tunirate.product.service.implementation;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import tn.anasazx.tunirate.company.entity.Company;
+import tn.anasazx.tunirate.company.repository.CompanyRepository;
+import tn.anasazx.tunirate.product.dto.ProductDetailsResponse;
+import tn.anasazx.tunirate.product.dto.ProductRequest;
+import tn.anasazx.tunirate.product.dto.ProductResponse;
+import tn.anasazx.tunirate.product.entity.Product;
+import tn.anasazx.tunirate.product.mapper.ProductMapper;
+import tn.anasazx.tunirate.product.repository.ProductRepository;
+import tn.anasazx.tunirate.product.service.ProductService;
+import tn.anasazx.tunirate.review.dto.ReviewResponse;
+import tn.anasazx.tunirate.review.service.ReviewService;
+
+import java.util.List;
+
+@Service
+public class ProductServiceImpl implements ProductService {
+
+    private final ProductRepository productRepository;
+    private final CompanyRepository companyRepository;
+    private final ReviewService reviewService;
+
+    private final ProductMapper productMapper;
+
+    public ProductServiceImpl(ProductRepository productRepository, CompanyRepository companyRepository, ReviewService reviewService, ProductMapper productMapper) {
+        this.productRepository = productRepository;
+        this.companyRepository = companyRepository;
+        this.reviewService = reviewService;
+        this.productMapper = productMapper;
+    }
+
+    @Override
+
+    public ProductDetailsResponse getProductDetails(Long id) {
+        Product product = findProduct(id);
+        List<ReviewResponse> reviews = reviewService.getReviewsByProductId(id);
+        double avgRating = reviews.stream()
+                .mapToInt(ReviewResponse::rating)
+                .average()
+                .orElse(0);
+        long reviewsCount = reviews.size();
+        return productMapper.toDetailsResponse(product, reviews, avgRating, reviewsCount);
+
+    }
+
+    @Override
+    public List<ProductResponse> getAllProducts() {
+        return productRepository.findAll().stream().map(productMapper::toResponse).toList();
+    }
+
+    @Override
+    public ProductResponse getProductById(Long id) {
+        return productMapper.toResponse(findProduct(id));
+    }
+
+    @Override
+    public ProductResponse createProduct(ProductRequest request) {
+
+        Company company = findCompany(request.companyId());
+
+        Product product = new Product();
+        product.setName(request.name());
+        product.setDescription(request.description());
+        product.setCategory(request.category());
+        product.setCompany(company);
+
+        Product savedProduct = productRepository.save(product);
+        return productMapper.toResponse(savedProduct);
+    }
+
+    @Override
+    public ProductResponse updateProduct(Long id, ProductRequest request) {
+        Product product = findProduct(id);
+        Company company = findCompany(request.companyId());
+
+        product.setName(request.name());
+        product.setDescription(request.description());
+        product.setCategory(request.category());
+        product.setCompany(company);
+
+        return productMapper.toResponse(productRepository.save(product));
+    }
+
+    @Override
+    public void deleteProduct(Long id) {
+        Product product = findProduct(id);
+        productRepository.delete(product);
+    }
+
+    @Override
+    public Product findProduct(Long id) {
+        return productRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+    }
+
+    @Override
+    public Company findCompany(Long id) {
+        return companyRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
+
+    }
+
+
+}
