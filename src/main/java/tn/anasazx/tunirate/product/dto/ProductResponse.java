@@ -9,5 +9,6 @@ public record ProductResponse(
         String category,
         Long companyId,
         String companyName,
+        String imageUrl,
         LocalDateTime createdAt
 ) {}

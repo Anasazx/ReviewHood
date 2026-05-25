@@ -7,10 +7,11 @@ import tn.anasazx.tunirate.authentification.dto.AuthResponse;
 import tn.anasazx.tunirate.authentification.dto.LoginRequest;
 import tn.anasazx.tunirate.authentification.dto.RegisterRequest;
 import tn.anasazx.tunirate.authentification.service.AuthService;
+import tn.anasazx.tunirate.exception.InvalidPasswordException;
 import tn.anasazx.tunirate.security.JwtService;
-import tn.anasazx.tunirate.user.Role;
+import tn.anasazx.tunirate.enums.GlobalRole;
 import tn.anasazx.tunirate.user.entity.User;
-import tn.anasazx.tunirate.user.repository.UserRepository;
+import tn.anasazx.tunirate.user.service.UserService;
 
 @Service
 
@@ -18,71 +19,55 @@ import tn.anasazx.tunirate.user.repository.UserRepository;
 
 public class AuthServiceImpl implements AuthService {
 
-    private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final JwtService jwtService;
+    private final UserService userService;
 
     @Override
-
     public AuthResponse register(RegisterRequest request) {
-
-        // 1. check if user exists
-
-        if (userRepository.findByEmail(request.email()).isPresent()) {
-
-            throw new RuntimeException("Email already exists");
-
+        
+        //Check if the password valid or not
+        if (!isStrongPassword(request.password())) {
+            throw new InvalidPasswordException();
         }
+        
+        //Create user instance
+        User user = new User(
+                request.name(),
+                request.email(), 
+                passwordEncoder.encode(request.password()),
+                GlobalRole.USER
+        );
 
-        // 2. create user
+        //call the creation user methode 
+        User savedUser = userService.createUser(user);
 
-        User user = new User();
+        //Generate token
+        String token = jwtService.generateToken(savedUser.getId(), savedUser.getGlobalRole());
 
-        user.setName(request.name());
+        return new AuthResponse(token, savedUser.getEmail(), savedUser.getGlobalRole().name());
+    }
 
-        user.setEmail(request.email());
-
-        user.setPassword(passwordEncoder.encode(request.password()));
-
-        // 3. role
-
-        user.setRole(Role.valueOf(request.role()));
-
-        userRepository.save(user);
-
-        // 4. generate token
-
-        String token = jwtService.generateToken(user.getId());
-
-        return new AuthResponse(token, user.getEmail(), user.getRole().name());
-
+    private boolean isStrongPassword(String password) {
+        return password != null
+                && !password.isBlank()
+                && password.length() >= 8;
     }
 
     @Override
-
     public AuthResponse login(LoginRequest request) {
 
-        // 1. find user
+        //Find the user
+        User user = userService.getUserByEmail(request.email());
 
-        User user = userRepository.findByEmail(request.email())
-
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // 2. check password
-
+        //Check password matching
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-
             throw new RuntimeException("Invalid credentials");
-
         }
 
-        // 3. generate token
-
-        String token = jwtService.generateToken(user.getId());
-
-        return new AuthResponse(token, user.getEmail(), user.getRole().name());
+        //Token generation
+        String token = jwtService.generateToken(user.getId(), user.getGlobalRole());
+        return new AuthResponse(token, user.getEmail(), user.getGlobalRole().name());
 
     }
 

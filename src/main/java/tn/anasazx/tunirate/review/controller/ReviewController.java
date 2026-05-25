@@ -2,6 +2,8 @@ package tn.anasazx.tunirate.review.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,13 +31,14 @@ public class ReviewController {
 	}
 
 	@GetMapping("/by-product/{productId}")
-	public ResponseEntity<List<ReviewResponse>> getReviewsByProductId(@PathVariable Long productId) {
-		return ResponseEntity.ok(reviewService.getReviewsByProductId(productId));
+	public ResponseEntity<Page<ReviewResponse>> getReviewsByProductId(@PathVariable Long productId, Pageable pageable) {
+		return ResponseEntity.ok(reviewService.getReviewsByProductId(productId, pageable));
 	}
 
+
 	@GetMapping("/by-user/{userId}")
-	public ResponseEntity<List<ReviewResponse>> getReviewsByUserId(@PathVariable Long userId) {
-		return ResponseEntity.ok(reviewService.getReviewsByUserId(userId));
+	public ResponseEntity<Page<ReviewResponse>> getReviewsByUserId(@PathVariable Long userId, Pageable pageable) {
+		return ResponseEntity.ok(reviewService.getReviewsByUserId(userId, pageable));
 	}
 
 	@PostMapping

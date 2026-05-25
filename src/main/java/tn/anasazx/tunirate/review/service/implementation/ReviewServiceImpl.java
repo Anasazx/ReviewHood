@@ -1,6 +1,8 @@
 package tn.anasazx.tunirate.review.service.implementation;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -37,14 +39,27 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewMapper.toResponse(findReview(id));
     }
 
-    @Override
-    public List<ReviewResponse> getReviewsByProductId(Long productId) {
-        return reviewRepository.findAllByProductId(productId).stream().map(reviewMapper::toResponse).toList();
-    }
 
     @Override
-    public List<ReviewResponse> getReviewsByUserId(Long userId) {
-        return reviewRepository.findAllByUserId(userId).stream().map(reviewMapper::toResponse).toList();
+    public Page<ReviewResponse> getReviewsByProductId(
+            Long productId,
+            Pageable pageable
+    ) {
+        return reviewRepository
+                .findByProductId(productId, pageable)
+                .map(reviewMapper::toResponse);
+    }
+    /*
+    @Override
+    public List<ReviewResponse> getAllReviewsByProductId(Long productId) {
+        return reviewRepository.findAllByProductId(productId).stream().map(reviewMapper::toResponse).toList();
+    }
+    */
+
+    @Override
+    public Page<ReviewResponse> getReviewsByUserId(Long userId, Pageable pageable) {
+        return reviewRepository.findByUserId(userId, pageable)
+                .map(reviewMapper::toResponse);
     }
 
     @Override
@@ -52,14 +67,17 @@ public class ReviewServiceImpl implements ReviewService {
 
         //This get the users id from the token
         User user = findUser(SecurityUtils.getCurrentUserId());
+        System.out.println("This is the result of findUser:(Highlighting the id now)" + user.getId());
 
         //This check if the product exists or not; it takes the product id from the request in the params
         //TODO: We need to throw an exception when no product found with this id
         Product product = findProduct(request.productId());
-
-        //From our business model each user have the right for one review per product so
-        //this methode throw an exception if a user have already made a review
-        reviewRepository.findByUserIdAndProductId(SecurityUtils.getCurrentUserId(), request.productId())
+        /*
+        From our business model each user have the right for one review per product so
+        this methode throw an exception if a user have already made a review
+        */
+        reviewRepository
+                .findByUserIdAndProductId(SecurityUtils.getCurrentUserId(), request.productId())
                 .ifPresent(existing -> {
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "Review already exists for this user and product");
                 });

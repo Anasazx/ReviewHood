@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.product.dto.ProductDetailsResponse;
@@ -21,6 +22,7 @@ public class ProductController {
 
     private final ProductService productService;
 
+
 	@GetMapping
 	public ResponseEntity<List<ProductResponse>> getAllProducts() {
 		return ResponseEntity.ok(productService.getAllProducts());
@@ -36,11 +38,13 @@ public class ProductController {
 		return ResponseEntity.ok(productService.getProductDetails(id));
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
 	public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(request));
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}")
 	public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
 		Product product = findProduct(id);

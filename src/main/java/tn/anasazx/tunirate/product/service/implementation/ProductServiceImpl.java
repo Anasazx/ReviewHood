@@ -1,5 +1,7 @@
 package tn.anasazx.tunirate.product.service.implementation;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -23,7 +25,6 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CompanyRepository companyRepository;
     private final ReviewService reviewService;
-
     private final ProductMapper productMapper;
 
     public ProductServiceImpl(ProductRepository productRepository, CompanyRepository companyRepository, ReviewService reviewService, ProductMapper productMapper) {
@@ -33,18 +34,21 @@ public class ProductServiceImpl implements ProductService {
         this.productMapper = productMapper;
     }
 
+    //This methode returns the product with his details such as reviews...
+    //There is a methode that returns only the basic info of a product called getProductById
     @Override
-
     public ProductDetailsResponse getProductDetails(Long id) {
         Product product = findProduct(id);
-        List<ReviewResponse> reviews = reviewService.getReviewsByProductId(id);
+        Pageable pageable = PageRequest.of(0, 5);
+        List<ReviewResponse> reviews = reviewService
+                .getReviewsByProductId(id, pageable)
+                .getContent();
         double avgRating = reviews.stream()
                 .mapToInt(ReviewResponse::rating)
                 .average()
                 .orElse(0);
         long reviewsCount = reviews.size();
         return productMapper.toDetailsResponse(product, reviews, avgRating, reviewsCount);
-
     }
 
     @Override
@@ -52,6 +56,8 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findAll().stream().map(productMapper::toResponse).toList();
     }
 
+    //This only return the basic info of a product without reviews...,
+    //there is another methode that return detailed product called getProductDetails
     @Override
     public ProductResponse getProductById(Long id) {
         return productMapper.toResponse(findProduct(id));
@@ -74,6 +80,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse updateProduct(Long id, ProductRequest request) {
+
         Product product = findProduct(id);
         Company company = findCompany(request.companyId());
 
@@ -93,13 +100,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product findProduct(Long id) {
-        return productRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        return productRepository
+                .findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
     }
 
     @Override
     public Company findCompany(Long id) {
         return companyRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
-
     }
 
 
