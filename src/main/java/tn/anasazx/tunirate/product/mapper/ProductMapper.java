@@ -1,8 +1,11 @@
 package tn.anasazx.tunirate.product.mapper;
 
 import org.springframework.stereotype.Component;
+import tn.anasazx.tunirate.categories.subcategory.entity.Subcategory;
+import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.product.dto.ProductDetailsResponse;
 import tn.anasazx.tunirate.product.dto.ProductImageResponse;
+import tn.anasazx.tunirate.product.dto.ProductRequest;
 import tn.anasazx.tunirate.product.dto.ProductResponse;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.entity.ProductImage;
@@ -13,7 +16,7 @@ import java.util.Optional;
 
 @Component
 public class ProductMapper {
-    public ProductResponse toResponse(Product product) {
+    public ProductResponse mapProductToResponse(Product product) {
 
         Optional<String> imageUrl = product.getImages().stream()
                 .filter(ProductImage::isMain)
@@ -27,7 +30,8 @@ public class ProductMapper {
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
-                product.getCategory(),
+                product.getSubcategory().getCategory().getName(),
+                product.getSubcategory().getName(),
                 product.getCompany().getId(),
                 product.getCompany().getName(),
                 imageUrl.orElse(null),
@@ -35,7 +39,7 @@ public class ProductMapper {
         );
     }
 
-    public ProductDetailsResponse toDetailsResponse(Product product, List<ReviewResponse> reviews, double avgRating, long reviewsCount) {
+    public ProductDetailsResponse mapProductToDetailsResponse(Product product, List<ReviewResponse> reviews, double avgRating, long reviewsCount) {
 
         List<ProductImageResponse> images = product.getImages()
                 .stream()
@@ -50,12 +54,29 @@ public class ProductMapper {
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
-                product.getCategory(),
+                product.getSubcategory().getCategory().getName(),
+                product.getSubcategory().getName(),
                 product.getCompany().getName(),
                 avgRating,
                 reviewsCount,
                 reviews,
                 images
                 );
+    }
+
+    public Product toProduct(ProductRequest request, Company company, Subcategory subcategory) {
+        Product product = new Product();
+        product.setName(request.name());
+        product.setDescription(request.description());
+        product.setCompany(company);
+        product.setSubcategory(subcategory);
+        return product;
+    }
+
+    public void updateProduct(Product product, ProductRequest request, Company company, Subcategory subcategory) {
+        product.setName(request.name());
+        product.setDescription(request.description());
+        product.setCompany(company);
+        product.setSubcategory(subcategory);
     }
 }

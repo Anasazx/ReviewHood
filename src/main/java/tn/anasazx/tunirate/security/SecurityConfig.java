@@ -42,7 +42,8 @@ public class SecurityConfig {
                                 "/company/**",
                                 "/users/**",
                                 "/productImage/**",
-                                "/uploads/**"
+                                "/uploads/**",
+                                "/categories/**"
                         ).permitAll()
                         // Everything else requires login
                         .anyRequest().authenticated()

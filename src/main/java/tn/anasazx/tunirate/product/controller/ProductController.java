@@ -6,11 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.product.dto.ProductDetailsResponse;
 import tn.anasazx.tunirate.product.dto.ProductRequest;
 import tn.anasazx.tunirate.product.dto.ProductResponse;
-import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.service.ProductService;
 
 import java.util.List;
@@ -47,14 +45,6 @@ public class ProductController {
 	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}")
 	public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
-		Product product = findProduct(id);
-		Company company = findCompany(request.companyId());
-
-		product.setName(request.name());
-		product.setDescription(request.description());
-		product.setCategory(request.category());
-		product.setCompany(company);
-
 		return ResponseEntity.ok(productService.updateProduct(id, request));
 	}
 
@@ -64,13 +54,6 @@ public class ProductController {
 		return ResponseEntity.noContent().build();
 	}
 
-	private Product findProduct(Long id) {
-        return productService.findProduct(id);
-    }
-
-	private Company findCompany(Long id) {
-        return productService.findCompany(id);
-    }
 
 
 }

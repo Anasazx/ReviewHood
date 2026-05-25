@@ -5,6 +5,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import tn.anasazx.tunirate.categories.category.repository.CategoryRepository;
+import tn.anasazx.tunirate.categories.subcategory.entity.Subcategory;
+import tn.anasazx.tunirate.categories.subcategory.repository.SubcategoryRepository;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.company.repository.CompanyRepository;
 import tn.anasazx.tunirate.product.dto.ProductDetailsResponse;
@@ -24,12 +27,15 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final CompanyRepository companyRepository;
+    private final SubcategoryRepository subcategoryRepository;
+
     private final ReviewService reviewService;
     private final ProductMapper productMapper;
 
-    public ProductServiceImpl(ProductRepository productRepository, CompanyRepository companyRepository, ReviewService reviewService, ProductMapper productMapper) {
+    public ProductServiceImpl(ProductRepository productRepository, CompanyRepository companyRepository, SubcategoryRepository subcategoryRepository, ReviewService reviewService, ProductMapper productMapper) {
         this.productRepository = productRepository;
         this.companyRepository = companyRepository;
+        this.subcategoryRepository = subcategoryRepository;
         this.reviewService = reviewService;
         this.productMapper = productMapper;
     }
@@ -48,19 +54,19 @@ public class ProductServiceImpl implements ProductService {
                 .average()
                 .orElse(0);
         long reviewsCount = reviews.size();
-        return productMapper.toDetailsResponse(product, reviews, avgRating, reviewsCount);
+        return productMapper.mapProductToDetailsResponse(product, reviews, avgRating, reviewsCount);
     }
 
     @Override
     public List<ProductResponse> getAllProducts() {
-        return productRepository.findAll().stream().map(productMapper::toResponse).toList();
+        return productRepository.findAll().stream().map(productMapper::mapProductToResponse).toList();
     }
 
     //This only return the basic info of a product without reviews...,
     //there is another methode that return detailed product called getProductDetails
     @Override
     public ProductResponse getProductById(Long id) {
-        return productMapper.toResponse(findProduct(id));
+        return productMapper.mapProductToResponse(findProduct(id));
     }
 
     @Override
@@ -68,28 +74,27 @@ public class ProductServiceImpl implements ProductService {
 
         Company company = findCompany(request.companyId());
 
-        Product product = new Product();
-        product.setName(request.name());
-        product.setDescription(request.description());
-        product.setCategory(request.category());
-        product.setCompany(company);
+        Subcategory subcategory = findSubcategory(request.subcategoryId());
+
+        Product product = productMapper.toProduct(request, company, subcategory);
 
         Product savedProduct = productRepository.save(product);
-        return productMapper.toResponse(savedProduct);
+
+        return productMapper.mapProductToResponse(savedProduct);
     }
 
     @Override
     public ProductResponse updateProduct(Long id, ProductRequest request) {
 
         Product product = findProduct(id);
+
         Company company = findCompany(request.companyId());
 
-        product.setName(request.name());
-        product.setDescription(request.description());
-        product.setCategory(request.category());
-        product.setCompany(company);
+        Subcategory subcategory = findSubcategory(request.subcategoryId());
 
-        return productMapper.toResponse(productRepository.save(product));
+        productMapper.updateProduct(product, request, company, subcategory);
+
+        return productMapper.mapProductToResponse(productRepository.save(product));
     }
 
     @Override
@@ -108,6 +113,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Company findCompany(Long id) {
         return companyRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
+    }
+
+    @Override
+    public Subcategory findSubcategory(Long id) {
+        return subcategoryRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subcategory not found"));
     }
 
 

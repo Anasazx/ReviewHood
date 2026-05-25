@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.product.service;
 
+import tn.anasazx.tunirate.categories.subcategory.entity.Subcategory;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.product.dto.ProductDetailsResponse;
 import tn.anasazx.tunirate.product.dto.ProductRequest;
@@ -17,4 +18,5 @@ public interface ProductService {
     void deleteProduct(Long id);
     Product findProduct(Long id);
     Company findCompany(Long id);
+    Subcategory findSubcategory(Long id);
 }

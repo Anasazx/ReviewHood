@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.product.dto;
 
+
 import java.time.LocalDateTime;
 
 public record ProductResponse(
@@ -7,6 +8,7 @@ public record ProductResponse(
         String name,
         String description,
         String category,
+        String subcategory,
         Long companyId,
         String companyName,
         String imageUrl,
