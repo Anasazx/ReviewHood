@@ -10,7 +10,6 @@ import tn.anasazx.tunirate.product.dto.ProductRequest;
 import tn.anasazx.tunirate.product.dto.ProductResponse;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.entity.ProductImage;
-import tn.anasazx.tunirate.review.dto.ReviewResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -49,7 +48,6 @@ public class ProductMapper {
 
     public ProductDetailsResponse mapProductToDetailsResponse(
             Product product,
-            List<ReviewResponse> reviews,
             double avgRating,
             long reviewsCount
     ) {
@@ -81,7 +79,6 @@ public class ProductMapper {
                 product.getCompany().getName(),
                 avgRating,
                 reviewsCount,
-                reviews,
                 images
         );
     }

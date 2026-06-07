@@ -7,6 +7,7 @@ import tn.anasazx.tunirate.review.dto.ReviewRequest;
 import tn.anasazx.tunirate.review.dto.ReviewResponse;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ReviewService {
 
@@ -23,6 +24,12 @@ public interface ReviewService {
     Page<ReviewResponse> getReviewsByUserId(Long userId, Pageable pageable);
 
     Page<ReviewResponse> getReviewsByProductId(Long productId, Pageable pageable);
+
+    Optional<ReviewResponse> getUserReviewForProduct(Long userId, Long productId);
+
+    double getAverageRatingByProductId(Long productId);
+
+    long countByProductId(Long productId);
 
 }
 

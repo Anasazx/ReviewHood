@@ -1,5 +1,4 @@
 package tn.anasazx.tunirate.product.dto;
-import tn.anasazx.tunirate.review.dto.ReviewResponse;
 
 import java.util.List;
 
@@ -12,7 +11,6 @@ public record ProductDetailsResponse(
         String companyName,
         double averageRating,
         long reviewsCount,
-        List<ReviewResponse> reviews,
         List<ProductImageResponse> images
 
 ) {}

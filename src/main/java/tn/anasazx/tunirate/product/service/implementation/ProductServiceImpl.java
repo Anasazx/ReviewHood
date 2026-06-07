@@ -1,7 +1,6 @@
 package tn.anasazx.tunirate.product.service.implementation;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,10 +15,11 @@ import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.mapper.ProductMapper;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
 import tn.anasazx.tunirate.product.service.ProductService;
-import tn.anasazx.tunirate.review.dto.ReviewResponse;
+import tn.anasazx.tunirate.review.mapper.ReviewMapper;
 import tn.anasazx.tunirate.review.service.ReviewService;
 
 import java.util.List;
+
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -31,7 +31,7 @@ public class ProductServiceImpl implements ProductService {
     private final ReviewService reviewService;
     private final ProductMapper productMapper;
 
-    public ProductServiceImpl(ProductRepository productRepository, CompanyRepository companyRepository, SubcategoryRepository subcategoryRepository, ReviewService reviewService, ProductMapper productMapper) {
+    public ProductServiceImpl(ProductRepository productRepository, CompanyRepository companyRepository, SubcategoryRepository subcategoryRepository, ReviewService reviewService, ProductMapper productMapper, ReviewMapper reviewMapper) {
         this.productRepository = productRepository;
         this.companyRepository = companyRepository;
         this.subcategoryRepository = subcategoryRepository;
@@ -43,17 +43,15 @@ public class ProductServiceImpl implements ProductService {
     //There is a methode that returns only the basic info of a product called getProductById
     @Override
     public ProductDetailsResponse getProductDetails(Long id) {
+
         Product product = findProduct(id);
-        Pageable pageable = PageRequest.of(0, 5);
-        List<ReviewResponse> reviews = reviewService
-                .getReviewsByProductId(id, pageable)
-                .getContent();
-        double avgRating = reviews.stream()
-                .mapToInt(ReviewResponse::rating)
-                .average()
-                .orElse(0);
-        long reviewsCount = reviews.size();
-        return productMapper.mapProductToDetailsResponse(product, reviews, avgRating, reviewsCount);
+
+        double avgRating = reviewService.getAverageRatingByProductId(id);
+
+        long reviewsCount = reviewService.countByProductId(id);
+
+        return productMapper.mapProductToDetailsResponse(product, avgRating, reviewsCount);
+
     }
 
     @Override

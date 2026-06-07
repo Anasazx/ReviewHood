@@ -2,6 +2,7 @@ package tn.anasazx.tunirate.review.service.implementation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,8 @@ import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -41,14 +44,48 @@ public class ReviewServiceImpl implements ReviewService {
 
 
     @Override
-    public Page<ReviewResponse> getReviewsByProductId(
-            Long productId,
-            Pageable pageable
-    ) {
+    public Page<ReviewResponse> getReviewsByProductId(Long productId, Pageable pageable) {
+
+        Long userId = SecurityUtils.getCurrentUserId();
+
+        Optional<ReviewResponse> userReview =
+                reviewRepository.findByUserIdAndProductId(userId, productId)
+                        .map(r -> reviewMapper.toResponse(r, true));
+
+        List<ReviewResponse> rawReviews =
+                reviewRepository.findByProductId(productId, pageable)
+                        .map(reviewMapper::toResponse)
+                        .getContent();
+
+        List<ReviewResponse> merged = userReview
+                .map(ur -> Stream.concat(
+                        Stream.of(ur),
+                        rawReviews.stream().filter(r -> !r.id().equals(ur.id()))
+                ).toList())
+                .orElse(rawReviews);
+
+        return new PageImpl<>(merged, pageable, merged.size());
+    }
+
+
+    //This methode perform a specific query to return the average rating for a specific product
+    public double getAverageRatingByProductId(Long productId) {
+        return reviewRepository.getAverageRatingByProductId(productId);
+    }
+
+    //This methode returns the number of review for a specific product
+    @Override
+    public long countByProductId(Long productId) {
+        return reviewRepository.countByProductId(productId);
+    }
+
+    @Override
+    public Optional<ReviewResponse> getUserReviewForProduct(Long userId, Long productId) {
         return reviewRepository
-                .findByProductId(productId, pageable)
+                .findByUserIdAndProductId(userId, productId)
                 .map(reviewMapper::toResponse);
     }
+
     /*
     @Override
     public List<ReviewResponse> getAllReviewsByProductId(Long productId) {

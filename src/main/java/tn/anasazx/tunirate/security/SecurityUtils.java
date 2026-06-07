@@ -7,13 +7,16 @@ import tn.anasazx.tunirate.user.entity.User;
 
 public class SecurityUtils {
 
-
     public static Long getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new NoAuthenticatedUserException();
         }
         Object principal = authentication.getPrincipal();
+        if (principal instanceof Long userId) {
+            return userId;
+        }
         if (principal instanceof User user) {
             return user.getId();
         }
