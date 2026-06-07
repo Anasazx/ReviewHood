@@ -2,7 +2,6 @@ package tn.anasazx.tunirate.product.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import tn.anasazx.tunirate.categories.category.entity.Category;
 import tn.anasazx.tunirate.categories.subcategory.entity.Subcategory;
 
 import java.time.LocalDateTime;
@@ -38,7 +37,7 @@ public class Product {
     //I d'ont need a category here bcs a subcategory is already belong to a category
     @ManyToOne
     @JoinColumn(name = "subcategory_id")
-    // TODO: make nullable true, im setting it false for now for dev, because i dont want to drop my test db for now ,,, @JoinColumn(name = "subcategory_id", nullable = false)
+    // after some analyzing I think the best option is to make the subcategory optional , where u can make a product then assign the subcategory to it
     private Subcategory subcategory;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)

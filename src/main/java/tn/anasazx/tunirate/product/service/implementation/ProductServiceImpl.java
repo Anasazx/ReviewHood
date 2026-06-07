@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import tn.anasazx.tunirate.categories.category.repository.CategoryRepository;
 import tn.anasazx.tunirate.categories.subcategory.entity.Subcategory;
 import tn.anasazx.tunirate.categories.subcategory.repository.SubcategoryRepository;
 import tn.anasazx.tunirate.company.entity.Company;
@@ -74,7 +73,7 @@ public class ProductServiceImpl implements ProductService {
 
         Company company = findCompany(request.companyId());
 
-        Subcategory subcategory = findSubcategory(request.subcategoryId());
+        Subcategory subcategory = resolveSubcategory(request.subcategoryId());
 
         Product product = productMapper.toProduct(request, company, subcategory);
 
@@ -90,12 +89,13 @@ public class ProductServiceImpl implements ProductService {
 
         Company company = findCompany(request.companyId());
 
-        Subcategory subcategory = findSubcategory(request.subcategoryId());
+        Subcategory subcategory = resolveSubcategory(request.subcategoryId());
 
         productMapper.updateProduct(product, request, company, subcategory);
 
         return productMapper.mapProductToResponse(productRepository.save(product));
     }
+
 
     @Override
     public void deleteProduct(Long id) {
@@ -113,6 +113,12 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Company findCompany(Long id) {
         return companyRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
+    }
+
+
+    private Subcategory resolveSubcategory(Long id) {
+        if (id == null) return null;
+        return findSubcategory(id);
     }
 
     @Override

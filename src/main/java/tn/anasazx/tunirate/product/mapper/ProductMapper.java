@@ -1,6 +1,7 @@
 package tn.anasazx.tunirate.product.mapper;
 
 import org.springframework.stereotype.Component;
+import tn.anasazx.tunirate.categories.category.entity.Category;
 import tn.anasazx.tunirate.categories.subcategory.entity.Subcategory;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.product.dto.ProductDetailsResponse;
@@ -25,21 +26,33 @@ public class ProductMapper {
                 .or(() -> product.getImages().stream()
                         .map(ProductImage::getUrl)
                         .findFirst());
-
+        String categoryName = Optional.ofNullable(product.getSubcategory())
+                .map(Subcategory::getCategory)
+                .map(Category::getName)
+                .orElse(null);
+        String subcategoryName = Optional.ofNullable(product.getSubcategory())
+                .map(Subcategory::getName)
+                .orElse(null);
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
-                product.getSubcategory().getCategory().getName(),
-                product.getSubcategory().getName(),
+                categoryName,
+                subcategoryName,
                 product.getCompany().getId(),
                 product.getCompany().getName(),
                 imageUrl.orElse(null),
                 product.getCreatedAt()
         );
+
     }
 
-    public ProductDetailsResponse mapProductToDetailsResponse(Product product, List<ReviewResponse> reviews, double avgRating, long reviewsCount) {
+    public ProductDetailsResponse mapProductToDetailsResponse(
+            Product product,
+            List<ReviewResponse> reviews,
+            double avgRating,
+            long reviewsCount
+    ) {
 
         List<ProductImageResponse> images = product.getImages()
                 .stream()
@@ -50,18 +63,27 @@ public class ProductMapper {
                 ))
                 .toList();
 
+        String categoryName = Optional.ofNullable(product.getSubcategory())
+                .map(Subcategory::getCategory)
+                .map(Category::getName)
+                .orElse(null);
+
+        String subcategoryName = Optional.ofNullable(product.getSubcategory())
+                .map(Subcategory::getName)
+                .orElse(null);
+
         return new ProductDetailsResponse(
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
-                product.getSubcategory().getCategory().getName(),
-                product.getSubcategory().getName(),
+                categoryName,
+                subcategoryName,
                 product.getCompany().getName(),
                 avgRating,
                 reviewsCount,
                 reviews,
                 images
-                );
+        );
     }
 
     public Product toProduct(ProductRequest request, Company company, Subcategory subcategory) {

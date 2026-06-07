@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 public record ProductRequest(
         @NotBlank String name,
         String description,
-        @NotBlank Long subcategoryId,
+        Long subcategoryId,
         @NotNull Long companyId
 ) {}
 
