@@ -2,14 +2,17 @@ package tn.anasazx.tunirate.membership.service.implementation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import tn.anasazx.tunirate.company.entity.Company;
-import tn.anasazx.tunirate.company.repository.CompanyRepository;
+import tn.anasazx.tunirate.company.service.CompanyService;
 import tn.anasazx.tunirate.enums.CompanyRole;
+import tn.anasazx.tunirate.membership.dto.CompanyMemberResponse;
 import tn.anasazx.tunirate.membership.entity.CompanyMember;
+import tn.anasazx.tunirate.membership.mapper.CompanyMemberMapper;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.membership.service.CompanyMemberService;
 import tn.anasazx.tunirate.user.entity.User;
-import tn.anasazx.tunirate.user.repository.UserRepository;
+import tn.anasazx.tunirate.user.service.UserService;
 
 import java.util.List;
 
@@ -17,46 +20,59 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CompanyMemberServiceImpl implements CompanyMemberService {
 
-    private final CompanyMemberRepository repository;
-    private final UserRepository userRepository;
-    private final CompanyRepository companyRepository;
+    private final CompanyMemberRepository companyMemberRepository;
+    private final UserService userService;
+    private final CompanyService companyService;
+
+
 
     @Override
-    public CompanyMember assignUserToCompany(Long userId, Long companyId, CompanyRole role) {
-        if (repository.existsByUserIdAndCompanyId(userId, companyId)) {
+    public CompanyMemberResponse assignUserToCompany(Long userId, Long companyId, CompanyRole role) {
+
+        if (companyMemberRepository.existsByUserIdAndCompanyId(userId, companyId)) {
             throw new RuntimeException("User already in this company");
         }
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        User user = userService.getUserEntityById(userId);
+        Company company = companyService.getCompanyEntityById(companyId);
+
         CompanyMember member = CompanyMember.builder()
                 .user(user)
                 .company(company)
                 .role(role)
                 .build();
-        return repository.save(member);
+
+        CompanyMember saved = companyMemberRepository.save(member);
+
+        return CompanyMemberMapper.toResponse(saved);
     }
 
     @Override
     public void removeUserFromCompany(Long userId, Long companyId) {
-        repository.findByUserIdAndCompanyId(userId, companyId)
-                .ifPresent(repository::delete);
+        companyMemberRepository.findByUserIdAndCompanyId(userId, companyId)
+                .ifPresent(companyMemberRepository::delete);
     }
 
     @Override
-    public List<CompanyMember> getMembersByCompany(Long companyId) {
-        return repository.findByCompanyId(companyId);
+    public List<CompanyMemberResponse> getMembersByCompany(Long companyId) {
+        return companyMemberRepository.findByCompanyId(companyId)
+                .stream()
+                .map(CompanyMemberMapper::toResponse)
+                .toList();
     }
 
     @Override
-    public List<CompanyMember> getCompaniesByUser(Long userId) {
-        return repository.findByUserId(userId);
+
+    public List<CompanyMemberResponse> getCompaniesByUser(Long userId) {
+        return companyMemberRepository.findByUserId(userId)
+                .stream()
+                .map(CompanyMemberMapper::toResponse)
+                .toList();
     }
 
     @Override
     public boolean isUserInCompany(Long userId, Long companyId) {
-        return repository.existsByUserIdAndCompanyId(userId, companyId);
+        return companyMemberRepository.existsByUserIdAndCompanyId(userId, companyId);
     }
 
 }

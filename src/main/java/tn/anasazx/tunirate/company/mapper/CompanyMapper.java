@@ -7,7 +7,7 @@ import tn.anasazx.tunirate.company.entity.Company;
 @Component
 public class CompanyMapper {
 
-    public CompanyResponse toResponse(Company company) {
+    public static CompanyResponse toResponse(Company company) {
         return new CompanyResponse(
                 company.getId(),
                 company.getName(),

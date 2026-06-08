@@ -21,11 +21,10 @@ public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
     private final ProductRepository productRepository;
-    private final CompanyMapper companyMapper;
 
     @Override
     public CompanyResponse getCompanyById(Long id) {
-        return companyMapper.toResponse(findCompany(id));
+        return CompanyMapper.toResponse(findCompany(id));
     }
 
     @Override
@@ -33,12 +32,12 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = companyRepository.findByNameIgnoreCase(name)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
 
-        return companyMapper.toResponse(company);
+        return CompanyMapper.toResponse(company);
     }
 
     @Override
     public List<CompanyResponse> getAllCompanies() {
-        return companyRepository.findAll().stream().map(companyMapper::toResponse).toList();
+        return companyRepository.findAll().stream().map(CompanyMapper::toResponse).toList();
     }
 
     @Override
@@ -52,7 +51,7 @@ public class CompanyServiceImpl implements CompanyService {
         company.setDescription(request.description());
         company.setVerified(request.verified() != null ? request.verified() : false);
 
-        return companyMapper.toResponse(companyRepository.save(company));
+        return CompanyMapper.toResponse(companyRepository.save(company));
     }
 
     @Override
@@ -69,7 +68,7 @@ public class CompanyServiceImpl implements CompanyService {
         company.setDescription(request.description());
         company.setVerified(request.verified() != null ? request.verified() : company.getVerified());
 
-        return companyMapper.toResponse(companyRepository.save(company));
+        return CompanyMapper.toResponse(companyRepository.save(company));
     }
 
     @Override
@@ -82,12 +81,19 @@ public class CompanyServiceImpl implements CompanyService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
-        return companyMapper.toResponse(product.getCompany());
+        return CompanyMapper.toResponse(product.getCompany());
+    }
+
+    @Override
+    public Company getCompanyEntityById(Long id) {
+        return companyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
     }
 
     private Company findCompany(Long id) {
         return companyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
     }
+
 }
 

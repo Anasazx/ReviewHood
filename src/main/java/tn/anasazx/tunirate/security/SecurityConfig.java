@@ -43,7 +43,8 @@ public class SecurityConfig {
                                 "/users/**",
                                 "/productImage/**",
                                 "/uploads/**",
-                                "/categories/**"
+                                "/categories/**",
+                                "/membership/**"
                         ).permitAll()
                         // Everything else requires login
                         .anyRequest().authenticated()

@@ -5,7 +5,7 @@ import tn.anasazx.tunirate.user.entity.User;
 
 public class UserMapper {
 
-    public static UserResponseDto toDto(User user) {
+    public static UserResponseDto toResponseDto(User user) {
         return new UserResponseDto(
                 user.getId(),
                 user.getName(),

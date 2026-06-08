@@ -21,7 +21,7 @@ public class UserServiceImpl implements UserService {
     public List<UserResponseDto> getAllUsers() {
         return userRepository.findAll()
                 .stream()
-                .map(UserMapper::toDto)
+                .map(UserMapper::toResponseDto)
                 .toList();
     }
 
@@ -55,6 +55,11 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
+    @Override
+    public User getUserEntityById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
 
 
 }

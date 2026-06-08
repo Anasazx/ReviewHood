@@ -15,4 +15,6 @@ public interface UserService {
     User updateUser(Long id, User updatedUser);
     User createUser(User user);
 
+    User getUserEntityById(Long id);
+
 }

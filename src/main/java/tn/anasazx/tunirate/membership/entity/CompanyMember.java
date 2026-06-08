@@ -24,6 +24,9 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_member_company", columnList = "company_id")
         }
 )
+
+//TODO: need to add "assigned by" field to know who assigned each member;
+
 public class CompanyMember {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,6 +46,7 @@ public class CompanyMember {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CompanyRole role;
+
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime joinedAt;
