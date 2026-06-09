@@ -28,4 +28,13 @@ public class Company {
 
     @Column(nullable = false)
     private Boolean verified = false;
+
+    @Column
+    private String logoUrl;
+
+    @Column
+    private String bannerUrl;
+
+
+
 }

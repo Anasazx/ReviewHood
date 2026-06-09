@@ -3,6 +3,7 @@ package tn.anasazx.tunirate.company.service.implementation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import tn.anasazx.tunirate.company.dto.CompanyRequest;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
@@ -10,6 +11,8 @@ import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.company.mapper.CompanyMapper;
 import tn.anasazx.tunirate.company.repository.CompanyRepository;
 import tn.anasazx.tunirate.company.service.CompanyService;
+import tn.anasazx.tunirate.enums.CompanyImageType;
+import tn.anasazx.tunirate.fileStorage.service.FileStorageService;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
 
@@ -21,6 +24,8 @@ public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
     private final ProductRepository productRepository;
+    private final FileStorageService fileStorageService;
+
 
     @Override
     public CompanyResponse getCompanyById(Long id) {
@@ -104,6 +109,66 @@ public class CompanyServiceImpl implements CompanyService {
                 .map(CompanyMapper::toResponse)
                 .toList();
     }
+
+
+
+    @Override
+    public void uploadImage(Long companyId, MultipartFile file, CompanyImageType type) {
+
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        String fileName = fileStorageService.saveFile(file);
+
+        switch (type) {
+            case LOGO -> {
+                if (company.getLogoUrl() != null) {
+                    fileStorageService.deleteFile(company.getLogoUrl());
+                }
+                company.setLogoUrl(fileName);
+            }
+            case BANNER -> {
+                if (company.getBannerUrl() != null) {
+                    fileStorageService.deleteFile(company.getBannerUrl());
+                }
+                company.setBannerUrl(fileName);
+            }
+        }
+        companyRepository.save(company);
+    }
+
+
+
+    @Override
+    public void deleteImage(Long companyId, CompanyImageType type) {
+
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        switch (type) {
+            case LOGO -> {
+                if (company.getLogoUrl() != null) {
+                    fileStorageService.deleteFile(company.getLogoUrl());
+                    company.setLogoUrl(null);
+                }
+            }
+
+            case BANNER -> {
+                if (company.getBannerUrl() != null) {
+                    fileStorageService.deleteFile(company.getBannerUrl());
+                    company.setBannerUrl(null);
+                }
+            }
+        }
+
+        companyRepository.save(company);
+    }
+
+
+
+
+
+
 
     private Company findCompany(Long id) {
         return companyRepository.findById(id)

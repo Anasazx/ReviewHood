@@ -36,4 +36,13 @@ public class FileStorageService {
 
     }
 
+    public void deleteFile(String fileName) {
+        try {
+            Path filePath = Paths.get(uploadDir).resolve(fileName);
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            throw new RuntimeException("File delete failed", e);
+        }
+    }
+
 }

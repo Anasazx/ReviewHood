@@ -12,6 +12,8 @@ public class CompanyMapper {
                 company.getId(),
                 company.getName(),
                 company.getDescription(),
+                company.getLogoUrl(),
+                company.getBannerUrl(),
                 company.getVerified()
         );
     }

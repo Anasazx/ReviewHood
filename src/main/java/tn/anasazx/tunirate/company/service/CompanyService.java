@@ -1,8 +1,10 @@
 package tn.anasazx.tunirate.company.service;
 
+import org.springframework.web.multipart.MultipartFile;
 import tn.anasazx.tunirate.company.dto.CompanyRequest;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.entity.Company;
+import tn.anasazx.tunirate.enums.CompanyImageType;
 
 import java.util.List;
 
@@ -26,5 +28,8 @@ public interface CompanyService {
 
     List<CompanyResponse> search(String query);
 
+    //FOR LOGO AND BANNER :
+    void uploadImage(Long companyId, MultipartFile file, CompanyImageType type);
+    void deleteImage(Long companyId, CompanyImageType type);
 }
 

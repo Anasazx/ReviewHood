@@ -5,9 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import tn.anasazx.tunirate.company.dto.CompanyRequest;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.service.CompanyService;
+import tn.anasazx.tunirate.enums.CompanyImageType;
 
 import java.util.List;
 
@@ -56,4 +58,35 @@ public class CompanyController {
     public ResponseEntity<CompanyResponse> getCompanyByProductId(@PathVariable Long productId) {
         return ResponseEntity.ok(companyService.getCompanyByProductId(productId));
     }
+
+
+    //IMAGE CONTROLLER
+
+    @PostMapping("/{id}/logo")
+    public ResponseEntity<Void> uploadLogo(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        companyService.uploadImage(id, file, CompanyImageType.LOGO);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/banner")
+    public ResponseEntity<Void> uploadBanner(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        companyService.uploadImage(id, file, CompanyImageType.BANNER);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}/logo")
+    public ResponseEntity<Void> deleteLogo(@PathVariable Long id) {
+        companyService.deleteImage(id, CompanyImageType.LOGO);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}/banner")
+    public ResponseEntity<Void> deleteBanner(@PathVariable Long id) {
+        companyService.deleteImage(id, CompanyImageType.BANNER);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
+
 }
