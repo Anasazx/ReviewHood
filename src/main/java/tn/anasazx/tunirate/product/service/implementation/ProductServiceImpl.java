@@ -1,6 +1,7 @@
 package tn.anasazx.tunirate.product.service.implementation;
 
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,6 +22,7 @@ import java.util.List;
 
 
 @Service
+@RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
@@ -29,12 +31,6 @@ public class ProductServiceImpl implements ProductService {
 
     private final ReviewService reviewService;
 
-    public ProductServiceImpl(ProductRepository productRepository, CompanyRepository companyRepository, SubcategoryRepository subcategoryRepository, ReviewService reviewService) {
-        this.productRepository = productRepository;
-        this.companyRepository = companyRepository;
-        this.subcategoryRepository = subcategoryRepository;
-        this.reviewService = reviewService;
-    }
 
     //This methode returns the product with his details such as reviews...
     //There is a methode that returns only the basic info of a product called getProductById
@@ -134,6 +130,15 @@ public class ProductServiceImpl implements ProductService {
 
         return productRepository
                 .search(q)
+                .stream()
+                .map(ProductMapper::mapProductToResponse)
+                .toList();
+    }
+
+    @Override
+    public List<ProductResponse> getProductsByCompanyId(Long companyId) {
+        findCompany(companyId);
+        return productRepository.findByCompanyId(companyId)
                 .stream()
                 .map(ProductMapper::mapProductToResponse)
                 .toList();

@@ -54,6 +54,9 @@ public class ProductController {
 		return ResponseEntity.noContent().build();
 	}
 
-
+	@GetMapping("/company/{companyId}")
+	public ResponseEntity<List<ProductResponse>> getProductsByCompanyId(@PathVariable Long companyId) {
+		return ResponseEntity.ok(productService.getProductsByCompanyId(companyId));
+	}
 
 }

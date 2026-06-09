@@ -11,6 +11,7 @@ public record ProductResponse(
         String subcategory,
         Long companyId,
         String companyName,
+        String companyLogoUrl,
         String imageUrl,
         LocalDateTime createdAt
 ) {}

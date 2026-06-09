@@ -40,6 +40,7 @@ public class ProductMapper {
                 subcategoryName,
                 product.getCompany().getId(),
                 product.getCompany().getName(),
+                product.getCompany().getLogoUrl(),
                 imageUrl.orElse(null),
                 product.getCreatedAt()
         );

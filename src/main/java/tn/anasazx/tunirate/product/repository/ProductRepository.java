@@ -16,5 +16,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     """)
     List<Product> search(@Param("q") String q);
 
+    List<Product> findByCompanyId(Long companyId);
+
 }
 
