@@ -17,4 +17,6 @@ public interface UserService {
 
     User getUserEntityById(Long id);
 
+    List<UserResponseDto> searchUsers(String query);
+
 }

@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.anasazx.tunirate.membership.dto.CompanyMemberRequest;
 import tn.anasazx.tunirate.membership.dto.CompanyMemberResponse;
+import tn.anasazx.tunirate.membership.dto.UpdateMemberRoleRequest;
 import tn.anasazx.tunirate.membership.service.CompanyMemberService;
 
 import java.util.List;
@@ -42,6 +43,13 @@ public class CompanyMemberController {
     public ResponseEntity<List<CompanyMemberResponse>> getCompaniesByUserId(@PathVariable Long userId) {
         return ResponseEntity.ok(
                 service.getCompaniesByUser(userId)
+        );
+    }
+
+    @PatchMapping("/role")
+    public ResponseEntity<CompanyMemberResponse> updateRole(@RequestBody UpdateMemberRoleRequest request) {
+        return ResponseEntity.ok(
+                service.updateRole(request.userId(), request.companyId(), request.role())
         );
     }
 

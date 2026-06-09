@@ -75,4 +75,19 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
         return companyMemberRepository.existsByUserIdAndCompanyId(userId, companyId);
     }
 
+    @Override
+
+    public CompanyMemberResponse updateRole(Long userId, Long companyId, CompanyRole role) {
+
+        CompanyMember membership = companyMemberRepository
+                .findByUserIdAndCompanyId(userId, companyId)
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+
+        membership.setRole(role);
+        CompanyMember saved = companyMemberRepository.save(membership);
+
+        return CompanyMemberMapper.toResponse(saved);
+    }
+
+
 }

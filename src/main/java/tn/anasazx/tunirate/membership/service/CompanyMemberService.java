@@ -12,4 +12,6 @@ public interface CompanyMemberService {
     List<CompanyMemberResponse> getCompaniesByUser(Long userId);
     boolean isUserInCompany(Long userId, Long companyId);
 
+    CompanyMemberResponse updateRole(Long  userId, Long companyId, CompanyRole role);
+
 }

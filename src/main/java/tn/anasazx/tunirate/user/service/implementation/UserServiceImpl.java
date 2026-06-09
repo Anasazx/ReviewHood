@@ -61,5 +61,14 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    @Override
+    public List<UserResponseDto> searchUsers(String query) {
+        return userRepository
+                .findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query)
+                .stream()
+                .map(UserMapper::toResponseDto)
+                .toList();
+    }
+
 
 }

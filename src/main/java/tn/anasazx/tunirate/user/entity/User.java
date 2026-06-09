@@ -18,6 +18,9 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_user_email", columnList = "email")
         }
 )
+
+//the user entity have a unique username and a unique email address
+
 public class User {
     public User(String name, String email, String password, GlobalRole globalRole){
         this.name = name;
