@@ -90,6 +90,21 @@ public class CompanyServiceImpl implements CompanyService {
                 .orElseThrow(() -> new RuntimeException("Company not found"));
     }
 
+    @Override
+    public List<CompanyResponse> search(String query) {
+
+        String q = (query == null) ? "" : query.trim();
+
+        if (q.isEmpty()) {
+            return List.of();
+        }
+
+        return companyRepository.search(q)
+                .stream()
+                .map(CompanyMapper::toResponse)
+                .toList();
+    }
+
     private Company findCompany(Long id) {
         return companyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));

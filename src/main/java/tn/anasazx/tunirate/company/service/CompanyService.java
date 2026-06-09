@@ -22,8 +22,9 @@ public interface CompanyService {
 
     CompanyResponse getCompanyByProductId(Long productId);
 
-
     Company getCompanyEntityById(Long id);
+
+    List<CompanyResponse> search(String query);
 
 }
 

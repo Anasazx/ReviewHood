@@ -19,4 +19,5 @@ public interface ProductService {
     Product findProduct(Long id);
     Company findCompany(Long id);
     Subcategory findSubcategory(Long id);
+    List<ProductResponse> search(String query);
 }

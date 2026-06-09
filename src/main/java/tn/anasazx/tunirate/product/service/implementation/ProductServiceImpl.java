@@ -15,7 +15,6 @@ import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.mapper.ProductMapper;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
 import tn.anasazx.tunirate.product.service.ProductService;
-import tn.anasazx.tunirate.review.mapper.ReviewMapper;
 import tn.anasazx.tunirate.review.service.ReviewService;
 
 import java.util.List;
@@ -31,7 +30,7 @@ public class ProductServiceImpl implements ProductService {
     private final ReviewService reviewService;
     private final ProductMapper productMapper;
 
-    public ProductServiceImpl(ProductRepository productRepository, CompanyRepository companyRepository, SubcategoryRepository subcategoryRepository, ReviewService reviewService, ProductMapper productMapper, ReviewMapper reviewMapper) {
+    public ProductServiceImpl(ProductRepository productRepository, CompanyRepository companyRepository, SubcategoryRepository subcategoryRepository, ReviewService reviewService, ProductMapper productMapper) {
         this.productRepository = productRepository;
         this.companyRepository = companyRepository;
         this.subcategoryRepository = subcategoryRepository;
@@ -122,6 +121,22 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Subcategory findSubcategory(Long id) {
         return subcategoryRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subcategory not found"));
+    }
+
+    @Override
+    public List<ProductResponse> search(String query) {
+
+        String q = (query == null) ? "" : query.trim();
+
+        if (q.isEmpty()) {
+            return List.of();
+        }
+
+        return productRepository
+                .search(q)
+                .stream()
+                .map(productMapper::mapProductToResponse)
+                .toList();
     }
 
 
