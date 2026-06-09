@@ -28,14 +28,12 @@ public class ProductServiceImpl implements ProductService {
     private final SubcategoryRepository subcategoryRepository;
 
     private final ReviewService reviewService;
-    private final ProductMapper productMapper;
 
-    public ProductServiceImpl(ProductRepository productRepository, CompanyRepository companyRepository, SubcategoryRepository subcategoryRepository, ReviewService reviewService, ProductMapper productMapper) {
+    public ProductServiceImpl(ProductRepository productRepository, CompanyRepository companyRepository, SubcategoryRepository subcategoryRepository, ReviewService reviewService) {
         this.productRepository = productRepository;
         this.companyRepository = companyRepository;
         this.subcategoryRepository = subcategoryRepository;
         this.reviewService = reviewService;
-        this.productMapper = productMapper;
     }
 
     //This methode returns the product with his details such as reviews...
@@ -49,20 +47,22 @@ public class ProductServiceImpl implements ProductService {
 
         long reviewsCount = reviewService.countByProductId(id);
 
-        return productMapper.mapProductToDetailsResponse(product, avgRating, reviewsCount);
+        return ProductMapper.mapProductToDetailsResponse(product, avgRating, reviewsCount);
 
     }
 
     @Override
     public List<ProductResponse> getAllProducts() {
-        return productRepository.findAll().stream().map(productMapper::mapProductToResponse).toList();
+        return productRepository.findAll().stream()
+                .map(ProductMapper::mapProductToResponse)
+                .toList();
     }
 
     //This only return the basic info of a product without reviews...,
     //there is another methode that return detailed product called getProductDetails
     @Override
     public ProductResponse getProductById(Long id) {
-        return productMapper.mapProductToResponse(findProduct(id));
+        return ProductMapper.mapProductToResponse(findProduct(id));
     }
 
     @Override
@@ -72,11 +72,11 @@ public class ProductServiceImpl implements ProductService {
 
         Subcategory subcategory = resolveSubcategory(request.subcategoryId());
 
-        Product product = productMapper.toProduct(request, company, subcategory);
+        Product product = ProductMapper.toProduct(request, company, subcategory);
 
         Product savedProduct = productRepository.save(product);
 
-        return productMapper.mapProductToResponse(savedProduct);
+        return ProductMapper.mapProductToResponse(savedProduct);
     }
 
     @Override
@@ -88,9 +88,9 @@ public class ProductServiceImpl implements ProductService {
 
         Subcategory subcategory = resolveSubcategory(request.subcategoryId());
 
-        productMapper.updateProduct(product, request, company, subcategory);
+        ProductMapper.updateProduct(product, request, company, subcategory);
 
-        return productMapper.mapProductToResponse(productRepository.save(product));
+        return ProductMapper.mapProductToResponse(productRepository.save(product));
     }
 
 
@@ -135,7 +135,7 @@ public class ProductServiceImpl implements ProductService {
         return productRepository
                 .search(q)
                 .stream()
-                .map(productMapper::mapProductToResponse)
+                .map(ProductMapper::mapProductToResponse)
                 .toList();
     }
 

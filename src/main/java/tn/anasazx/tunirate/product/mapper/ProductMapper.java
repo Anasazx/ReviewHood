@@ -16,7 +16,7 @@ import java.util.Optional;
 
 @Component
 public class ProductMapper {
-    public ProductResponse mapProductToResponse(Product product) {
+    public static ProductResponse mapProductToResponse(Product product) {
 
         Optional<String> imageUrl = product.getImages().stream()
                 .filter(ProductImage::isMain)
@@ -46,11 +46,7 @@ public class ProductMapper {
 
     }
 
-    public ProductDetailsResponse mapProductToDetailsResponse(
-            Product product,
-            double avgRating,
-            long reviewsCount
-    ) {
+    public static ProductDetailsResponse mapProductToDetailsResponse(Product product, double avgRating, long reviewsCount) {
 
         List<ProductImageResponse> images = product.getImages()
                 .stream()
@@ -83,19 +79,17 @@ public class ProductMapper {
         );
     }
 
-    public Product toProduct(ProductRequest request, Company company, Subcategory subcategory) {
+    public static Product toProduct(ProductRequest request, Company company, Subcategory subcategory) {
         Product product = new Product();
-        product.setName(request.name());
-        product.setDescription(request.description());
-        product.setCompany(company);
-        product.setSubcategory(subcategory);
+        updateProduct(product, request, company, subcategory);
         return product;
     }
 
-    public void updateProduct(Product product, ProductRequest request, Company company, Subcategory subcategory) {
+    public static void updateProduct(Product product, ProductRequest request, Company company, Subcategory subcategory) {
         product.setName(request.name());
         product.setDescription(request.description());
         product.setCompany(company);
         product.setSubcategory(subcategory);
     }
+
 }
