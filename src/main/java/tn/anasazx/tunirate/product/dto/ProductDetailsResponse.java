@@ -8,7 +8,10 @@ public record ProductDetailsResponse(
         String description,
         String category,
         String subcategory,
+        Long companyId,
         String companyName,
+        boolean companyIsVerified,
+        String companyLogoUrl,
         double averageRating,
         long reviewsCount,
         List<ProductImageResponse> images

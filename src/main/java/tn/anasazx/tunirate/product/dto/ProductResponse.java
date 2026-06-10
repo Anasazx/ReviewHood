@@ -11,6 +11,7 @@ public record ProductResponse(
         String subcategory,
         Long companyId,
         String companyName,
+        boolean companyIsVerified,
         String companyLogoUrl,
         String imageUrl,
         LocalDateTime createdAt

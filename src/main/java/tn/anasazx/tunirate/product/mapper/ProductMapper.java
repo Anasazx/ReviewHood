@@ -40,6 +40,7 @@ public class ProductMapper {
                 subcategoryName,
                 product.getCompany().getId(),
                 product.getCompany().getName(),
+                product.getCompany().getVerified(),
                 product.getCompany().getLogoUrl(),
                 imageUrl.orElse(null),
                 product.getCreatedAt()
@@ -73,7 +74,10 @@ public class ProductMapper {
                 product.getDescription(),
                 categoryName,
                 subcategoryName,
+                product.getCompany().getId(),
                 product.getCompany().getName(),
+                product.getCompany().getVerified(),
+                product.getCompany().getLogoUrl(),
                 avgRating,
                 reviewsCount,
                 images
