@@ -44,6 +44,7 @@ public class SecurityConfig {
                                 "/productImage/**",
                                 "/uploads/**",
                                 "/categories/**",
+                                "/subcategories/**",
                                 "/membership/**",
                                 "/search/**"
                         ).permitAll()

@@ -49,7 +49,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponse> getAllProducts() {
-        return productRepository.findAll().stream()
+        return productRepository.findAllByOrderByCreatedAtAsc().stream()
                 .map(ProductMapper::mapProductToResponse)
                 .toList();
     }

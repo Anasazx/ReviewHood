@@ -22,7 +22,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponse> getAllCategories() {
-        return categoryRepository.findAll()
+        return categoryRepository.findAllByOrderByNameAsc()
                 .stream()
                 .map(categoryMapper::toResponse)
                 .toList();
