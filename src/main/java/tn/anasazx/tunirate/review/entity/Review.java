@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
                 @UniqueConstraint(columnNames = {"user_id", "product_id"})
         },
         indexes = {
-                @Index(name = "idx_product_id", columnList = "product_id"),
-                @Index(name = "idx_user_id", columnList = "user_id")
+                @Index(name = "idx_reviews_product_id", columnList = "product_id"),
+                @Index(name = "idx_reviews_user_id", columnList = "user_id")
         }
 )
 public class Review {

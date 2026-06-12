@@ -3,6 +3,7 @@ package tn.anasazx.tunirate.security;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
+import tn.anasazx.tunirate.enums.CompanyRole;
 import tn.anasazx.tunirate.enums.GlobalRole;
 
 import java.security.Key;
@@ -18,7 +19,7 @@ public class JwtService {
     private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
     //Generate token
-    public String generateToken(Long id, GlobalRole globalRole) {
+    public String generateToken(Long id, GlobalRole globalRole, Long companyId, CompanyRole companyRole) {
         return Jwts.builder()
                 .setSubject(String.valueOf(id))
                 .claim("role", globalRole.name())
@@ -43,6 +44,8 @@ public class JwtService {
     //      if user is requesting a gateway that is protected by admin privilege it gets the id from the token then it runs a query
     //      to check if this user has admin privileges
 
+
+    // because it's harder to guess an admin id
 
 
     //Extract role
