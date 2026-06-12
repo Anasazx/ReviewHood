@@ -14,16 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(
-        name = "company_members",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"user_id", "company_id"})
-        },
-        indexes = {
-                @Index(name = "idx_member_user", columnList = "user_id"),
-                @Index(name = "idx_member_company", columnList = "company_id")
-        }
-)
+@Table(name = "company_members")
 
 //TODO: need to add "assigned by" field to know who assigned each member;
 
@@ -33,7 +24,7 @@ public class CompanyMember {
     private Long id;
 
     // Who is the user
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

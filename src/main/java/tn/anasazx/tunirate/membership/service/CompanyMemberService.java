@@ -9,7 +9,7 @@ public interface CompanyMemberService {
     CompanyMemberResponse assignUserToCompany(Long userId, Long companyId, CompanyRole role);
     void removeUserFromCompany(Long userId, Long companyId);
     List<CompanyMemberResponse> getMembersByCompany(Long companyId);
-    List<CompanyMemberResponse> getCompaniesByUser(Long userId);
+    CompanyMemberResponse getCompanyByUserId(Long userId);
     boolean isUserInCompany(Long userId, Long companyId);
 
     CompanyMemberResponse updateRole(Long  userId, Long companyId, CompanyRole role);

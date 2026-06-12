@@ -40,9 +40,9 @@ public class CompanyMemberController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<CompanyMemberResponse>> getCompaniesByUserId(@PathVariable Long userId) {
+    public ResponseEntity<CompanyMemberResponse> getCompaniesByUserId(@PathVariable Long userId) {
         return ResponseEntity.ok(
-                service.getCompaniesByUser(userId)
+                service.getCompanyByUserId(userId)
         );
     }
 

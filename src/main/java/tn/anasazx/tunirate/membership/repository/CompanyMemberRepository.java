@@ -13,8 +13,8 @@ public interface CompanyMemberRepository extends JpaRepository<CompanyMember, Lo
     // Find all members of a company
     List<CompanyMember> findByCompanyId(Long companyId);
 
-    // Find all companies of a user
-    List<CompanyMember> findByUserId(Long userId);
+    // Find company of a user
+    Optional<CompanyMember> findFirstByUserId(Long userId);
 
     // Check if user is already in company
     boolean existsByUserIdAndCompanyId(Long userId, Long companyId);

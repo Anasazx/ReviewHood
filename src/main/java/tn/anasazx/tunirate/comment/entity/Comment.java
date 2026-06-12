@@ -13,9 +13,9 @@ import java.time.LocalDateTime;
 @Table(
         name = "comments",
         indexes = {
-                @Index(name = "idx_review_id", columnList = "review_id"),
-                @Index(name = "idx_user_id", columnList = "user_id"),
-                @Index(name = "idx_parent_comment_id", columnList = "parent_comment_id")
+                @Index(name = "idx_comments_review_id", columnList = "review_id"),
+                @Index(name = "idx_comments_user_id", columnList = "user_id"),
+                @Index(name = "idx_comments_parent_comment_id", columnList = "parent_comment_id")
         }
 )
 public class Comment {
@@ -31,9 +31,9 @@ public class Comment {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column
     private LocalDateTime updatedAt;
 
-    // Relationships
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
