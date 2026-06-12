@@ -62,12 +62,10 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
     }
 
     @Override
-
-    public List<CompanyMemberResponse> getCompaniesByUser(Long userId) {
-        return companyMemberRepository.findByUserId(userId)
-                .stream()
+    public CompanyMemberResponse getCompanyByUserId(Long userId) {
+        return companyMemberRepository.findFirstByUserId(userId)
                 .map(CompanyMemberMapper::toResponse)
-                .toList();
+                .orElse(null);
     }
 
     @Override
