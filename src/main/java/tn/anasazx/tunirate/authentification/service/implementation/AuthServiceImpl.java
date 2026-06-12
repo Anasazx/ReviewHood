@@ -7,11 +7,15 @@ import tn.anasazx.tunirate.authentification.dto.AuthResponse;
 import tn.anasazx.tunirate.authentification.dto.LoginRequest;
 import tn.anasazx.tunirate.authentification.dto.RegisterRequest;
 import tn.anasazx.tunirate.authentification.service.AuthService;
+import tn.anasazx.tunirate.enums.CompanyRole;
 import tn.anasazx.tunirate.exception.InvalidPasswordException;
+import tn.anasazx.tunirate.membership.dto.CompanyMemberResponse;
+import tn.anasazx.tunirate.membership.service.CompanyMemberService;
 import tn.anasazx.tunirate.security.JwtService;
 import tn.anasazx.tunirate.enums.GlobalRole;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.service.UserService;
+
 
 @Service
 
@@ -22,6 +26,8 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final UserService userService;
+    private final CompanyMemberService companyMemberService;
+
 
     @Override
     public AuthResponse register(RegisterRequest request) {
@@ -43,9 +49,9 @@ public class AuthServiceImpl implements AuthService {
         User savedUser = userService.createUser(user);
 
         //Generate token
-        String token = jwtService.generateToken(savedUser.getId(), savedUser.getGlobalRole());
+        String token = jwtService.generateToken(savedUser.getId(), savedUser.getGlobalRole(), null, null);
 
-        return new AuthResponse(token, savedUser.getEmail(), savedUser.getGlobalRole().name());
+        return new AuthResponse(token, savedUser.getEmail(), savedUser.getGlobalRole().name(), null, null);
     }
 
     private boolean isStrongPassword(String password) {
@@ -65,10 +71,20 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid credentials");
         }
 
-        //Token generation
-        String token = jwtService.generateToken(user.getId(), user.getGlobalRole());
-        return new AuthResponse(token, user.getEmail(), user.getGlobalRole().name());
 
+        CompanyMemberResponse userCompanyMembership = companyMemberService.getCompanyByUserId(user.getId());
+
+        Long companyId = null;
+        CompanyRole companyRole = null;
+
+        if (userCompanyMembership != null) {
+            companyId = userCompanyMembership.company().id();
+            companyRole = userCompanyMembership.role();
+        }
+
+        //Token generation
+        String token = jwtService.generateToken(user.getId(), user.getGlobalRole(), companyId, companyRole);
+        return new AuthResponse(token, user.getEmail(), user.getGlobalRole().name(), companyId, companyRole);
     }
 
 }
