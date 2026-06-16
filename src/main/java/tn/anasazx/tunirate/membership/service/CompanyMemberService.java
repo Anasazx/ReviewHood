@@ -6,12 +6,18 @@ import tn.anasazx.tunirate.membership.dto.CompanyMemberResponse;
 import java.util.List;
 
 public interface CompanyMemberService {
-    CompanyMemberResponse assignUserToCompany(Long userId, Long companyId, CompanyRole role);
+    CompanyMemberResponse assignUserToCompany(Long userId, Long companyId);
     void removeUserFromCompany(Long userId, Long companyId);
-    List<CompanyMemberResponse> getMembersByCompany(Long companyId);
+    List<CompanyMemberResponse> getMembersByCompanyId(Long companyId);
     CompanyMemberResponse getCompanyByUserId(Long userId);
     boolean isUserInCompany(Long userId, Long companyId);
 
+    boolean isUserHeadInCompany(Long userId, Long companyId);
+
+    List<CompanyMemberResponse> getMyCompanyMembers();
+
     CompanyMemberResponse updateRole(Long  userId, Long companyId, CompanyRole role);
+
+    void removeUserFromMyCompany(Long removedUserId);
 
 }

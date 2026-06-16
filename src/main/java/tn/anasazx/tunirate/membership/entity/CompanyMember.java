@@ -36,7 +36,7 @@ public class CompanyMember {
     // Role inside the company
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private CompanyRole role;
+    private CompanyRole companyRole;
 
 
     @Column(nullable = false, updatable = false)

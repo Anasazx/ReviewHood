@@ -11,6 +11,7 @@ import tn.anasazx.tunirate.membership.entity.CompanyMember;
 import tn.anasazx.tunirate.membership.mapper.CompanyMemberMapper;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.membership.service.CompanyMemberService;
+import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.service.UserService;
 
@@ -24,10 +25,12 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
     private final UserService userService;
     private final CompanyService companyService;
 
+    //TODO: i need to add a methode "getMyCompanyMembers()" that takes no params and return the members of a users after searching the company id from his id
+
 
 
     @Override
-    public CompanyMemberResponse assignUserToCompany(Long userId, Long companyId, CompanyRole role) {
+    public CompanyMemberResponse assignUserToCompany(Long userId, Long companyId) {
 
         if (companyMemberRepository.existsByUserIdAndCompanyId(userId, companyId)) {
             throw new RuntimeException("User already in this company");
@@ -39,7 +42,7 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
         CompanyMember member = CompanyMember.builder()
                 .user(user)
                 .company(company)
-                .role(role)
+                .companyRole(CompanyRole.WORKER)
                 .build();
 
         CompanyMember saved = companyMemberRepository.save(member);
@@ -47,6 +50,7 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
         return CompanyMemberMapper.toResponse(saved);
     }
 
+    //this is for the global admin , normal user shouldn't provide a company id
     @Override
     public void removeUserFromCompany(Long userId, Long companyId) {
         companyMemberRepository.findByUserIdAndCompanyId(userId, companyId)
@@ -54,7 +58,7 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
     }
 
     @Override
-    public List<CompanyMemberResponse> getMembersByCompany(Long companyId) {
+    public List<CompanyMemberResponse> getMembersByCompanyId(Long companyId) {
         return companyMemberRepository.findByCompanyId(companyId)
                 .stream()
                 .map(CompanyMemberMapper::toResponse)
@@ -74,17 +78,61 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
     }
 
     @Override
+    public boolean isUserHeadInCompany(Long userId, Long companyId) {
+        return companyMemberRepository.existsByUserIdAndCompanyIdAndCompanyRole(userId, companyId, CompanyRole.HEAD);
+    }
 
-    public CompanyMemberResponse updateRole(Long userId, Long companyId, CompanyRole role) {
+    @Override
+    public List<CompanyMemberResponse> getMyCompanyMembers() {
+        Long userId = SecurityUtils.getCurrentUserId();
+        CompanyMemberResponse membership = getCompanyByUserId(userId);
+        if (membership == null) {
+            throw new RuntimeException("User is not in this company");
+        }
+        if (membership.companyRole() != CompanyRole.HEAD) {
+            throw new RuntimeException("Not allowed");
+        }
+
+        return companyMemberRepository
+                .findByCompanyId(membership.company().id())
+                .stream()
+                .map(CompanyMemberMapper::toResponse)
+                .toList();
+
+    }
+
+    @Override
+    public CompanyMemberResponse updateRole(Long userId, Long companyId, CompanyRole companyRole) {
 
         CompanyMember membership = companyMemberRepository
                 .findByUserIdAndCompanyId(userId, companyId)
                 .orElseThrow(() -> new RuntimeException("Member not found"));
 
-        membership.setRole(role);
+        membership.setCompanyRole(companyRole);
+
         CompanyMember saved = companyMemberRepository.save(membership);
 
         return CompanyMemberMapper.toResponse(saved);
+    }
+
+
+    @Override
+    public void removeUserFromMyCompany(Long removedUserId) {
+
+        Long userId = SecurityUtils.getCurrentUserId();
+
+        CompanyMemberResponse membership = getCompanyByUserId(userId);
+
+        if (membership == null) {
+            throw new RuntimeException("User is not in this company");
+        }
+        if (membership.companyRole() != CompanyRole.HEAD) {
+            throw new RuntimeException("Not allowed");
+        }
+
+
+        companyMemberRepository.findByUserIdAndCompanyId(removedUserId, membership.company().id())
+                .ifPresent(companyMemberRepository::delete);
     }
 
 

@@ -20,7 +20,7 @@ public class CompanyMemberController {
 
     @PostMapping("/assign")
     public ResponseEntity<CompanyMemberResponse> assignMemberToCompany(@RequestBody CompanyMemberRequest request) {
-        CompanyMemberResponse response = service.assignUserToCompany(request.userId(), request.companyId(), request.role());
+        CompanyMemberResponse response = service.assignUserToCompany(request.userId(), request.companyId());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
@@ -32,10 +32,16 @@ public class CompanyMemberController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping
+    public ResponseEntity<Void> removeMemberFromMyCompany(@RequestParam Long userId) {
+        service.removeUserFromMyCompany(userId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/company/{companyId}")
     public ResponseEntity<List<CompanyMemberResponse>> getMembersByCompanyId(@PathVariable Long companyId) {
         return ResponseEntity.ok(
-                service.getMembersByCompany(companyId)
+                service.getMembersByCompanyId(companyId)
         );
     }
 
@@ -46,10 +52,15 @@ public class CompanyMemberController {
         );
     }
 
+    @GetMapping
+    public ResponseEntity<List<CompanyMemberResponse>> getMyCompanyMembers() {
+        return ResponseEntity.ok(service.getMyCompanyMembers());
+    }
+
     @PatchMapping("/role")
     public ResponseEntity<CompanyMemberResponse> updateRole(@RequestBody UpdateMemberRoleRequest request) {
         return ResponseEntity.ok(
-                service.updateRole(request.userId(), request.companyId(), request.role())
+                service.updateRole(request.userId(), request.companyId(), request.companyRole())
         );
     }
 

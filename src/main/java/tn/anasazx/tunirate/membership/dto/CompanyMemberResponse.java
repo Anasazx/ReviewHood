@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public record CompanyMemberResponse (
         UserResponseDto user,
         CompanyResponse company,
-        CompanyRole role,
+        CompanyRole companyRole,
         LocalDateTime joinedAt
 ){}
 

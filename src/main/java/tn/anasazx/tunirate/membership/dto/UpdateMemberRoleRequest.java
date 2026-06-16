@@ -6,5 +6,5 @@ import tn.anasazx.tunirate.enums.CompanyRole;
 public record UpdateMemberRoleRequest(
         @NotNull Long userId,
         @NotNull Long companyId,
-        @NotNull CompanyRole role
+        @NotNull CompanyRole companyRole
 ) {}

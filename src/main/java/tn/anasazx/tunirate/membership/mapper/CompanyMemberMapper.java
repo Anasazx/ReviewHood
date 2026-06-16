@@ -11,7 +11,7 @@ public class CompanyMemberMapper {
         return new CompanyMemberResponse(
                 UserMapper.toResponseDto(m.getUser()),
                 CompanyMapper.toResponse(m.getCompany()),
-                m.getRole(),
+                m.getCompanyRole(),
                 m.getJoinedAt()
         );
     }

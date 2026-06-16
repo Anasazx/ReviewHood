@@ -22,7 +22,6 @@ public interface CompanyMemberRepository extends JpaRepository<CompanyMember, Lo
     // Get specific membership (useful for role checks)
     Optional<CompanyMember> findByUserIdAndCompanyId(Long userId, Long companyId);
 
-    // Get all HEADS of a company
-    List<CompanyMember> findByCompanyIdAndRole(Long companyId, CompanyRole role);
+    boolean existsByUserIdAndCompanyIdAndCompanyRole(Long userId, Long companyId, CompanyRole role);
 
 }

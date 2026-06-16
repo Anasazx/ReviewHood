@@ -8,8 +8,7 @@ import tn.anasazx.tunirate.user.entity.User;
 public class SecurityUtils {
 
     public static Long getCurrentUserId() {
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new NoAuthenticatedUserException();
         }

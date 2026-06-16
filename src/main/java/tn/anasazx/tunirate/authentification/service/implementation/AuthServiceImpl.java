@@ -79,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (userCompanyMembership != null) {
             companyId = userCompanyMembership.company().id();
-            companyRole = userCompanyMembership.role();
+            companyRole = userCompanyMembership.companyRole();
         }
 
         //Token generation
