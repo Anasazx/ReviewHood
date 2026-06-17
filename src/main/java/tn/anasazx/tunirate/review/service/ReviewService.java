@@ -31,5 +31,7 @@ public interface ReviewService {
 
     long countByProductId(Long productId);
 
+    List<ReviewResponse> getMyCompanyReviews();
+
 }
 

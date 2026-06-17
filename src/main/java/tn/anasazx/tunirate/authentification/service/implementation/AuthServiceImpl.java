@@ -1,8 +1,10 @@
 package tn.anasazx.tunirate.authentification.service.implementation;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import tn.anasazx.tunirate.authentification.dto.AuthResponse;
 import tn.anasazx.tunirate.authentification.dto.LoginRequest;
 import tn.anasazx.tunirate.authentification.dto.RegisterRequest;
@@ -13,7 +15,9 @@ import tn.anasazx.tunirate.membership.dto.CompanyMemberResponse;
 import tn.anasazx.tunirate.membership.service.CompanyMemberService;
 import tn.anasazx.tunirate.security.JwtService;
 import tn.anasazx.tunirate.enums.GlobalRole;
+import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.entity.User;
+import tn.anasazx.tunirate.user.repository.UserRepository;
 import tn.anasazx.tunirate.user.service.UserService;
 
 
@@ -27,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final UserService userService;
     private final CompanyMemberService companyMemberService;
+    private final UserRepository userRepository;
 
 
     @Override
@@ -46,12 +51,12 @@ public class AuthServiceImpl implements AuthService {
         );
 
         //call the creation user methode 
-        User savedUser = userService.createUser(user);
+        UserResponse savedUser = userService.createUser(user);
 
         //Generate token
-        String token = jwtService.generateToken(savedUser.getId(), savedUser.getGlobalRole(), null, null);
+        String token = jwtService.generateToken(savedUser.id());
 
-        return new AuthResponse(token, savedUser.getEmail(), savedUser.getGlobalRole().name(), null, null);
+        return new AuthResponse(token, savedUser.email(), savedUser.globalRole().name(), null, null);
     }
 
     private boolean isStrongPassword(String password) {
@@ -64,7 +69,9 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse login(LoginRequest request) {
 
         //Find the user
-        User user = userService.getUserByEmail(request.email());
+        User user = userRepository.findByEmail(request.email()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
+        );
 
         //Check password matching
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
@@ -83,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         //Token generation
-        String token = jwtService.generateToken(user.getId(), user.getGlobalRole(), companyId, companyRole);
+        String token = jwtService.generateToken(user.getId());
         return new AuthResponse(token, user.getEmail(), user.getGlobalRole().name(), companyId, companyRole);
     }
 

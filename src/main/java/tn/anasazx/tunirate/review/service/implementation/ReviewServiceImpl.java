@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import tn.anasazx.tunirate.membership.dto.CompanyMemberResponse;
+import tn.anasazx.tunirate.membership.service.CompanyMemberService;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
 import tn.anasazx.tunirate.review.dto.ReviewRequest;
@@ -28,18 +30,21 @@ import java.util.stream.Stream;
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
+
+    private final CompanyMemberService companyMemberService;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
-    private final ReviewMapper reviewMapper;
 
     @Override
     public List<ReviewResponse> getAllReviews() {
-        return reviewRepository.findAll().stream().map(reviewMapper::toResponse).toList();
+        return reviewRepository.findAll().stream()
+                .map(ReviewMapper::toResponse)
+                .toList();
     }
 
     @Override
     public ReviewResponse getReviewById(Long id) {
-        return reviewMapper.toResponse(findReview(id));
+        return ReviewMapper.toResponse(findReviewEntity(id));
     }
 
 
@@ -50,11 +55,11 @@ public class ReviewServiceImpl implements ReviewService {
 
         Optional<ReviewResponse> userReview =
                 reviewRepository.findByUserIdAndProductId(userId, productId)
-                        .map(r -> reviewMapper.toResponse(r, true));
+                        .map(ReviewMapper::toResponse);
 
         List<ReviewResponse> rawReviews =
                 reviewRepository.findByProductId(productId, pageable)
-                        .map(reviewMapper::toResponse)
+                        .map(ReviewMapper::toResponse)
                         .getContent();
 
         List<ReviewResponse> merged = userReview
@@ -83,32 +88,45 @@ public class ReviewServiceImpl implements ReviewService {
     public Optional<ReviewResponse> getUserReviewForProduct(Long userId, Long productId) {
         return reviewRepository
                 .findByUserIdAndProductId(userId, productId)
-                .map(reviewMapper::toResponse);
+                .map(ReviewMapper::toResponse);
     }
 
-    /*
-    @Override
-    public List<ReviewResponse> getAllReviewsByProductId(Long productId) {
-        return reviewRepository.findAllByProductId(productId).stream().map(reviewMapper::toResponse).toList();
-    }
-    */
 
     @Override
     public Page<ReviewResponse> getReviewsByUserId(Long userId, Pageable pageable) {
         return reviewRepository.findByUserId(userId, pageable)
-                .map(reviewMapper::toResponse);
+                .map(ReviewMapper::toResponse);
+    }
+
+    @Override
+    public List<ReviewResponse> getMyCompanyReviews() {
+
+        Long userId = SecurityUtils.getCurrentUserId();
+
+        CompanyMemberResponse membership = companyMemberService.getCompanyByUserId(userId);
+
+        if (membership == null) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+
+        Long companyId = membership.company().id();
+
+        return reviewRepository.findByProductCompanyId(companyId).stream()
+                .map(ReviewMapper::toResponse)
+                .toList();
+
     }
 
     @Override
     public ReviewResponse createReview(ReviewRequest request) {
 
         //This get the users id from the token
-        User user = findUser(SecurityUtils.getCurrentUserId());
-        System.out.println("This is the result of findUser:(Highlighting the id now)" + user.getId());
+        Long userId = SecurityUtils.getCurrentUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         //This check if the product exists or not; it takes the product id from the request in the params
         //TODO: We need to throw an exception when no product found with this id
-        Product product = findProduct(request.productId());
+        Product product = productRepository.findById(request.productId())
+                .orElseThrow(() -> new RuntimeException("Product not found"));
         /*
         From our business model each user have the right for one review per product so
         this methode throw an exception if a user have already made a review
@@ -126,14 +144,19 @@ public class ReviewServiceImpl implements ReviewService {
         review.setUser(user);
         review.setProduct(product);
 
-        return reviewMapper.toResponse(reviewRepository.save(review));
+        return ReviewMapper.toResponse(reviewRepository.save(review));
     }
 
     @Override
     public ReviewResponse updateReview(Long id, ReviewRequest request) {
-        Review review = findReview(id);
-        User user = findUser(SecurityUtils.getCurrentUserId());
-        Product product = findProduct(request.productId());
+
+        Review review = findReviewEntity(id);
+
+        Long userId = SecurityUtils.getCurrentUserId();
+
+        User user = findUserEntity(userId);
+
+        Product product = findProductEntity(request.productId());
 
         reviewRepository.findByUserIdAndProductId(SecurityUtils.getCurrentUserId(), request.productId())
                 .filter(existing -> !existing.getId().equals(id))
@@ -146,27 +169,27 @@ public class ReviewServiceImpl implements ReviewService {
         review.setUser(user);
         review.setProduct(product);
 
-        return reviewMapper.toResponse(reviewRepository.save(review));
+        return ReviewMapper.toResponse(reviewRepository.save(review));
     }
 
     @Override
     public void deleteReview(Long id) {
-        reviewRepository.delete(findReview(id));
+        reviewRepository.delete(findReviewEntity(id));
     }
 
-    private Review findReview(Long id) {
+    private Review findReviewEntity(Long id) {
         return reviewRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found"));
     }
 
-    private User findUser(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    private User findUserEntity(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    private Product findProduct(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+    private Product findProductEntity(Long productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
     }
 }
 

@@ -2,6 +2,9 @@ package tn.anasazx.tunirate.review.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import tn.anasazx.tunirate.product.entity.Product;
+import tn.anasazx.tunirate.user.entity.User;
+
 import java.time.LocalDateTime;
 
 @Getter
@@ -42,11 +45,11 @@ public class Review {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private tn.anasazx.tunirate.user.entity.User user;
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
-    private tn.anasazx.tunirate.product.entity.Product product;
+    private Product product;
 
     @PrePersist
     public void prePersist() {

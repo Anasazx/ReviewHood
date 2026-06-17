@@ -19,10 +19,9 @@ public class JwtService {
     private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
     //Generate token
-    public String generateToken(Long id, GlobalRole globalRole, Long companyId, CompanyRole companyRole) {
+    public String generateToken(Long id) {
         return Jwts.builder()
                 .setSubject(String.valueOf(id))
-                .claim("role", globalRole.name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24h
                 .signWith(key, SignatureAlgorithm.HS256)

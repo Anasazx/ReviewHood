@@ -1,10 +1,12 @@
 package tn.anasazx.tunirate.membership.service.implementation;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import org.springframework.web.server.ResponseStatusException;
 import tn.anasazx.tunirate.company.entity.Company;
-import tn.anasazx.tunirate.company.service.CompanyService;
+import tn.anasazx.tunirate.company.repository.CompanyRepository;
 import tn.anasazx.tunirate.enums.CompanyRole;
 import tn.anasazx.tunirate.membership.dto.CompanyMemberResponse;
 import tn.anasazx.tunirate.membership.entity.CompanyMember;
@@ -13,7 +15,7 @@ import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.membership.service.CompanyMemberService;
 import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.entity.User;
-import tn.anasazx.tunirate.user.service.UserService;
+import tn.anasazx.tunirate.user.repository.UserRepository;
 
 import java.util.List;
 
@@ -22,12 +24,8 @@ import java.util.List;
 public class CompanyMemberServiceImpl implements CompanyMemberService {
 
     private final CompanyMemberRepository companyMemberRepository;
-    private final UserService userService;
-    private final CompanyService companyService;
-
-    //TODO: i need to add a methode "getMyCompanyMembers()" that takes no params and return the members of a users after searching the company id from his id
-
-
+    private final UserRepository userRepository;
+    private final CompanyRepository companyRepository;
 
     @Override
     public CompanyMemberResponse assignUserToCompany(Long userId, Long companyId) {
@@ -36,8 +34,12 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
             throw new RuntimeException("User already in this company");
         }
 
-        User user = userService.getUserEntityById(userId);
-        Company company = companyService.getCompanyEntityById(companyId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User Not Found"));
+
+
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company Not Found"));
 
         CompanyMember member = CompanyMember.builder()
                 .user(user)

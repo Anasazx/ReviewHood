@@ -1,25 +1,20 @@
 package tn.anasazx.tunirate.review.mapper;
 
-import org.springframework.stereotype.Component;
 import tn.anasazx.tunirate.review.dto.ReviewResponse;
 import tn.anasazx.tunirate.review.entity.Review;
+import tn.anasazx.tunirate.security.SecurityUtils;
+
+import java.util.Objects;
 
 
-
-@Component
 public class ReviewMapper {
 
-    public ReviewResponse toResponse(Review review) {
-        return new ReviewResponse(
-                review.getId(),
-                review.getRating(),
-                review.getContent(),
-                review.getUser().getName(),
-                review.getCreatedAt()
-        );
-    }
+    public static ReviewResponse toResponse(Review review) {
 
-    public ReviewResponse toResponse(Review review, boolean isMine) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
+        boolean isMine = currentUserId != null && Objects.equals(review.getUser().getId(), currentUserId);
+
         return new ReviewResponse(
                 review.getId(),
                 review.getRating(),
@@ -29,19 +24,6 @@ public class ReviewMapper {
                 review.getCreatedAt()
         );
     }
-
-
-    public ReviewResponse toProductResponse(Review review, Long userId) {
-        return new ReviewResponse(
-                review.getId(),
-                review.getRating(),
-                review.getContent(),
-                review.getUser().getName(),
-                review.getUser().getId().equals(userId),
-                review.getCreatedAt()
-        );
-    }
-
 
 }
 

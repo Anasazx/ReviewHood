@@ -1,8 +1,10 @@
 package tn.anasazx.tunirate.user.service.implementation;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import tn.anasazx.tunirate.user.dto.UserResponseDto;
+import org.springframework.web.server.ResponseStatusException;
+import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.mapper.UserMapper;
 import tn.anasazx.tunirate.user.repository.UserRepository;
@@ -18,55 +20,57 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public List<UserResponseDto> getAllUsers() {
+    public List<UserResponse> getAllUsers() {
         return userRepository.findAll()
                 .stream()
-                .map(UserMapper::toResponseDto)
+                .map(UserMapper::toResponse)
                 .toList();
     }
 
     @Override
-    public User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public UserResponse getUserById(Long id) {
+        return UserMapper.toResponse(userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"))
+        );
     }
 
     @Override
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public UserResponse getUserByEmail(String email) {
+        return UserMapper.toResponse(userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"))
+        );
     }
 
     @Override
-    public User updateUser(Long id, User updatedUser) {
-        User existingUser = getUserById(id);
+    public UserResponse updateUser(Long id, User updatedUser) {
+
+        User existingUser = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         // update allowed fields only
         existingUser.setName(updatedUser.getName());
-        return userRepository.save(existingUser);
+
+        User savedUser = userRepository.save(existingUser);
+
+        return UserMapper.toResponse(savedUser);
     }
 
     @Override
-    public User createUser(User user) {
+    public UserResponse createUser(User user) {
         //Check if user exists
         if (userRepository.existsUserByEmailOrName(user.getEmail(), user.getName())) {
             throw new RuntimeException("Email or name already exists");
         }
-        return userRepository.save(user);
+
+        return UserMapper.toResponse(userRepository.save(user));
     }
 
-    @Override
-    public User getUserEntityById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-    }
 
     @Override
-    public List<UserResponseDto> searchUsers(String query) {
+    public List<UserResponse> searchUsers(String query) {
         return userRepository
                 .findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query)
                 .stream()
-                .map(UserMapper::toResponseDto)
+                .map(UserMapper::toResponse)
                 .toList();
     }
 

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import tn.anasazx.tunirate.review.entity.Review;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
@@ -22,4 +23,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Double getAverageRatingByProductId(Long productId);
 
     long countByProductId(Long productId);
+
+    List<Review> findByProductCompanyId(Long companyId);
 }

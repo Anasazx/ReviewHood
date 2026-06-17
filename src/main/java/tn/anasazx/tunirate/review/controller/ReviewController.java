@@ -35,6 +35,12 @@ public class ReviewController {
 		return ResponseEntity.ok(reviewService.getReviewsByProductId(productId, pageable));
 	}
 
+	@GetMapping("/my")
+	public ResponseEntity<List<ReviewResponse>> getMyCompanyReviews() {
+		return ResponseEntity.ok(reviewService.getMyCompanyReviews());
+	}
+
+
 
 	@GetMapping("/by-user/{userId}")
 	public ResponseEntity<Page<ReviewResponse>> getReviewsByUserId(@PathVariable Long userId, Pageable pageable) {
@@ -47,10 +53,7 @@ public class ReviewController {
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<ReviewResponse> updateReview(
-			@PathVariable Long id,
-			@Valid @RequestBody ReviewRequest request
-	) {
+	public ResponseEntity<ReviewResponse> updateReview(@PathVariable Long id, @Valid @RequestBody ReviewRequest request) {
 		return ResponseEntity.ok(reviewService.updateReview(id, request));
 	}
 

@@ -9,7 +9,7 @@ public class CompanyMemberMapper {
 
     public static CompanyMemberResponse toResponse(CompanyMember m) {
         return new CompanyMemberResponse(
-                UserMapper.toResponseDto(m.getUser()),
+                UserMapper.toResponse(m.getUser()),
                 CompanyMapper.toResponse(m.getCompany()),
                 m.getCompanyRole(),
                 m.getJoinedAt()

@@ -4,7 +4,7 @@ import tn.anasazx.tunirate.enums.GlobalRole;
 
 import java.time.LocalDateTime;
 
-public record UserResponseDto(
+public record UserResponse(
         Long id,
         String name,
         String email,
