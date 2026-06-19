@@ -7,6 +7,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import tn.anasazx.tunirate.comment.dto.CommentResponse;
+import tn.anasazx.tunirate.comment.mapper.CommentMapper;
+import tn.anasazx.tunirate.comment.repository.CommentRepository;
 import tn.anasazx.tunirate.membership.dto.CompanyMemberResponse;
 import tn.anasazx.tunirate.membership.service.CompanyMemberService;
 import tn.anasazx.tunirate.product.entity.Product;
@@ -29,22 +32,24 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
 
-    private final ReviewRepository reviewRepository;
-
     private final CompanyMemberService companyMemberService;
+
+    private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final CommentRepository commentRepository;
+
 
     @Override
     public List<ReviewResponse> getAllReviews() {
         return reviewRepository.findAll().stream()
-                .map(ReviewMapper::toResponse)
+                .map(this::mapReview)
                 .toList();
     }
 
     @Override
     public ReviewResponse getReviewById(Long id) {
-        return ReviewMapper.toResponse(findReviewEntity(id));
+        return this.mapReview(findReviewEntity(id));
     }
 
 
@@ -55,11 +60,11 @@ public class ReviewServiceImpl implements ReviewService {
 
         Optional<ReviewResponse> userReview =
                 reviewRepository.findByUserIdAndProductId(userId, productId)
-                        .map(ReviewMapper::toResponse);
+                        .map(this::mapReview);
 
         List<ReviewResponse> rawReviews =
                 reviewRepository.findByProductId(productId, pageable)
-                        .map(ReviewMapper::toResponse)
+                        .map(this::mapReview)
                         .getContent();
 
         List<ReviewResponse> merged = userReview
@@ -88,14 +93,14 @@ public class ReviewServiceImpl implements ReviewService {
     public Optional<ReviewResponse> getUserReviewForProduct(Long userId, Long productId) {
         return reviewRepository
                 .findByUserIdAndProductId(userId, productId)
-                .map(ReviewMapper::toResponse);
+                .map(this::mapReview);
     }
 
 
     @Override
     public Page<ReviewResponse> getReviewsByUserId(Long userId, Pageable pageable) {
         return reviewRepository.findByUserId(userId, pageable)
-                .map(ReviewMapper::toResponse);
+                .map(this::mapReview);
     }
 
     @Override
@@ -110,7 +115,7 @@ public class ReviewServiceImpl implements ReviewService {
         Long companyId = membership.company().id();
 
         return reviewRepository.findByProductCompanyId(companyId).stream()
-                .map(ReviewMapper::toResponse)
+                .map(this::mapReview)
                 .toList();
 
     }
@@ -124,7 +129,6 @@ public class ReviewServiceImpl implements ReviewService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         //This check if the product exists or not; it takes the product id from the request in the params
-        //TODO: We need to throw an exception when no product found with this id
         Product product = productRepository.findById(request.productId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         /*
@@ -144,7 +148,7 @@ public class ReviewServiceImpl implements ReviewService {
         review.setUser(user);
         review.setProduct(product);
 
-        return ReviewMapper.toResponse(reviewRepository.save(review));
+        return this.mapReview(reviewRepository.save(review));
     }
 
     @Override
@@ -169,7 +173,7 @@ public class ReviewServiceImpl implements ReviewService {
         review.setUser(user);
         review.setProduct(product);
 
-        return ReviewMapper.toResponse(reviewRepository.save(review));
+        return this.mapReview(reviewRepository.save(review));
     }
 
     @Override
@@ -191,5 +195,23 @@ public class ReviewServiceImpl implements ReviewService {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
     }
+
+    private ReviewResponse mapReview(Review review) {
+
+        Long commentsCount = commentRepository.countByReview_Id(review.getId());
+
+        CommentResponse previewComment = commentRepository
+                .findFirstByReview_IdOrderByCreatedAtAsc(review.getId())
+                .map(CommentMapper::toResponse)
+                .orElse(null);
+
+        return ReviewMapper.toResponse(
+                review,
+                commentsCount,
+                previewComment
+        );
+    }
+
+
 }
 

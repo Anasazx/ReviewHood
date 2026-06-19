@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.review.mapper;
 
+import tn.anasazx.tunirate.comment.dto.CommentResponse;
 import tn.anasazx.tunirate.review.dto.ReviewResponse;
 import tn.anasazx.tunirate.review.entity.Review;
 import tn.anasazx.tunirate.security.SecurityUtils;
@@ -9,7 +10,7 @@ import java.util.Objects;
 
 public class ReviewMapper {
 
-    public static ReviewResponse toResponse(Review review) {
+    public static ReviewResponse toResponse(Review review, Long commentsCount, CommentResponse previewComment) {
 
         Long currentUserId = SecurityUtils.getCurrentUserId();
 
@@ -21,6 +22,8 @@ public class ReviewMapper {
                 review.getContent(),
                 review.getUser().getName(),
                 isMine,
+                commentsCount,
+                previewComment,
                 review.getCreatedAt()
         );
     }
