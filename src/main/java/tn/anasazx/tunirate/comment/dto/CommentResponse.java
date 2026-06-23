@@ -12,7 +12,10 @@ public record CommentResponse(
         ActorType actorType,// ← lets the frontend know how to render it
         Long actorId,
         Long reviewId,
-        Long parentCommentId,
+        Long repliedToCommentId,
+        Long repliedToActorId,
+        ActorType repliedToActorType,
         boolean isMine,
         LocalDateTime createdAt
 ) {}
+

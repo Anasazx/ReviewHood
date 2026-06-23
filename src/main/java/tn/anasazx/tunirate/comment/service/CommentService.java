@@ -13,6 +13,7 @@ public interface CommentService {
     CommentResponse createCommentAsCompany(Long reviewId, String content);
 
     CommentResponse replyToComment(Long parentCommentId, String content);
+    CommentResponse replyToCommentAsCompany(Long parentCommentId, String content);
 
     void deleteComment(Long commentId);
 

@@ -21,6 +21,9 @@ public class CommentMapper {
     public CommentResponse toResponse(Comment comment, Long currentUserId) {
         Actor actor = comment.getActor();
 
+        Comment repliedTo = comment.getRepliedTo();
+        Actor mentionedActor = repliedTo != null ? repliedTo.getActor() : null;
+
         String authorName = switch (actor.getType()) {
             case USER -> ((User) actor).getName();
             case COMPANY -> ((Company) actor).getName();
@@ -40,7 +43,9 @@ public class CommentMapper {
                 actor.getType(),
                 actor.getId(),
                 comment.getReview().getId(),
-                comment.getRepliedTo() != null ? comment.getRepliedTo().getId() : null,
+                repliedTo != null ? repliedTo.getId() : null,
+                mentionedActor != null ? mentionedActor.getId() : null,
+                mentionedActor != null ? mentionedActor.getType() : null,
                 isMine,
                 comment.getCreatedAt()
         );

@@ -92,16 +92,41 @@ public class CommentServiceImpl implements CommentService {
         User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        Comment parent = commentRepository.findById(parentCommentId)
+        Comment parentComment = commentRepository.findById(parentCommentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent comment not found"));
 
-        Comment reply = new Comment();
-        reply.setContent(content);
-        reply.setActor(user);
-        reply.setReview(parent.getReview());
-        reply.setRepliedTo(parent);
+        Comment replyComment = new Comment();
+        replyComment.setContent(content);
+        replyComment.setActor(user);
+        replyComment.setReview(parentComment.getReview());
+        replyComment.setRepliedTo(parentComment);
 
-        return commentMapper.toResponse(commentRepository.save(reply), currentUserId);
+        return commentMapper.toResponse(commentRepository.save(replyComment), currentUserId);
+    }
+
+    @Override
+    public CommentResponse replyToCommentAsCompany(Long parentCommentId, String content) {
+
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
+        Comment parentComment = commentRepository.findById(parentCommentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent comment not found"));
+
+        CompanyMember membership = companyMemberRepository.findById(currentUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not belong to any company"));
+
+        Company company = membership.getCompany();
+
+        User user = membership.getUser();
+
+        Comment replyComment = new Comment();
+        replyComment.setContent(content);
+        replyComment.setActor(company);
+        replyComment.setPostedBy(user);
+        replyComment.setReview(parentComment.getReview());
+        replyComment.setRepliedTo(parentComment);
+
+        return commentMapper.toResponse(commentRepository.save(replyComment), currentUserId);
     }
 
 
