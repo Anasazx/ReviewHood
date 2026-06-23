@@ -15,6 +15,7 @@ public record CommentResponse(
         Long repliedToCommentId,
         Long repliedToActorId,
         ActorType repliedToActorType,
+        String repliedToActorName,
         boolean isMine,
         LocalDateTime createdAt
 ) {}

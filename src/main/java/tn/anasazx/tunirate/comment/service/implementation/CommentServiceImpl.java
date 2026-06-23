@@ -35,7 +35,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<CommentResponse> getCommentsByReviewId(Long reviewId) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
-        List<Comment> commentList = commentRepository.findByReview_IdAndRepliedToIsNull(reviewId);
+        List<Comment> commentList = commentRepository.findByReview_Id(reviewId);
         return commentMapper.toResponseList(commentList, currentUserId);
     }
 

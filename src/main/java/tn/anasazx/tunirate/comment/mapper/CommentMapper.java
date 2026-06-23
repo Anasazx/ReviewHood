@@ -22,13 +22,24 @@ public class CommentMapper {
         Actor actor = comment.getActor();
 
         Comment repliedTo = comment.getRepliedTo();
-        Actor mentionedActor = repliedTo != null ? repliedTo.getActor() : null;
 
-        String authorName = switch (actor.getType()) {
+        String actorName = switch (actor.getType()) {
             case USER -> ((User) actor).getName();
             case COMPANY -> ((Company) actor).getName();
             default -> "Unknown";
         };
+
+        Actor mentionedActor = repliedTo != null ? repliedTo.getActor() : null;
+
+        String repliedToActorName = null;
+
+        if (mentionedActor != null) {
+            repliedToActorName = switch (mentionedActor.getType()) {
+                case USER -> ((User) mentionedActor).getName();
+                case COMPANY -> ((Company) mentionedActor).getName();
+                default -> "Unknown";
+            };
+        }
 
         boolean isMine = switch (actor.getType()) {
             case USER -> actor.getId().equals(currentUserId);
@@ -39,13 +50,14 @@ public class CommentMapper {
         return new CommentResponse(
                 comment.getId(),
                 comment.getContent(),
-                authorName,
+                actorName,
                 actor.getType(),
                 actor.getId(),
                 comment.getReview().getId(),
                 repliedTo != null ? repliedTo.getId() : null,
                 mentionedActor != null ? mentionedActor.getId() : null,
                 mentionedActor != null ? mentionedActor.getType() : null,
+                repliedToActorName,
                 isMine,
                 comment.getCreatedAt()
         );
