@@ -31,12 +31,27 @@ public class CommentController {
         return commentService.createComment(reviewId, request.content());
     }
 
+
+
+    @PostMapping("/c/review/{reviewId}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommentResponse createCommentAsCompany(@PathVariable Long reviewId, @RequestBody CommentRequest request) {
+        return commentService.createCommentAsCompany(reviewId, request.content());
+    }
+
+
+
+    //TODO: MAKE THE METHODE CREATE COMMENT AS A COMPANY
+
     //Reply to comment
+    //this is out of service for now;
+    /*
     @PostMapping("/reply/{parentCommentId}")
     @ResponseStatus(HttpStatus.CREATED)
     public CommentResponse replyToComment(@PathVariable Long parentCommentId, @RequestBody CommentRequest request) {
         return commentService.replyToComment(parentCommentId, request.content());
     }
+    */
 
     //Delete comment
     @DeleteMapping("/{commentId}")

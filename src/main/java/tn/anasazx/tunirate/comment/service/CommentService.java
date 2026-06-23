@@ -10,6 +10,8 @@ public interface CommentService {
 
     CommentResponse createComment(Long reviewId, String content);
 
+    CommentResponse createCommentAsCompany(Long reviewId, String content);
+
     CommentResponse replyToComment(Long parentCommentId, String content);
 
     void deleteComment(Long commentId);

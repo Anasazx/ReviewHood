@@ -2,6 +2,7 @@ package tn.anasazx.tunirate.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import tn.anasazx.tunirate.actor.entity.Actor;
 import tn.anasazx.tunirate.enums.GlobalRole;
 
 import java.time.LocalDateTime;
@@ -9,8 +10,6 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-
 @Entity
 @Table(
         name = "users",
@@ -18,20 +17,8 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_user_email", columnList = "email")
         }
 )
-
-//the user entity have a unique username and a unique email address
-
-public class User {
-    public User(String name, String email, String password, GlobalRole globalRole){
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.globalRole = globalRole;
-    }
-    //TODO: need to change the generation type in the production/future
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@DiscriminatorValue("USER")
+public class User extends Actor {
 
     @Column(nullable = false, unique = true)
     private String name;
@@ -48,6 +35,13 @@ public class User {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public User(String name, String email, String password, GlobalRole globalRole) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.globalRole = globalRole;
+    }
 
     @PrePersist
     public void prePersist() {

@@ -4,11 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import tn.anasazx.tunirate.actor.entity.Actor;
 import tn.anasazx.tunirate.comment.dto.CommentResponse;
 import tn.anasazx.tunirate.comment.entity.Comment;
 import tn.anasazx.tunirate.comment.mapper.CommentMapper;
 import tn.anasazx.tunirate.comment.repository.CommentRepository;
 import tn.anasazx.tunirate.comment.service.CommentService;
+import tn.anasazx.tunirate.company.entity.Company;
+import tn.anasazx.tunirate.membership.entity.CompanyMember;
+import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.review.entity.Review;
 import tn.anasazx.tunirate.review.repository.ReviewRepository;
 import tn.anasazx.tunirate.security.SecurityUtils;
@@ -24,21 +28,24 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
+    private final CompanyMemberRepository companyMemberRepository;
+    private final CommentMapper commentMapper;
+
 
     @Override
     public List<CommentResponse> getCommentsByReviewId(Long reviewId) {
-        return commentRepository.findByReview_IdAndParentCommentIsNull(reviewId)
-                .stream()
-                .map(CommentMapper::toResponse)
-                .toList();
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        List<Comment> commentList = commentRepository.findByReview_IdAndRepliedToIsNull(reviewId);
+        return commentMapper.toResponseList(commentList, currentUserId);
     }
+
 
     @Override
     public CommentResponse createComment(Long reviewId, String content) {
 
-        Long userId = SecurityUtils.getCurrentUserId();
+        Long currentUserId = SecurityUtils.getCurrentUserId();
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         Review review = reviewRepository.findById(reviewId)
@@ -46,18 +53,43 @@ public class CommentServiceImpl implements CommentService {
 
         Comment comment = new Comment();
         comment.setContent(content);
-        comment.setUser(user);
+        comment.setActor(user);
         comment.setReview(review);
 
-        return CommentMapper.toResponse(commentRepository.save(comment));
+        return commentMapper.toResponse(commentRepository.save(comment), currentUserId);
     }
+
+    @Override
+    public CommentResponse createCommentAsCompany(Long reviewId, String content) {
+
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
+
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found"));
+
+        CompanyMember membership = companyMemberRepository.findById(currentUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not belong to any company"));
+
+        Company company = membership.getCompany( );
+        User user = membership.getUser( );
+
+        Comment comment = new Comment();
+        comment.setContent(content);
+        comment.setActor(company);
+        comment.setPostedBy(user);
+        comment.setReview(review);
+
+        return commentMapper.toResponse(commentRepository.save(comment), currentUserId);
+    }
+
 
     @Override
     public CommentResponse replyToComment(Long parentCommentId, String content) {
 
-        Long userId = SecurityUtils.getCurrentUserId();
+        Long currentUserId = SecurityUtils.getCurrentUserId();
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         Comment parent = commentRepository.findById(parentCommentId)
@@ -65,23 +97,48 @@ public class CommentServiceImpl implements CommentService {
 
         Comment reply = new Comment();
         reply.setContent(content);
-        reply.setUser(user);
+        reply.setActor(user);
         reply.setReview(parent.getReview());
-        reply.setParentComment(parent);
+        reply.setRepliedTo(parent);
 
-        return CommentMapper.toResponse(commentRepository.save(reply));
+        return commentMapper.toResponse(commentRepository.save(reply), currentUserId);
     }
+
 
     @Override
     public void deleteComment(Long commentId) {
 
-        Long userId = SecurityUtils.getCurrentUserId();
+        Long currentUserId = SecurityUtils.getCurrentUserId();
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
 
-        if (!comment.getUser().getId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your comment");
+        Actor author = comment.getActor();
+
+        switch (author.getType()) {
+
+            case USER -> {
+                if (!author.getId().equals(currentUserId)) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your comment");
+                }
+            }
+
+            case COMPANY -> {
+                Long companyId = author.getId();
+
+                CompanyMember membership = companyMemberRepository
+                        .findByUserIdAndCompanyId(currentUserId, companyId)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.FORBIDDEN, "You don't belong to this company"));
+
+                if (!membership.getCompanyRole().canDeleteComments()) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Insufficient role");
+                }
+            }
+
+            // any future ActorType that hasn't been handled yet is denied
+            default -> throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Delete not supported for this actor type");
         }
 
         commentRepository.delete(comment);

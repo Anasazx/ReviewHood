@@ -1,27 +1,46 @@
 package tn.anasazx.tunirate.comment.mapper;
 
+import org.springframework.stereotype.Component;
+import tn.anasazx.tunirate.actor.entity.Actor;
 import tn.anasazx.tunirate.comment.dto.CommentResponse;
 import tn.anasazx.tunirate.comment.entity.Comment;
-import tn.anasazx.tunirate.security.SecurityUtils;
+import tn.anasazx.tunirate.company.entity.Company;
+import tn.anasazx.tunirate.user.entity.User;
 
-import java.util.Objects;
+import java.util.List;
 
+@Component
 public class CommentMapper {
 
-    public static CommentResponse toResponse(Comment comment) {
+    public List<CommentResponse> toResponseList(List<Comment> comments, Long currentUserId) {
+        return comments.stream()
+                .map(c -> toResponse(c, currentUserId))
+                .toList();
+    }
 
-        Long currentUserId = SecurityUtils.getCurrentUserId();
+    public CommentResponse toResponse(Comment comment, Long currentUserId) {
+        Actor actor = comment.getActor();
 
-        boolean isMine = currentUserId != null && Objects.equals(comment.getUser().getId(), currentUserId);
+        String authorName = switch (actor.getType()) {
+            case USER -> ((User) actor).getName();
+            case COMPANY -> ((Company) actor).getName();
+            default -> "Unknown";
+        };
 
-        Long parentId = comment.getParentComment() != null ? comment.getParentComment().getId() : null;
+        boolean isMine = switch (actor.getType()) {
+            case USER -> actor.getId().equals(currentUserId);
+            case COMPANY -> false;
+            default -> false;
+        };
 
         return new CommentResponse(
                 comment.getId(),
                 comment.getContent(),
-                comment.getUser().getName(),
+                authorName,
+                actor.getType(),
+                actor.getId(),
                 comment.getReview().getId(),
-                parentId,
+                comment.getRepliedTo() != null ? comment.getRepliedTo().getId() : null,
                 isMine,
                 comment.getCreatedAt()
         );

@@ -13,6 +13,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import tn.anasazx.tunirate.enums.GlobalRole;
+import tn.anasazx.tunirate.user.entity.User;
+import tn.anasazx.tunirate.user.repository.UserRepository;
+
 
 import java.io.IOException;
 import java.util.List;
@@ -22,6 +26,7 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
@@ -41,17 +46,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         //Extract USER ID
-        Long userId = jwtService.extractUserId(token);
+        Long currentUserId = jwtService.extractUserId(token);
 
         //Extract Role
-        String role = jwtService.extractRole(token);
+        GlobalRole role = extractUserRole(currentUserId);
 
         List<GrantedAuthority> authorities =
-                List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
 
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(
-                        userId,
+                        currentUserId,
                         null,
                         authorities
                 );
@@ -61,11 +66,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         );
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
-        System.out.println("ROLE FROM TOKEN = " + role);
-        System.out.println("AUTHORITIES = " + authorities);
-
 
         filterChain.doFilter(request, response);
 
     }
+
+    GlobalRole extractUserRole(Long currentUserId){
+        User user = userRepository.findFirstById(currentUserId).orElseThrow(()-> new RuntimeException("User Not Found"));
+        return user.getGlobalRole();
+    }
+
 }

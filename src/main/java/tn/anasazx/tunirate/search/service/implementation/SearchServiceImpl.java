@@ -6,7 +6,7 @@ import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.service.CompanyService;
 import tn.anasazx.tunirate.product.dto.ProductResponse;
 import tn.anasazx.tunirate.product.service.ProductService;
-import tn.anasazx.tunirate.search.searchDTO.SearchResponseDTO;
+import tn.anasazx.tunirate.search.dto.SearchResponseDTO;
 import tn.anasazx.tunirate.search.service.SearchService;
 
 import java.util.List;

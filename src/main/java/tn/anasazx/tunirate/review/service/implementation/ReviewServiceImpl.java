@@ -10,8 +10,9 @@ import org.springframework.web.server.ResponseStatusException;
 import tn.anasazx.tunirate.comment.dto.CommentResponse;
 import tn.anasazx.tunirate.comment.mapper.CommentMapper;
 import tn.anasazx.tunirate.comment.repository.CommentRepository;
-import tn.anasazx.tunirate.membership.dto.CompanyMemberResponse;
-import tn.anasazx.tunirate.membership.service.CompanyMemberService;
+import tn.anasazx.tunirate.enums.ActorType;
+import tn.anasazx.tunirate.membership.entity.CompanyMember;
+import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
 import tn.anasazx.tunirate.review.dto.ReviewRequest;
@@ -32,39 +33,43 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
 
-    private final CompanyMemberService companyMemberService;
-
+    private final CompanyMemberRepository companyMemberRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final CommentRepository commentRepository;
+    private final CommentMapper commentMapper;
 
 
     @Override
     public List<ReviewResponse> getAllReviews() {
+
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
         return reviewRepository.findAll().stream()
-                .map(this::mapReview)
+                .map((r) -> mapReview(r, currentUserId))
                 .toList();
     }
 
     @Override
     public ReviewResponse getReviewById(Long id) {
-        return this.mapReview(findReviewEntity(id));
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return this.mapReview(findReviewEntity(id), currentUserId);
     }
 
 
     @Override
     public Page<ReviewResponse> getReviewsByProductId(Long productId, Pageable pageable) {
 
-        Long userId = SecurityUtils.getCurrentUserId();
+        Long currentUserId = SecurityUtils.getCurrentUserId();
 
         Optional<ReviewResponse> userReview =
-                reviewRepository.findByUserIdAndProductId(userId, productId)
-                        .map(this::mapReview);
+                reviewRepository.findByUserIdAndProductId(currentUserId, productId)
+                        .map((r) -> mapReview(r, currentUserId));
 
         List<ReviewResponse> rawReviews =
                 reviewRepository.findByProductId(productId, pageable)
-                        .map(this::mapReview)
+                        .map((r) -> mapReview(r, currentUserId))
                         .getContent();
 
         List<ReviewResponse> merged = userReview
@@ -91,31 +96,33 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public Optional<ReviewResponse> getUserReviewForProduct(Long userId, Long productId) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
         return reviewRepository
                 .findByUserIdAndProductId(userId, productId)
-                .map(this::mapReview);
+                .map((r) -> mapReview(r, currentUserId));
     }
 
 
     @Override
     public Page<ReviewResponse> getReviewsByUserId(Long userId, Pageable pageable) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
         return reviewRepository.findByUserId(userId, pageable)
-                .map(this::mapReview);
+                .map((r) -> mapReview(r, currentUserId));
     }
 
     @Override
     public List<ReviewResponse> getMyCompanyReviews() {
 
-        Long userId = SecurityUtils.getCurrentUserId();
+        Long currentUserId = SecurityUtils.getCurrentUserId();
 
-        CompanyMemberResponse membership = companyMemberService.getCompanyByUserId(userId);
+        Optional<CompanyMember> membershipOpt = companyMemberRepository.findFirstByUserId(currentUserId);
 
-        if (membership == null) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        if (membershipOpt.isEmpty()) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
-        Long companyId = membership.company().id();
+        Long companyId = membershipOpt.get().getCompany().getId();
 
         return reviewRepository.findByProductCompanyId(companyId).stream()
-                .map(this::mapReview)
+                .map((r) -> mapReview(r, currentUserId))
                 .toList();
 
     }
@@ -124,8 +131,8 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewResponse createReview(ReviewRequest request) {
 
         //This get the users id from the token
-        Long userId = SecurityUtils.getCurrentUserId();
-        User user = userRepository.findById(userId)
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         //This check if the product exists or not; it takes the product id from the request in the params
@@ -148,7 +155,7 @@ public class ReviewServiceImpl implements ReviewService {
         review.setUser(user);
         review.setProduct(product);
 
-        return this.mapReview(reviewRepository.save(review));
+        return this.mapReview(reviewRepository.save(review), currentUserId);
     }
 
     @Override
@@ -156,9 +163,9 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review review = findReviewEntity(id);
 
-        Long userId = SecurityUtils.getCurrentUserId();
+        Long currentUserId = SecurityUtils.getCurrentUserId();
 
-        User user = findUserEntity(userId);
+        User user = findUserEntity(currentUserId);
 
         Product product = findProductEntity(request.productId());
 
@@ -173,7 +180,7 @@ public class ReviewServiceImpl implements ReviewService {
         review.setUser(user);
         review.setProduct(product);
 
-        return this.mapReview(reviewRepository.save(review));
+        return this.mapReview(reviewRepository.save(review), currentUserId);
     }
 
     @Override
@@ -196,20 +203,29 @@ public class ReviewServiceImpl implements ReviewService {
                 .orElseThrow(() -> new RuntimeException("Product not found"));
     }
 
-    private ReviewResponse mapReview(Review review) {
+    private ReviewResponse mapReview(Review review, Long currentUserId) {
 
         Long commentsCount = commentRepository.countByReview_Id(review.getId());
 
-        CommentResponse previewComment = commentRepository
-                .findFirstByReview_IdOrderByCreatedAtAsc(review.getId())
-                .map(CommentMapper::toResponse)
-                .orElse(null);
+        System.out.println("this is the preview comment ; ");
+
+        CommentResponse previewComment = getPreviewComment(review, currentUserId);
 
         return ReviewMapper.toResponse(
                 review,
                 commentsCount,
                 previewComment
         );
+    }
+
+    private CommentResponse getPreviewComment(Review review, Long currentUserId){
+
+        Long companyId = review.getProduct().getCompany().getId();
+
+        return commentRepository
+                .findFirstByReview_IdAndActor_TypeAndActor_IdOrderByCreatedAtDesc(review.getId(), ActorType.COMPANY, companyId)
+                .map((c) -> commentMapper.toResponse(c, currentUserId))
+                .orElse(null);
     }
 
 

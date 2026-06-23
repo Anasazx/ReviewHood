@@ -2,7 +2,7 @@ package tn.anasazx.tunirate.product.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import tn.anasazx.tunirate.categories.subcategory.entity.Subcategory;
+import tn.anasazx.tunirate.subcategory.entity.Subcategory;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

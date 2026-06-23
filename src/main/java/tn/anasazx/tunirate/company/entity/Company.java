@@ -2,6 +2,7 @@ package tn.anasazx.tunirate.company.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import tn.anasazx.tunirate.actor.entity.Actor;
 
 @Getter
 @Setter
@@ -14,11 +15,8 @@ import lombok.*;
                 @Index(name = "idx_company_name", columnList = "name")
         }
 )
-public class Company {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@DiscriminatorValue("COMPANY")
+public class Company extends Actor {
 
     @Column(nullable = false, unique = true)
     private String name;
@@ -34,7 +32,5 @@ public class Company {
 
     @Column
     private String bannerUrl;
-
-
 
 }

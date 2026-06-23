@@ -2,6 +2,9 @@ package tn.anasazx.tunirate.comment.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import tn.anasazx.tunirate.actor.entity.Actor;
+import tn.anasazx.tunirate.user.entity.User;
+
 import java.time.LocalDateTime;
 
 @Getter
@@ -14,8 +17,10 @@ import java.time.LocalDateTime;
         name = "comments",
         indexes = {
                 @Index(name = "idx_comments_review_id", columnList = "review_id"),
-                @Index(name = "idx_comments_user_id", columnList = "user_id"),
-                @Index(name = "idx_comments_parent_comment_id", columnList = "parent_comment_id")
+                @Index(name = "idx_comments_actor_id", columnList = "actor_id"),
+                @Index(name = "idx_comments_parent_comment_id", columnList = "parent_comment_id"),
+                @Index(name = "idx_comments_posted_by_id", columnList = "posted_by_id")
+
         }
 )
 public class Comment {
@@ -36,8 +41,13 @@ public class Comment {
 
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private tn.anasazx.tunirate.user.entity.User user;
+    @JoinColumn(name = "actor_id", nullable = false)
+    private Actor actor;
+
+    @ManyToOne
+    @JoinColumn(name = "posted_by_id")
+    private User postedBy; // INTERNAL — which employee posted it, null if actor is a regular user
+
 
     @ManyToOne
     @JoinColumn(name = "review_id", nullable = false)
@@ -45,7 +55,7 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "parent_comment_id")
-    private Comment parentComment;
+    private Comment repliedTo;
 
     @PrePersist
     public void prePersist() {

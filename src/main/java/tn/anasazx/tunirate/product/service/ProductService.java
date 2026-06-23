@@ -1,6 +1,6 @@
 package tn.anasazx.tunirate.product.service;
 
-import tn.anasazx.tunirate.categories.subcategory.entity.Subcategory;
+import tn.anasazx.tunirate.subcategory.entity.Subcategory;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.product.dto.ProductDetailsResponse;
 import tn.anasazx.tunirate.product.dto.ProductRequest;

@@ -3,8 +3,7 @@ package tn.anasazx.tunirate.security;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
-import tn.anasazx.tunirate.enums.CompanyRole;
-import tn.anasazx.tunirate.enums.GlobalRole;
+
 
 import java.security.Key;
 import java.util.Date;
@@ -48,11 +47,16 @@ public class JwtService {
 
 
     //Extract role
+    //I WILL REMOVE THIS , I THINK IT'S A RISK BECAUSE MY ROLE BASED FUNCTIONS GONNA BE USED LIKE 5% OF THE WHOLE USE CASE,
+    //SO EVERY TIME I THINK IT'S BETTER TO GET THE ID THEN CHECK THE ROLE
+    /*
     public String extractRole(String token) {
         return parseClaims(token)
                 .getBody()
                 .get("role", String.class);
     }
+    */
+
 
     //Validate token
     public boolean isTokenValid(String token) {

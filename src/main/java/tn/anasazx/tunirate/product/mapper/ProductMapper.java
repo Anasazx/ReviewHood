@@ -1,8 +1,8 @@
 package tn.anasazx.tunirate.product.mapper;
 
 import org.springframework.stereotype.Component;
-import tn.anasazx.tunirate.categories.category.entity.Category;
-import tn.anasazx.tunirate.categories.subcategory.entity.Subcategory;
+import tn.anasazx.tunirate.category.entity.Category;
+import tn.anasazx.tunirate.subcategory.entity.Subcategory;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.product.dto.ProductDetailsResponse;
 import tn.anasazx.tunirate.product.dto.ProductImageResponse;
