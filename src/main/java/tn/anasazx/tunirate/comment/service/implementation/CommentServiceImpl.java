@@ -64,11 +64,12 @@ public class CommentServiceImpl implements CommentService {
 
         Long currentUserId = SecurityUtils.getCurrentUserId();
 
-
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found"));
 
-        CompanyMember membership = companyMemberRepository.findById(currentUserId)
+        System.out.println("reviewId: " + reviewId);
+
+        CompanyMember membership = companyMemberRepository.findFirstByUserId(currentUserId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not belong to any company"));
 
         Company company = membership.getCompany( );
@@ -112,7 +113,7 @@ public class CommentServiceImpl implements CommentService {
         Comment parentComment = commentRepository.findById(parentCommentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent comment not found"));
 
-        CompanyMember membership = companyMemberRepository.findById(currentUserId)
+        CompanyMember membership = companyMemberRepository.findFirstByUserId(currentUserId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not belong to any company"));
 
         Company company = membership.getCompany();
