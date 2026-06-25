@@ -25,6 +25,11 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.getCompanyById(id));
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<CompanyResponse> getMyCompany() {
+        return ResponseEntity.ok(companyService.getMyCompany());
+    }
+
     @GetMapping("/by-name")
     public ResponseEntity<CompanyResponse> getCompanyByName(@RequestParam String name) {
         return ResponseEntity.ok(companyService.getCompanyByName(name));
@@ -41,10 +46,7 @@ public class CompanyController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CompanyResponse> updateCompany(
-            @PathVariable Long id,
-            @Valid @RequestBody CompanyRequest request
-    ) {
+    public ResponseEntity<CompanyResponse> updateCompany(@PathVariable Long id, @Valid @RequestBody CompanyRequest request) {
         return ResponseEntity.ok(companyService.updateCompany(id, request));
     }
 

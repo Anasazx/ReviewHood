@@ -12,6 +12,8 @@ public interface CompanyService {
 
     CompanyResponse getCompanyById(Long id);
 
+    CompanyResponse getMyCompany();
+
     CompanyResponse getCompanyByName(String name);
 
     List<CompanyResponse> getAllCompanies();

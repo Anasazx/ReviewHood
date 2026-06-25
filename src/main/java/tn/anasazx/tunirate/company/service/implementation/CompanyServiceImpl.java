@@ -13,8 +13,11 @@ import tn.anasazx.tunirate.company.repository.CompanyRepository;
 import tn.anasazx.tunirate.company.service.CompanyService;
 import tn.anasazx.tunirate.enums.CompanyImageType;
 import tn.anasazx.tunirate.fileStorage.service.FileStorageService;
+import tn.anasazx.tunirate.membership.entity.CompanyMember;
+import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
+import tn.anasazx.tunirate.security.SecurityUtils;
 
 import java.util.List;
 
@@ -24,6 +27,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
     private final ProductRepository productRepository;
+    private final CompanyMemberRepository companyMemberRepository;
     private final FileStorageService fileStorageService;
 
 
@@ -31,6 +35,20 @@ public class CompanyServiceImpl implements CompanyService {
     public CompanyResponse getCompanyById(Long id) {
         return CompanyMapper.toResponse(findCompany(id));
     }
+
+    @Override
+    public CompanyResponse getMyCompany() {
+        long currentUserId = SecurityUtils.getCurrentUserId();
+        CompanyMember membership = companyMemberRepository.findFirstByUserId(currentUserId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User doesn't belong to any company!")
+        );
+
+        //Extract company entity from the membership response
+        Company company = membership.getCompany();
+
+        return CompanyMapper.toResponse(company);
+    }
+
 
     @Override
     public CompanyResponse getCompanyByName(String name) {
