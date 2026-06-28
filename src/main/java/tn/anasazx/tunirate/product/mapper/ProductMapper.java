@@ -2,12 +2,9 @@ package tn.anasazx.tunirate.product.mapper;
 
 import org.springframework.stereotype.Component;
 import tn.anasazx.tunirate.category.entity.Category;
+import tn.anasazx.tunirate.enums.GlobalRole;
+import tn.anasazx.tunirate.product.dto.*;
 import tn.anasazx.tunirate.subcategory.entity.Subcategory;
-import tn.anasazx.tunirate.company.entity.Company;
-import tn.anasazx.tunirate.product.dto.ProductDetailsResponse;
-import tn.anasazx.tunirate.product.dto.ProductImageResponse;
-import tn.anasazx.tunirate.product.dto.ProductRequest;
-import tn.anasazx.tunirate.product.dto.ProductResponse;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.entity.ProductImage;
 
@@ -16,6 +13,7 @@ import java.util.Optional;
 
 @Component
 public class ProductMapper {
+
     public static ProductResponse mapProductToResponse(Product product) {
 
         Optional<String> imageUrl = product.getImages().stream()
@@ -47,6 +45,116 @@ public class ProductMapper {
         );
 
     }
+
+    public static CompanyProductResponse mapProductToCompanyResponse(Product product) {
+
+        Optional<String> imageUrl = product.getImages().stream()
+                .filter(ProductImage::isMain)
+                .map(ProductImage::getUrl)
+                .findFirst()
+                .or(() -> product.getImages().stream()
+                        .map(ProductImage::getUrl)
+                        .findFirst());
+        String categoryName = Optional.ofNullable(product.getSubcategory())
+                .map(Subcategory::getCategory)
+                .map(Category::getName)
+                .orElse(null);
+        String subcategoryName = Optional.ofNullable(product.getSubcategory())
+                .map(Subcategory::getName)
+                .orElse(null);
+
+        String createdByName = product.getCreatedBy().getName();
+
+        if (product.getCreatedBy().getGlobalRole() == GlobalRole.ADMIN) {
+            createdByName = "TunisiaRate Admin";
+        }
+
+
+        String updatedByName = null;
+
+        if (product.getUpdatedBy() != null){
+            if (product.getUpdatedBy().getGlobalRole() == GlobalRole.ADMIN) {
+                updatedByName = "TunisiaRate Admin";
+            }
+            else {
+                updatedByName = product.getUpdatedBy().getName();
+            }
+        }
+
+
+
+
+        return new CompanyProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                categoryName,
+                subcategoryName,
+                product.getCompany().getId(),
+                product.getCompany().getName(),
+                product.getCompany().getVerified(),
+                product.getCompany().getLogoUrl(),
+                imageUrl.orElse(null),
+                product.getCreatedAt(),
+                createdByName,
+                updatedByName,
+                product.getStatus()
+        );
+
+    }
+
+
+
+
+    public static AdminProductResponse mapProductToAdminResponse(Product product) {
+
+        Optional<String> imageUrl = product.getImages().stream()
+                .filter(ProductImage::isMain)
+                .map(ProductImage::getUrl)
+                .findFirst()
+                .or(() -> product.getImages().stream()
+                        .map(ProductImage::getUrl)
+                        .findFirst());
+        String categoryName = Optional.ofNullable(product.getSubcategory())
+                .map(Subcategory::getCategory)
+                .map(Category::getName)
+                .orElse(null);
+        String subcategoryName = Optional.ofNullable(product.getSubcategory())
+                .map(Subcategory::getName)
+                .orElse(null);
+
+        String updatedByName = null;
+        Long updatedById = null;
+
+        if (product.getUpdatedBy() != null) {
+            updatedByName = product.getUpdatedBy().getName();
+            updatedById = product.getUpdatedBy().getId();
+        }
+
+
+
+
+            return new AdminProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                categoryName,
+                subcategoryName,
+                product.getCompany().getId(),
+                product.getCompany().getName(),
+                product.getCompany().getVerified(),
+                product.getCompany().getLogoUrl(),
+                imageUrl.orElse(null),
+                product.getCreatedAt(),
+                product.getCreatedBy().getName(),
+                product.getCreatedBy().getId(),
+                updatedByName,
+                updatedById,
+                product.getStatus()
+        );
+
+    }
+
 
     public static ProductDetailsResponse mapProductToDetailsResponse(Product product, double avgRating, long reviewsCount) {
 
@@ -84,17 +192,6 @@ public class ProductMapper {
         );
     }
 
-    public static Product toProduct(ProductRequest request, Company company, Subcategory subcategory) {
-        Product product = new Product();
-        updateProduct(product, request, company, subcategory);
-        return product;
-    }
 
-    public static void updateProduct(Product product, ProductRequest request, Company company, Subcategory subcategory) {
-        product.setName(request.name());
-        product.setDescription(request.description());
-        product.setCompany(company);
-        product.setSubcategory(subcategory);
-    }
 
 }

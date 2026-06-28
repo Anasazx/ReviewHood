@@ -3,6 +3,7 @@ package tn.anasazx.tunirate.membership.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import tn.anasazx.tunirate.enums.CompanyRole;
 import tn.anasazx.tunirate.membership.entity.CompanyMember;
+import tn.anasazx.tunirate.user.entity.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,4 +25,7 @@ public interface CompanyMemberRepository extends JpaRepository<CompanyMember, Lo
 
     boolean existsByUserIdAndCompanyIdAndCompanyRole(Long userId, Long companyId, CompanyRole role);
 
+    Long countByCompanyId(Long companyId);
+
+    Long user(User user);
 }

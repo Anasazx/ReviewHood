@@ -2,7 +2,9 @@ package tn.anasazx.tunirate.product.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import tn.anasazx.tunirate.enums.ProductStatus;
 import tn.anasazx.tunirate.subcategory.entity.Subcategory;
+import tn.anasazx.tunirate.user.entity.User;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -48,6 +50,18 @@ public class Product {
     private tn.anasazx.tunirate.company.entity.Company company;
 
 
+
+    @ManyToOne
+    @JoinColumn(name = "created_by", nullable = false)
+    private User createdBy;
+
+    @ManyToOne
+    @JoinColumn(name = "updated_by")
+    private User updatedBy;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProductStatus status = ProductStatus.DRAFT;
 
 
     @Column(nullable = false, updatable = false)

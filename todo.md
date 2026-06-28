@@ -2,4 +2,4 @@
 The frontend should debounce input and call a backend search API that returns matching products (or entities) based on partial text. 
 Users can click a suggestion to instantly navigate to its details page, making search faster and more interactive.
 
-2- 
+2- Remove any hard delete; replace it with status like 'deleted'

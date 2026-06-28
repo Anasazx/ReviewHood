@@ -22,7 +22,17 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     """)
     Double getAverageRatingByProductId(Long productId);
 
-    long countByProductId(Long productId);
+    Long countByProductId(Long productId);
+
+    Long countByProductCompanyId(Long companyId);
 
     List<Review> findByProductCompanyId(Long companyId);
+
+    @Query("""
+    SELECT AVG(r.rating)
+    FROM Review r
+    WHERE r.product.company.id = :companyId
+    """)
+    Double findAverageRatingByCompanyId(Long companyId);
+
 }
