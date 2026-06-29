@@ -17,7 +17,7 @@ public interface CompanyMemberRepository extends JpaRepository<CompanyMember, Lo
     // Find company of a user
     Optional<CompanyMember> findFirstByUserId(Long userId);
 
-    // Check if user is already in company
+    // Check if the user is already in the company
     boolean existsByUserIdAndCompanyId(Long userId, Long companyId);
 
     // Get specific membership (useful for role checks)
@@ -27,5 +27,4 @@ public interface CompanyMemberRepository extends JpaRepository<CompanyMember, Lo
 
     Long countByCompanyId(Long companyId);
 
-    Long user(User user);
 }

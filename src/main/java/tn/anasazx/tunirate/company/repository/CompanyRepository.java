@@ -21,5 +21,7 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
 	List<Company> search(@Param("q") String q);
 
 
+	Long countByVerified(Boolean verified);
+
 }
 

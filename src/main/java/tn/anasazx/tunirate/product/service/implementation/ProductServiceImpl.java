@@ -103,6 +103,7 @@ public class ProductServiceImpl implements ProductService {
         product.setCompany(company);
         product.setSubcategory(subcategory);
         product.setCreatedBy(currentUser);
+        product.setStatus(ProductStatus.PUBLISHED);
 
         return ProductMapper.toAdminResponse(productRepository.save(product));
     }

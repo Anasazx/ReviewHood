@@ -34,5 +34,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Long countByCompanyId(Long companyId);
 
+    Long countByStatus(ProductStatus status);
+
 }
 
