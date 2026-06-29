@@ -40,16 +40,25 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.getAllCompanies());
     }
 
+    //Admin method
+    @GetMapping("/op")
+    public ResponseEntity<List<CompanyResponse>> getAllCompaniesAsAdmin() {
+        return ResponseEntity.ok(companyService.getAllCompanies());
+    }
+
+    //Admin method
     @PostMapping
     public ResponseEntity<CompanyResponse> createCompany(@Valid @RequestBody CompanyRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(companyService.createCompany(request));
     }
 
+    //Admin method
     @PutMapping("/{id}")
     public ResponseEntity<CompanyResponse> updateCompany(@PathVariable Long id, @Valid @RequestBody CompanyRequest request) {
         return ResponseEntity.ok(companyService.updateCompany(id, request));
     }
 
+    //Admin method
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCompany(@PathVariable Long id) {
         companyService.deleteCompany(id);

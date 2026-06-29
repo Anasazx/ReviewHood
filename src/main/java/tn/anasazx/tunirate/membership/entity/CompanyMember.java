@@ -23,9 +23,9 @@ public class CompanyMember {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Who is the user
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
     // Which company

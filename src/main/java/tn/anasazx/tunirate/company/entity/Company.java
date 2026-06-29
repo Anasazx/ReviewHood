@@ -3,6 +3,9 @@ package tn.anasazx.tunirate.company.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import tn.anasazx.tunirate.actor.entity.Actor;
+import tn.anasazx.tunirate.membership.entity.CompanyMember;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -32,5 +35,8 @@ public class Company extends Actor {
 
     @Column
     private String bannerUrl;
+
+    @OneToMany(mappedBy = "company")
+    private List<CompanyMember> members;
 
 }
