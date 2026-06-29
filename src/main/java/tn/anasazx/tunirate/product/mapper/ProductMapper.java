@@ -167,6 +167,7 @@ public class ProductMapper {
                 ))
                 .toList();
 
+
         String categoryName = Optional.ofNullable(product.getSubcategory())
                 .map(Subcategory::getCategory)
                 .map(Category::getName)
@@ -189,6 +190,56 @@ public class ProductMapper {
                 avgRating,
                 reviewsCount,
                 images
+        );
+    }
+
+
+    public static AdminProductDetailsResponse mapProductToAdminDetailsResponse(Product product, double avgRating, long reviewsCount) {
+
+        List<ProductImageResponse> images = product.getImages()
+                .stream()
+                .map(img -> new ProductImageResponse(
+                        img.getId(),
+                        img.getUrl(),
+                        img.isMain()
+                ))
+                .toList();
+
+
+        String categoryName = Optional.ofNullable(product.getSubcategory())
+                .map(Subcategory::getCategory)
+                .map(Category::getName)
+                .orElse(null);
+
+        String subcategoryName = Optional.ofNullable(product.getSubcategory())
+                .map(Subcategory::getName)
+                .orElse(null);
+
+        String updatedByName = null;
+        Long updatedById = null;
+        if (product.getUpdatedBy() != null) {
+            updatedByName = product.getUpdatedBy().getName();
+            updatedById = product.getUpdatedBy().getId();
+        }
+
+        return new AdminProductDetailsResponse(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                categoryName,
+                subcategoryName,
+                product.getCompany().getId(),
+                product.getCompany().getName(),
+                product.getCompany().getVerified(),
+                product.getCompany().getLogoUrl(),
+                avgRating,
+                reviewsCount,
+                images,
+                product.getCreatedBy().getName(),
+                product.getCreatedBy().getId(),
+                updatedByName,
+                updatedById,
+                product.getStatus().name()
         );
     }
 

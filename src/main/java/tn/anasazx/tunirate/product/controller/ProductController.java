@@ -32,6 +32,7 @@ public class ProductController {
 		return ResponseEntity.ok(productService.getProductById(id));
 	}
 
+
 	@GetMapping("/{id}/details")
 	public ResponseEntity<ProductDetailsResponse> getProductDetails(@PathVariable Long id){
 		return ResponseEntity.ok(productService.getProductDetailsById(id));
@@ -69,6 +70,12 @@ public class ProductController {
 	public ResponseEntity<Void> deleteProductAsAdmin(@PathVariable Long id) {
 		productService.deleteProductAsAdmin(id);
 		return ResponseEntity.noContent().build();
+	}
+
+	@PreAuthorize("hasRole('ADMIN')")
+	@GetMapping("/op/{id}/details")
+	public ResponseEntity<AdminProductDetailsResponse> getProductDetailsAsAdmin(@PathVariable Long id){
+		return ResponseEntity.ok(productService.getProductDetailsByIdAsAdmin(id));
 	}
 
 

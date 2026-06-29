@@ -42,16 +42,29 @@ public class ProductServiceImpl implements ProductService {
     //There is a methode that returns only the basic info of a product called getProductById
     @Override
     public ProductDetailsResponse getProductDetailsById(Long ProductId) {
-
         Product product = findProductById(ProductId);
 
-        double avgRating = Optional.ofNullable(reviewRepository.findAverageRatingByCompanyId(ProductId)).orElse(0.0);
+        Long companyId = product.getCompany().getId();
+
+        double avgRating = Optional.ofNullable(reviewRepository.findAverageRatingByCompanyId(companyId)).orElse(0.0);
+
         long reviewsCount = reviewRepository.countByProductId(ProductId);
 
         return ProductMapper.mapProductToDetailsResponse(product, avgRating, reviewsCount);
+    }
 
+    @Override
+    public AdminProductDetailsResponse getProductDetailsByIdAsAdmin(Long ProductId) {
 
+        Product product = findProductById(ProductId);
 
+        Long companyId = product.getCompany().getId();
+
+        double avgRating = Optional.ofNullable(reviewRepository.findAverageRatingByCompanyId(companyId)).orElse(0.0);
+
+        long reviewsCount = reviewRepository.countByProductId(ProductId);
+
+        return ProductMapper.mapProductToAdminDetailsResponse(product, avgRating, reviewsCount);
     }
 
     @Override

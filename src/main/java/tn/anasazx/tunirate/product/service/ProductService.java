@@ -13,6 +13,7 @@ public interface ProductService {
     List<ProductResponse> getProductsByCompanyId(Long companyId);
 
     //Admin methods
+    AdminProductDetailsResponse getProductDetailsByIdAsAdmin(Long id);
     List<AdminProductResponse> getProductsAsAdmin();
     AdminProductResponse createProductAsAdmin(AdminProductRequest request);
     AdminProductResponse updateProductAsAdmin(Long id, AdminProductRequest request);
