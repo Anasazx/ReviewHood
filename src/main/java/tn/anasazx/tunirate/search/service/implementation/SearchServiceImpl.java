@@ -5,11 +5,9 @@ import org.springframework.stereotype.Service;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.mapper.CompanyMapper;
 import tn.anasazx.tunirate.company.repository.CompanyRepository;
-import tn.anasazx.tunirate.company.service.CompanyService;
 import tn.anasazx.tunirate.product.dto.ProductResponse;
 import tn.anasazx.tunirate.product.mapper.ProductMapper;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
-import tn.anasazx.tunirate.product.service.ProductService;
 import tn.anasazx.tunirate.search.dto.SearchResponseDTO;
 import tn.anasazx.tunirate.search.service.SearchService;
 
@@ -51,7 +49,7 @@ public class SearchServiceImpl implements SearchService {
         return productRepository
                 .search(q)
                 .stream()
-                .map(ProductMapper::mapProductToResponse)
+                .map(ProductMapper::toResponse)
                 .toList();
     }
 

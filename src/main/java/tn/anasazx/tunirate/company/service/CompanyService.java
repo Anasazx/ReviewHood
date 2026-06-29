@@ -1,6 +1,7 @@
 package tn.anasazx.tunirate.company.service;
 
 import org.springframework.web.multipart.MultipartFile;
+import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
 import tn.anasazx.tunirate.company.dto.CompanyRequest;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.entity.Company;
@@ -10,23 +11,27 @@ import java.util.List;
 
 public interface CompanyService {
 
-    CompanyResponse getCompanyById(Long id);
+    CompanyResponse getCompanyById(Long companyId);
 
     CompanyResponse getMyCompany();
 
-    CompanyResponse getCompanyByName(String name);
+    CompanyResponse getCompanyByName(String companyName);
 
     List<CompanyResponse> getAllCompanies();
 
+    //Admin method
+    AdminCompanyResponse getCompanyDetailsByIdAsAdmin(Long companyId);
+
+
     CompanyResponse createCompany(CompanyRequest request);
 
-    CompanyResponse updateCompany(Long id, CompanyRequest request);
+    CompanyResponse updateCompany(Long companyId, CompanyRequest request);
 
-    void deleteCompany(Long id);
+    void deleteCompany(Long companyId);
 
     CompanyResponse getCompanyByProductId(Long productId);
 
-    Company getCompanyEntityById(Long id);
+    Company getCompanyEntityById(Long companyId);
 
     List<CompanyResponse> search(String query);
 

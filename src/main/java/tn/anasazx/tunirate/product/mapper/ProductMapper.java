@@ -14,7 +14,7 @@ import java.util.Optional;
 @Component
 public class ProductMapper {
 
-    public static ProductResponse mapProductToResponse(Product product) {
+    public static ProductResponse toResponse(Product product) {
 
         Optional<String> imageUrl = product.getImages().stream()
                 .filter(ProductImage::isMain)
@@ -46,7 +46,7 @@ public class ProductMapper {
 
     }
 
-    public static CompanyProductResponse mapProductToCompanyResponse(Product product) {
+    public static CompanyProductResponse toCompanyResponse(Product product) {
 
         Optional<String> imageUrl = product.getImages().stream()
                 .filter(ProductImage::isMain)
@@ -103,10 +103,7 @@ public class ProductMapper {
 
     }
 
-
-
-
-    public static AdminProductResponse mapProductToAdminResponse(Product product) {
+    public static AdminProductResponse toAdminResponse(Product product) {
 
         Optional<String> imageUrl = product.getImages().stream()
                 .filter(ProductImage::isMain)
@@ -155,8 +152,7 @@ public class ProductMapper {
 
     }
 
-
-    public static ProductDetailsResponse mapProductToDetailsResponse(Product product, double avgRating, long reviewsCount) {
+    public static ProductDetailsResponse toDetailsResponse(Product product, double avgRating, long reviewsCount) {
 
         List<ProductImageResponse> images = product.getImages()
                 .stream()
@@ -193,8 +189,7 @@ public class ProductMapper {
         );
     }
 
-
-    public static AdminProductDetailsResponse mapProductToAdminDetailsResponse(Product product, double avgRating, long reviewsCount) {
+    public static AdminProductDetailsResponse toAdminDetailsResponse(Product product, double avgRating, long reviewsCount) {
 
         List<ProductImageResponse> images = product.getImages()
                 .stream()
@@ -242,7 +237,5 @@ public class ProductMapper {
                 product.getStatus().name()
         );
     }
-
-
 
 }

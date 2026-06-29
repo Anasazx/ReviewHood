@@ -7,6 +7,4 @@ public record CompanyResponse(
         String logoUrl,
         String bannerUrl,
         Boolean verified
-) {
-}
-
+) {}

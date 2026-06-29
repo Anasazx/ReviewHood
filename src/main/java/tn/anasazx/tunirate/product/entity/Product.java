@@ -2,6 +2,7 @@ package tn.anasazx.tunirate.product.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.enums.ProductStatus;
 import tn.anasazx.tunirate.subcategory.entity.Subcategory;
 import tn.anasazx.tunirate.user.entity.User;
@@ -36,10 +37,10 @@ public class Product {
     private String description;
 
 
-    //I d'ont need a category here bcs a subcategory is already belong to a category
+    //I d'ont need a category here bcs a subcategory already belongs to a category
     @ManyToOne
     @JoinColumn(name = "subcategory_id")
-    // after some analyzing I think the best option is to make the subcategory optional , where u can make a product then assign the subcategory to it
+    // after some analyzing, I think the best option is to make the subcategory optional, where you can make a product then assign the subcategory to it
     private Subcategory subcategory;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -47,8 +48,7 @@ public class Product {
 
     @ManyToOne
     @JoinColumn(name = "company_id", nullable = false)
-    private tn.anasazx.tunirate.company.entity.Company company;
-
+    private Company company;
 
 
     @ManyToOne

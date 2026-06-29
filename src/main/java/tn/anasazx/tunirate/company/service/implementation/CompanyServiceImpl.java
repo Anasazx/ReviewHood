@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
 import tn.anasazx.tunirate.company.dto.CompanyRequest;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.entity.Company;
@@ -61,6 +62,14 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public List<CompanyResponse> getAllCompanies() {
         return companyRepository.findAll().stream().map(CompanyMapper::toResponse).toList();
+    }
+
+    @Override
+    public AdminCompanyResponse getCompanyDetailsByIdAsAdmin(Long companyId) {
+        Company company = companyRepository.findById(companyId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found")
+        );
+        return CompanyMapper.toAdminResponse(company);
     }
 
     @Override

@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import tn.anasazx.tunirate.actor.entity.Actor;
 import tn.anasazx.tunirate.membership.entity.CompanyMember;
+import tn.anasazx.tunirate.product.entity.Product;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -36,7 +38,11 @@ public class Company extends Actor {
     @Column
     private String bannerUrl;
 
-    @OneToMany(mappedBy = "company")
-    private List<CompanyMember> members;
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
+    private List<CompanyMember> members = new ArrayList<>();
+
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
+    private List<Product> Products = new ArrayList<>();
+
 
 }

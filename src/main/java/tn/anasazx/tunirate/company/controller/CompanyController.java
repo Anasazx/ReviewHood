@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
 import tn.anasazx.tunirate.company.dto.CompanyRequest;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.service.CompanyService;
@@ -20,9 +21,9 @@ public class CompanyController {
 
     private final CompanyService companyService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CompanyResponse> getCompanyById(@PathVariable Long id) {
-        return ResponseEntity.ok(companyService.getCompanyById(id));
+    @GetMapping("/{companyId}")
+    public ResponseEntity<CompanyResponse> getCompanyById(@PathVariable Long companyId) {
+        return ResponseEntity.ok(companyService.getCompanyById(companyId));
     }
 
     @GetMapping("/my")
@@ -31,8 +32,8 @@ public class CompanyController {
     }
 
     @GetMapping("/by-name")
-    public ResponseEntity<CompanyResponse> getCompanyByName(@RequestParam String name) {
-        return ResponseEntity.ok(companyService.getCompanyByName(name));
+    public ResponseEntity<CompanyResponse> getCompanyByName(@RequestParam String companyName) {
+        return ResponseEntity.ok(companyService.getCompanyByName(companyName));
     }
 
     @GetMapping
@@ -41,9 +42,9 @@ public class CompanyController {
     }
 
     //Admin method
-    @GetMapping("/op")
-    public ResponseEntity<List<CompanyResponse>> getAllCompaniesAsAdmin() {
-        return ResponseEntity.ok(companyService.getAllCompanies());
+    @GetMapping("/details/{companyId}")
+    public ResponseEntity<AdminCompanyResponse> getCompanyDetailsByIdAsAdmin(@PathVariable Long companyId) {
+        return ResponseEntity.ok(companyService.getCompanyDetailsByIdAsAdmin(companyId));
     }
 
     //Admin method
@@ -53,15 +54,15 @@ public class CompanyController {
     }
 
     //Admin method
-    @PutMapping("/{id}")
-    public ResponseEntity<CompanyResponse> updateCompany(@PathVariable Long id, @Valid @RequestBody CompanyRequest request) {
-        return ResponseEntity.ok(companyService.updateCompany(id, request));
+    @PutMapping("/{companyId}")
+    public ResponseEntity<CompanyResponse> updateCompany(@PathVariable Long companyId, @Valid @RequestBody CompanyRequest request) {
+        return ResponseEntity.ok(companyService.updateCompany(companyId, request));
     }
 
     //Admin method
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCompany(@PathVariable Long id) {
-        companyService.deleteCompany(id);
+    @DeleteMapping("/{companyId}")
+    public ResponseEntity<Void> deleteCompany(@PathVariable Long companyId) {
+        companyService.deleteCompany(companyId);
         return ResponseEntity.noContent().build();
     }
 

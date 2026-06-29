@@ -50,7 +50,7 @@ public class ProductServiceImpl implements ProductService {
 
         long reviewsCount = reviewRepository.countByProductId(ProductId);
 
-        return ProductMapper.mapProductToDetailsResponse(product, avgRating, reviewsCount);
+        return ProductMapper.toDetailsResponse(product, avgRating, reviewsCount);
     }
 
     @Override
@@ -64,13 +64,13 @@ public class ProductServiceImpl implements ProductService {
 
         long reviewsCount = reviewRepository.countByProductId(ProductId);
 
-        return ProductMapper.mapProductToAdminDetailsResponse(product, avgRating, reviewsCount);
+        return ProductMapper.toAdminDetailsResponse(product, avgRating, reviewsCount);
     }
 
     @Override
     public List<ProductResponse> getAllProducts() {
         return findAllProducts().stream()
-                .map(ProductMapper::mapProductToResponse)
+                .map(ProductMapper::toResponse)
                 .toList();
     }
 
@@ -81,7 +81,7 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = findProductById(productId);
 
-        return ProductMapper.mapProductToResponse(product);
+        return ProductMapper.toResponse(product);
 
     }
 
@@ -104,7 +104,7 @@ public class ProductServiceImpl implements ProductService {
         product.setSubcategory(subcategory);
         product.setCreatedBy(currentUser);
 
-        return ProductMapper.mapProductToAdminResponse(productRepository.save(product));
+        return ProductMapper.toAdminResponse(productRepository.save(product));
     }
 
     @Override
@@ -129,7 +129,7 @@ public class ProductServiceImpl implements ProductService {
         product.setCreatedBy(currentUser);
         if (request.status() == ProductStatus.DRAFT) product.setStatus(ProductStatus.DRAFT);
 
-        return ProductMapper.mapProductToCompanyResponse(productRepository.save(product));
+        return ProductMapper.toCompanyResponse(productRepository.save(product));
 
     }
 
@@ -149,7 +149,7 @@ public class ProductServiceImpl implements ProductService {
         product.setSubcategory(subcategory);
         product.setCompany(company);
 
-        return ProductMapper.mapProductToAdminResponse(productRepository.save(product));
+        return ProductMapper.toAdminResponse(productRepository.save(product));
 
     }
 
@@ -165,7 +165,7 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductResponse> getProductsByCompanyId(Long companyId) {
         return findProductsByCompanyId(companyId)
                 .stream()
-                .map(ProductMapper::mapProductToResponse)
+                .map(ProductMapper::toResponse)
                 .toList();
     }
 
@@ -180,22 +180,15 @@ public class ProductServiceImpl implements ProductService {
 
         return findProductsByCompanyIdAsCompany(companyId)
                 .stream()
-                .map(ProductMapper::mapProductToCompanyResponse)
+                .map(ProductMapper::toCompanyResponse)
                 .toList();
     }
 
     @Override
     public List<AdminProductResponse> getProductsAsAdmin() {
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
-
-        CompanyMember membership = findMembershipByUserId(currentUserId);
-
-        Long companyId = membership.getCompany().getId();
-
         return findAllProductsAsAdmin()
                 .stream()
-                .map(ProductMapper::mapProductToAdminResponse)
+                .map(ProductMapper::toAdminResponse)
                 .toList();
     }
 
