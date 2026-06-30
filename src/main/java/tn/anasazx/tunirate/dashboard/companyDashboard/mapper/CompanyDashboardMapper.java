@@ -1,6 +1,10 @@
 package tn.anasazx.tunirate.dashboard.companyDashboard.mapper;
 
 import tn.anasazx.tunirate.dashboard.companyDashboard.dto.CompanyDashboardResponse;
+import tn.anasazx.tunirate.review.entity.Review;
+import tn.anasazx.tunirate.review.mapper.ReviewMapper;
+
+import java.util.List;
 
 public class CompanyDashboardMapper {
 
@@ -8,13 +12,15 @@ public class CompanyDashboardMapper {
             Long totalProducts,
             Long totalReviews,
             Double averageRating,
-            Long totalTeamMembers
+            Long totalTeamMembers,
+            List<Review> recentReviews
     ) {
         return new CompanyDashboardResponse(
                 totalProducts,
                 totalReviews,
                 averageRating,
-                totalTeamMembers
+                totalTeamMembers,
+                recentReviews.stream().map(ReviewMapper::toMinimizedResponse).toList()
         );
     }
 }

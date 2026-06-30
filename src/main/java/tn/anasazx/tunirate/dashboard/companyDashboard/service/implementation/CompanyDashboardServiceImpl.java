@@ -3,7 +3,6 @@ package tn.anasazx.tunirate.dashboard.companyDashboard.service.implementation;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
-import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.dashboard.companyDashboard.dto.CompanyDashboardResponse;
 import tn.anasazx.tunirate.dashboard.companyDashboard.mapper.CompanyDashboardMapper;
 import tn.anasazx.tunirate.dashboard.companyDashboard.service.CompanyDashboardService;
@@ -11,9 +10,11 @@ import tn.anasazx.tunirate.dashboard.companyDashboard.service.CompanyDashboardSe
 import tn.anasazx.tunirate.membership.entity.CompanyMember;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
+import tn.anasazx.tunirate.review.entity.Review;
 import tn.anasazx.tunirate.review.repository.ReviewRepository;
 import tn.anasazx.tunirate.security.SecurityUtils;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -42,9 +43,11 @@ public class CompanyDashboardServiceImpl implements CompanyDashboardService {
 
         Double averageRating = reviewRepository.findAverageRatingByCompanyId(companyId);
 
-        double averageRatingResponse = Optional.ofNullable(averageRating).orElse(0.0);;
+        List<Review> recentReviews = reviewRepository.findTop3ByProductCompanyIdOrderByCreatedAtDesc(companyId); //get last 3 reviews
 
-        return CompanyDashboardMapper.toDto(totalProducts, totalReviews, averageRatingResponse, totalTeamMembers);
+        double averageRatingResponse = Optional.ofNullable(averageRating).orElse(0.0);
+
+        return CompanyDashboardMapper.toDto(totalProducts, totalReviews, averageRatingResponse, totalTeamMembers, recentReviews);
     }
 
 }

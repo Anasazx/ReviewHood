@@ -8,7 +8,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tn.anasazx.tunirate.product.dto.*;
 import tn.anasazx.tunirate.product.service.ProductService;
-import tn.anasazx.tunirate.security.SecurityUtils;
 
 import java.util.List;
 
@@ -89,6 +88,11 @@ public class ProductController {
 	@GetMapping("/my")
 	public ResponseEntity<List<CompanyProductResponse>> getProductsAsCompany() {
 		return ResponseEntity.ok(productService.getProductsAsCompany());
+	}
+
+	@GetMapping("/c/{id}")
+	public ResponseEntity<CompanyProductResponse> getProductByIdAsCompany(@PathVariable Long id) {
+		return ResponseEntity.ok(productService.getProductByIdAsCompany(id));
 	}
 
 

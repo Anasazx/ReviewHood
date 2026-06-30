@@ -193,6 +193,15 @@ public class ProductServiceImpl implements ProductService {
                 .toList();
     }
 
+    @Override
+    public CompanyProductResponse getProductByIdAsCompany(Long productId) {
+
+        Product product = findProductById(productId);
+
+        return ProductMapper.toCompanyResponse(product);
+
+    }
+
     // -- HELPERS --
 
     User findUserByUserId(Long userId) {

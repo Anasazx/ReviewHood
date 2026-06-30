@@ -35,4 +35,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     """)
     Double findAverageRatingByCompanyId(Long companyId);
 
+    List<Review> findTop3ByProductCompanyIdOrderByCreatedAtDesc(Long productCompanyId);
+
 }

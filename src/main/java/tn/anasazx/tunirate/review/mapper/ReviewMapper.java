@@ -1,6 +1,7 @@
 package tn.anasazx.tunirate.review.mapper;
 
 import tn.anasazx.tunirate.comment.dto.CommentResponse;
+import tn.anasazx.tunirate.review.dto.MinimizedReviewResponse;
 import tn.anasazx.tunirate.review.dto.ReviewResponse;
 import tn.anasazx.tunirate.review.entity.Review;
 import tn.anasazx.tunirate.security.SecurityUtils;
@@ -24,6 +25,17 @@ public class ReviewMapper {
                 isMine,
                 commentsCount,
                 previewComment,
+                review.getCreatedAt()
+        );
+    }
+
+    public static MinimizedReviewResponse toMinimizedResponse(Review review) {
+        return new MinimizedReviewResponse(
+                review.getId(),
+                review.getRating(),
+                review.getContent(),
+                review.getUser().getName(),
+                review.getProduct().getName(),
                 review.getCreatedAt()
         );
     }
