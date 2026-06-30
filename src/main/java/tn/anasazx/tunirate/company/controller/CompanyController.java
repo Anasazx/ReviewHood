@@ -36,20 +36,11 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.getCompanyByName(companyName));
     }
 
+    //Admin method
     @GetMapping
-    public ResponseEntity<List<CompanyResponse>> getAllCompanies() {
+    public ResponseEntity<List<CompanyResponse>> getAllCompaniesAsAdmin() {
         return ResponseEntity.ok(companyService.getAllCompanies());
     }
-
-    /*
-    //Company method
-    //TODO; COMPLETE THIS METHOD
-    @GetMapping("/my")
-    public ResponseEntity<CompanyResponse> getMyCompanyInformation() {
-        return ResponseEntity.ok(companyService.getMyCompany());
-    }
-    */
-
 
     //Admin method
     @GetMapping("/details/{companyId}")

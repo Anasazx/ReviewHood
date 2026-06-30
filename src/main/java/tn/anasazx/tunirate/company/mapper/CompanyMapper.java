@@ -21,6 +21,7 @@ public class CompanyMapper {
                 company.getDescription(),
                 company.getLogoUrl(),
                 company.getBannerUrl(),
+                company.getCountry(),
                 company.getStatus()
         );
     }
