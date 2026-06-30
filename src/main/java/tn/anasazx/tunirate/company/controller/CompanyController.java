@@ -6,8 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tn.anasazx.tunirate.company.dto.AdminCompanyRequest;
 import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
-import tn.anasazx.tunirate.company.dto.CompanyRequest;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.service.CompanyService;
 import tn.anasazx.tunirate.enums.CompanyImageType;
@@ -41,6 +41,15 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.getAllCompanies());
     }
 
+    /*
+    //Company method
+    //TODO; COMPLETE THIS METHOD
+    @GetMapping("/my")
+    public ResponseEntity<CompanyResponse> getMyCompanyInformation() {
+        return ResponseEntity.ok(companyService.getMyCompany());
+    }
+    */
+
 
     //Admin method
     @GetMapping("/details/{companyId}")
@@ -50,19 +59,20 @@ public class CompanyController {
 
     //Admin method
     @PostMapping
-    public ResponseEntity<CompanyResponse> createCompany(@Valid @RequestBody CompanyRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(companyService.createCompany(request));
+    public ResponseEntity<CompanyResponse> createCompanyAsAdmin(@Valid @RequestBody AdminCompanyRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(companyService.createCompanyAsAdmin(request));
     }
 
     //Admin method
     @PutMapping("/{companyId}")
-    public ResponseEntity<CompanyResponse> updateCompany(@PathVariable Long companyId, @Valid @RequestBody CompanyRequest request) {
-        return ResponseEntity.ok(companyService.updateCompany(companyId, request));
+    public ResponseEntity<CompanyResponse> updateCompanyAsAdmin(@PathVariable Long companyId, @Valid @RequestBody AdminCompanyRequest request) {
+        return ResponseEntity.ok(companyService.updateCompanyAsAdmin(companyId, request));
     }
 
     //Admin method
+    //TODO: remove the hard delete
     @DeleteMapping("/{companyId}")
-    public ResponseEntity<Void> deleteCompany(@PathVariable Long companyId) {
+    public ResponseEntity<Void> deleteCompanyAsAdmin(@PathVariable Long companyId) {
         companyService.deleteCompany(companyId);
         return ResponseEntity.noContent().build();
     }

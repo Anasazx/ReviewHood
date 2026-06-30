@@ -1,8 +1,8 @@
 package tn.anasazx.tunirate.company.service;
 
 import org.springframework.web.multipart.MultipartFile;
+import tn.anasazx.tunirate.company.dto.AdminCompanyRequest;
 import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
-import tn.anasazx.tunirate.company.dto.CompanyRequest;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.enums.CompanyImageType;
@@ -23,9 +23,9 @@ public interface CompanyService {
     AdminCompanyResponse getCompanyDetailsByIdAsAdmin(Long companyId);
 
 
-    CompanyResponse createCompany(CompanyRequest request);
+    CompanyResponse createCompanyAsAdmin(AdminCompanyRequest request);
 
-    CompanyResponse updateCompany(Long companyId, CompanyRequest request);
+    CompanyResponse updateCompanyAsAdmin(Long companyId, AdminCompanyRequest request);
 
     void deleteCompany(Long companyId);
 

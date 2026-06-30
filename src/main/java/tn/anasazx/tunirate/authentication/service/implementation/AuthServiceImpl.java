@@ -56,7 +56,7 @@ public class AuthServiceImpl implements AuthService {
         //Generate token
         String token = jwtService.generateToken(savedUser.id());
 
-        return new AuthResponse(token, savedUser.email(), savedUser.globalRole().name(), null, null);
+        return new AuthResponse(token, savedUser.name(), savedUser.email(), savedUser.globalRole().name(), null, null);
     }
 
     private boolean isStrongPassword(String password) {
@@ -91,7 +91,7 @@ public class AuthServiceImpl implements AuthService {
 
         //Token generation
         String token = jwtService.generateToken(user.getId());
-        return new AuthResponse(token, user.getEmail(), user.getGlobalRole().name(), companyId, companyRole);
+        return new AuthResponse(token, user.getName(), user.getEmail(), user.getGlobalRole().name(), companyId, companyRole);
     }
 
 }

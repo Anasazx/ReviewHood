@@ -26,15 +26,15 @@ public class ProductController {
 		return ResponseEntity.ok(productService.getAllProducts());
 	}
 
-	@GetMapping("/{id}")
-	public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
-		return ResponseEntity.ok(productService.getProductById(id));
+	@GetMapping("/{productId}")
+	public ResponseEntity<ProductResponse> getProductById(@PathVariable Long productId) {
+		return ResponseEntity.ok(productService.getProductById(productId));
 	}
 
 
-	@GetMapping("/{id}/details")
-	public ResponseEntity<ProductDetailsResponse> getProductDetails(@PathVariable Long id){
-		return ResponseEntity.ok(productService.getProductDetailsById(id));
+	@GetMapping("/{productId}/details")
+	public ResponseEntity<ProductDetailsResponse> getProductDetails(@PathVariable Long productId){
+		return ResponseEntity.ok(productService.getProductDetailsById(productId));
 	}
 
 	@GetMapping("/company/{companyId}")
@@ -64,17 +64,16 @@ public class ProductController {
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")
-	@DeleteMapping("/{id}")
-	//TODO: future update; Remove this hard delete; and change it like (deleted = true);
-	public ResponseEntity<Void> deleteProductAsAdmin(@PathVariable Long id) {
-		productService.deleteProductAsAdmin(id);
+	@PostMapping("/op/{productId}/archive")
+	public ResponseEntity<Void> archiveProductAsAdmin(@PathVariable Long productId) {
+		productService.archiveProductAsAdmin(productId);
 		return ResponseEntity.noContent().build();
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")
-	@GetMapping("/op/{id}/details")
-	public ResponseEntity<AdminProductDetailsResponse> getProductDetailsAsAdmin(@PathVariable Long id){
-		return ResponseEntity.ok(productService.getProductDetailsByIdAsAdmin(id));
+	@GetMapping("/op/{productId}/details")
+	public ResponseEntity<AdminProductDetailsResponse> getProductDetailsAsAdmin(@PathVariable Long productId){
+		return ResponseEntity.ok(productService.getProductDetailsByIdAsAdmin(productId));
 	}
 
 
@@ -90,9 +89,9 @@ public class ProductController {
 		return ResponseEntity.ok(productService.getProductsAsCompany());
 	}
 
-	@GetMapping("/c/{id}")
-	public ResponseEntity<CompanyProductResponse> getProductByIdAsCompany(@PathVariable Long id) {
-		return ResponseEntity.ok(productService.getProductByIdAsCompany(id));
+	@GetMapping("/c/{productId}")
+	public ResponseEntity<CompanyProductResponse> getProductByIdAsCompany(@PathVariable Long productId) {
+		return ResponseEntity.ok(productService.getProductByIdAsCompany(productId));
 	}
 
 

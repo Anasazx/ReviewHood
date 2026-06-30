@@ -6,6 +6,7 @@ import tn.anasazx.tunirate.company.repository.CompanyRepository;
 import tn.anasazx.tunirate.dashboard.adminDashboard.dto.AdminDashboardResponse;
 import tn.anasazx.tunirate.dashboard.adminDashboard.mapper.AdminDashboardMapper;
 import tn.anasazx.tunirate.dashboard.adminDashboard.service.AdminDashboardService;
+import tn.anasazx.tunirate.enums.CompanyStatus;
 import tn.anasazx.tunirate.enums.ProductStatus;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
 import tn.anasazx.tunirate.review.repository.ReviewRepository;
@@ -26,7 +27,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
 
         Long totalUsers = userRepository.count();
         Long totalCompanies = companyRepository.count();
-        Long totalVerifiedCompanies = companyRepository.countByVerified(true);
+        Long totalVerifiedCompanies = companyRepository.countByStatus(CompanyStatus.ACTIVE);
         Long totalProducts = productRepository.count();
         Long totalReviews = reviewRepository.count();
         Long totalPendingApprovals = productRepository.countByStatus(ProductStatus.PENDING_REVIEW);

@@ -17,12 +17,14 @@ public interface ProductService {
     List<AdminProductResponse> getProductsAsAdmin();
     AdminProductResponse createProductAsAdmin(AdminProductRequest request);
     AdminProductResponse updateProductAsAdmin(Long id, AdminProductRequest request);
-    void deleteProductAsAdmin(Long productId);
+    void archiveProductAsAdmin(Long productId);
 
     //Company methods
     List<CompanyProductResponse> getProductsAsCompany();
     CompanyProductResponse createProductAsCompany(CompanyProductRequest request);
     CompanyProductResponse getProductByIdAsCompany(Long productId);
+
+
 
 
 }

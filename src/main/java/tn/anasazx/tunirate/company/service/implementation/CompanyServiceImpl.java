@@ -5,20 +5,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import tn.anasazx.tunirate.company.dto.AdminCompanyRequest;
 import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
-import tn.anasazx.tunirate.company.dto.CompanyRequest;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.company.mapper.CompanyMapper;
 import tn.anasazx.tunirate.company.repository.CompanyRepository;
 import tn.anasazx.tunirate.company.service.CompanyService;
 import tn.anasazx.tunirate.enums.CompanyImageType;
+import tn.anasazx.tunirate.enums.CompanyStatus;
 import tn.anasazx.tunirate.fileStorage.service.FileStorageService;
 import tn.anasazx.tunirate.membership.entity.CompanyMember;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
 import tn.anasazx.tunirate.security.SecurityUtils;
+import tn.anasazx.tunirate.user.entity.User;
+import tn.anasazx.tunirate.user.repository.UserRepository;
 
 import java.util.List;
 
@@ -30,6 +33,7 @@ public class CompanyServiceImpl implements CompanyService {
     private final ProductRepository productRepository;
     private final CompanyMemberRepository companyMemberRepository;
     private final FileStorageService fileStorageService;
+    private final UserRepository userRepository;
 
 
     @Override
@@ -73,21 +77,33 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public CompanyResponse createCompany(CompanyRequest request) {
+    public CompanyResponse createCompanyAsAdmin(AdminCompanyRequest request) {
+
         companyRepository.findByNameIgnoreCase(request.name()).ifPresent(existing -> {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Company name already exists");
         });
 
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
+        User currentUser = findUser(currentUserId);
+
         Company company = new Company();
         company.setName(request.name());
         company.setDescription(request.description());
-        company.setVerified(request.verified() != null ? request.verified() : false);
+        company.setPhoneNumber(request.phoneNumber());
+        company.setWebsiteUrl(request.websiteUrl());
+        company.setAddress(request.address());
+        company.setCountry(request.country());
+        company.setIndustry(request.industry());
+        company.setCreatedBy(currentUser);
+        company.setStatus(request.status() != null ? request.status() : CompanyStatus.PENDING);
+
 
         return CompanyMapper.toResponse(companyRepository.save(company));
     }
 
     @Override
-    public CompanyResponse updateCompany(Long id, CompanyRequest request) {
+    public CompanyResponse updateCompanyAsAdmin(Long id, AdminCompanyRequest request) {
         Company company = findCompany(id);
 
         companyRepository.findByNameIgnoreCase(request.name())
@@ -96,9 +112,19 @@ public class CompanyServiceImpl implements CompanyService {
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "Company name already exists");
                 });
 
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
+        User currentUser = findUser(currentUserId);
+
         company.setName(request.name());
         company.setDescription(request.description());
-        company.setVerified(request.verified() != null ? request.verified() : company.getVerified());
+        company.setPhoneNumber(request.phoneNumber());
+        company.setWebsiteUrl(request.websiteUrl());
+        company.setAddress(request.address());
+        company.setCountry(request.country());
+        company.setIndustry(request.industry());
+        company.setUpdatedBy(currentUser);
+        company.setStatus(request.status());
 
         return CompanyMapper.toResponse(companyRepository.save(company));
     }
@@ -200,6 +226,10 @@ public class CompanyServiceImpl implements CompanyService {
     private Company findCompany(Long id) {
         return companyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
+    }
+
+    private User findUser(Long userId){
+        return userRepository.findFirstById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     }
 
 }

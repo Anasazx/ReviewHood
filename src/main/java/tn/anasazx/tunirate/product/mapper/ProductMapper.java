@@ -2,6 +2,7 @@ package tn.anasazx.tunirate.product.mapper;
 
 import org.springframework.stereotype.Component;
 import tn.anasazx.tunirate.category.entity.Category;
+import tn.anasazx.tunirate.enums.CompanyStatus;
 import tn.anasazx.tunirate.enums.GlobalRole;
 import tn.anasazx.tunirate.product.dto.*;
 import tn.anasazx.tunirate.subcategory.entity.Subcategory;
@@ -30,6 +31,9 @@ public class ProductMapper {
         String subcategoryName = Optional.ofNullable(product.getSubcategory())
                 .map(Subcategory::getName)
                 .orElse(null);
+
+        boolean companyIsVerified =  product.getCompany().getStatus() == CompanyStatus.ACTIVE;
+
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
@@ -38,7 +42,7 @@ public class ProductMapper {
                 subcategoryName,
                 product.getCompany().getId(),
                 product.getCompany().getName(),
-                product.getCompany().getVerified(),
+                companyIsVerified,
                 product.getCompany().getLogoUrl(),
                 imageUrl.orElse(null),
                 product.getCreatedAt()
@@ -82,6 +86,7 @@ public class ProductMapper {
         }
 
 
+        boolean companyIsVerified =  product.getCompany().getStatus() == CompanyStatus.ACTIVE;
 
 
         return new CompanyProductResponse(
@@ -92,7 +97,7 @@ public class ProductMapper {
                 subcategoryName,
                 product.getCompany().getId(),
                 product.getCompany().getName(),
-                product.getCompany().getVerified(),
+                companyIsVerified,
                 product.getCompany().getLogoUrl(),
                 imageUrl.orElse(null),
                 product.getCreatedAt(),
@@ -129,9 +134,11 @@ public class ProductMapper {
         }
 
 
+        boolean companyIsVerified =  product.getCompany().getStatus() == CompanyStatus.ACTIVE;
 
 
-            return new AdminProductResponse(
+
+        return new AdminProductResponse(
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
@@ -139,7 +146,7 @@ public class ProductMapper {
                 subcategoryName,
                 product.getCompany().getId(),
                 product.getCompany().getName(),
-                product.getCompany().getVerified(),
+                companyIsVerified,
                 product.getCompany().getLogoUrl(),
                 imageUrl.orElse(null),
                 product.getCreatedAt(),
@@ -173,6 +180,8 @@ public class ProductMapper {
                 .map(Subcategory::getName)
                 .orElse(null);
 
+        boolean companyIsVerified =  product.getCompany().getStatus() == CompanyStatus.ACTIVE;
+
         return new ProductDetailsResponse(
                 product.getId(),
                 product.getName(),
@@ -181,7 +190,7 @@ public class ProductMapper {
                 subcategoryName,
                 product.getCompany().getId(),
                 product.getCompany().getName(),
-                product.getCompany().getVerified(),
+                companyIsVerified,
                 product.getCompany().getLogoUrl(),
                 avgRating,
                 reviewsCount,
@@ -217,6 +226,9 @@ public class ProductMapper {
             updatedById = product.getUpdatedBy().getId();
         }
 
+        boolean companyIsVerified =  product.getCompany().getStatus() == CompanyStatus.ACTIVE;
+
+
         return new AdminProductDetailsResponse(
                 product.getId(),
                 product.getName(),
@@ -225,7 +237,7 @@ public class ProductMapper {
                 subcategoryName,
                 product.getCompany().getId(),
                 product.getCompany().getName(),
-                product.getCompany().getVerified(),
+                companyIsVerified,
                 product.getCompany().getLogoUrl(),
                 avgRating,
                 reviewsCount,

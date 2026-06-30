@@ -2,6 +2,7 @@ package tn.anasazx.tunirate.product.service.implementation;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
@@ -42,7 +44,7 @@ public class ProductServiceImpl implements ProductService {
     //There is a methode that returns only the basic info of a product called getProductById
     @Override
     public ProductDetailsResponse getProductDetailsById(Long ProductId) {
-        Product product = findProductById(ProductId);
+        Product product = findProductByIdStatusPublished(ProductId);
 
         Long companyId = product.getCompany().getId();
 
@@ -56,7 +58,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public AdminProductDetailsResponse getProductDetailsByIdAsAdmin(Long ProductId) {
 
-        Product product = findProductById(ProductId);
+        Product product = findProductByIdStatusPublished(ProductId);
 
         Long companyId = product.getCompany().getId();
 
@@ -79,7 +81,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse getProductById(Long productId) {
 
-        Product product = findProductById(productId);
+        Product product = findProductByIdStatusPublished(productId);
 
         return ProductMapper.toResponse(product);
 
@@ -90,7 +92,7 @@ public class ProductServiceImpl implements ProductService {
 
         Company company = findCompanyById(request.companyId());
 
-        Subcategory subcategory = findSubcategoryById(request.subcategoryId());
+        Subcategory subcategory = request.subcategoryId() == null ? null : findSubcategoryById(request.subcategoryId());
 
         Long currentUserId = SecurityUtils.getCurrentUserId();
 
@@ -103,7 +105,8 @@ public class ProductServiceImpl implements ProductService {
         product.setCompany(company);
         product.setSubcategory(subcategory);
         product.setCreatedBy(currentUser);
-        product.setStatus(ProductStatus.PUBLISHED);
+        product.setStatus(request.status() != null ? request.status() : ProductStatus.PENDING_REVIEW);
+        System.out.println("this is the current status ; " + request.status());
 
         return ProductMapper.toAdminResponse(productRepository.save(product));
     }
@@ -155,11 +158,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
-    //TODO: Change the hard delete to something else
     @Override
-    public void deleteProductAsAdmin(Long id) {
-        Product product = findProductByIdAsAdmin(id);
-        productRepository.delete(product);
+    public void archiveProductAsAdmin(Long productId) {
+        System.out.println("1");
+        Product product = findProductById(productId);
+        System.out.println("2");
+        product.setStatus(ProductStatus.ARCHIVED);
+        System.out.println("3");
+        productRepository.save(product);
+        System.out.println("4");
     }
 
     @Override
@@ -196,7 +203,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public CompanyProductResponse getProductByIdAsCompany(Long productId) {
 
-        Product product = findProductById(productId);
+        Product product = findProductByIdStatusPublished(productId);
 
         return ProductMapper.toCompanyResponse(product);
 
@@ -236,8 +243,13 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
-    Product findProductById(Long productId){
+    Product findProductByIdStatusPublished(Long productId){
         return productRepository.findByStatusAndId(ProductStatus.PUBLISHED, productId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    Product findProductById(Long productId){
+        return productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
