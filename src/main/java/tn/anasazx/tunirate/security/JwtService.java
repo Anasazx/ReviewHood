@@ -37,25 +37,6 @@ public class JwtService {
         );
     }
 
-    //TODO: IMO this is a big security gap to get the user's role from the token
-    // so in the future it needs to this workflow :
-    //      if user is requesting a gateway that is protected by admin privilege it gets the id from the token then it runs a query
-    //      to check if this user has admin privileges
-
-
-    // because it's harder to guess an admin id
-
-
-    //Extract role
-    //I WILL REMOVE THIS , I THINK IT'S A RISK BECAUSE MY ROLE BASED FUNCTIONS GONNA BE USED LIKE 5% OF THE WHOLE USE CASE,
-    //SO EVERY TIME I THINK IT'S BETTER TO GET THE ID THEN CHECK THE ROLE
-    /*
-    public String extractRole(String token) {
-        return parseClaims(token)
-                .getBody()
-                .get("role", String.class);
-    }
-    */
 
 
     //Validate token

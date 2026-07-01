@@ -11,6 +11,9 @@ import java.util.Optional;
 
 public interface CompanyRepository extends JpaRepository<Company, Long> {
 
+	//TODO: do not return companies with pending status to public
+
+
 	Optional<Company> findByNameIgnoreCase(String name);
 
 	@Query("""
