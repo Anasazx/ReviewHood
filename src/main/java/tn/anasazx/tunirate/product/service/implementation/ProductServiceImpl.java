@@ -58,13 +58,19 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public AdminProductDetailsResponse getProductDetailsByIdAsAdmin(Long ProductId) {
 
-        Product product = findProductByIdStatusPublished(ProductId);
+        System.out.println("1");
+
+        Product product = findProductById(ProductId);
+        System.out.println("2");
 
         Long companyId = product.getCompany().getId();
+        System.out.println("3");
 
         double avgRating = Optional.ofNullable(reviewRepository.findAverageRatingByCompanyId(companyId)).orElse(0.0);
+        System.out.println("4");
 
         long reviewsCount = reviewRepository.countByProductId(ProductId);
+        System.out.println("5");
 
         return ProductMapper.toAdminDetailsResponse(product, avgRating, reviewsCount);
     }
