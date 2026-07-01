@@ -7,7 +7,9 @@ public record AdminProductDetailsResponse(
         String name,
         String description,
         String category,
-        String subcategory,
+        Long subcategoryId,
+        String subcategoryName,
+
         Long companyId,
         String companyName,
         boolean companyIsVerified,

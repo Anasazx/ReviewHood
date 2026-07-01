@@ -58,19 +58,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public AdminProductDetailsResponse getProductDetailsByIdAsAdmin(Long ProductId) {
 
-        System.out.println("1");
-
         Product product = findProductById(ProductId);
-        System.out.println("2");
 
         Long companyId = product.getCompany().getId();
-        System.out.println("3");
 
         double avgRating = Optional.ofNullable(reviewRepository.findAverageRatingByCompanyId(companyId)).orElse(0.0);
-        System.out.println("4");
 
         long reviewsCount = reviewRepository.countByProductId(ProductId);
-        System.out.println("5");
 
         return ProductMapper.toAdminDetailsResponse(product, avgRating, reviewsCount);
     }
@@ -148,6 +142,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public AdminProductResponse updateProductAsAdmin(Long productId, AdminProductRequest request) {
 
+
         Product product = findProductByIdAsAdmin(productId);
 
         Company company = findCompanyById(request.companyId());
@@ -158,6 +153,8 @@ public class ProductServiceImpl implements ProductService {
         product.setDescription(request.description());
         product.setSubcategory(subcategory);
         product.setCompany(company);
+
+        if (request.status() != null) product.setStatus(request.status());
 
         return ProductMapper.toAdminResponse(productRepository.save(product));
 

@@ -11,4 +11,3 @@ public record AdminProductRequest(
         @NotNull Long companyId,
         ProductStatus status
 ) {}
-

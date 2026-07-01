@@ -124,14 +124,23 @@ public class CompanyServiceImpl implements CompanyService {
         company.setCountry(request.country());
         company.setIndustry(request.industry());
         company.setUpdatedBy(currentUser);
+
+        if (request.status() == CompanyStatus.ARCHIVED && !company.getProducts().isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company has products");
+
         company.setStatus(request.status());
 
         return CompanyMapper.toResponse(companyRepository.save(company));
     }
 
     @Override
-    public void deleteCompany(Long id) {
-        companyRepository.delete(findCompany(id));
+    public void archiveCompanyAsAdmin(Long id) {
+
+        Company company = findCompany(id);
+
+        if (!company.getProducts().isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company has products");
+
+        company.setStatus(CompanyStatus.ARCHIVED);
+
     }
 
     @Override
@@ -140,12 +149,6 @@ public class CompanyServiceImpl implements CompanyService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
         return CompanyMapper.toResponse(product.getCompany());
-    }
-
-    @Override
-    public Company getCompanyEntityById(Long id) {
-        return companyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
     }
 
     @Override

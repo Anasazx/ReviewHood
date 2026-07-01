@@ -121,8 +121,13 @@ public class ProductMapper {
                 .map(Subcategory::getCategory)
                 .map(Category::getName)
                 .orElse(null);
+
         String subcategoryName = Optional.ofNullable(product.getSubcategory())
                 .map(Subcategory::getName)
+                .orElse(null);
+
+        Long subcategoryId = Optional.ofNullable(product.getSubcategory())
+                .map(Subcategory::getId)
                 .orElse(null);
 
         String updatedByName = null;
@@ -143,6 +148,7 @@ public class ProductMapper {
                 product.getName(),
                 product.getDescription(),
                 categoryName,
+                subcategoryId,
                 subcategoryName,
                 product.getCompany().getId(),
                 product.getCompany().getName(),
@@ -219,6 +225,10 @@ public class ProductMapper {
                 .map(Subcategory::getName)
                 .orElse(null);
 
+        Long subcategoryId = Optional.ofNullable(product.getSubcategory())
+                .map(Subcategory::getId)
+                .orElse(null);
+
         String updatedByName = null;
         Long updatedById = null;
         if (product.getUpdatedBy() != null) {
@@ -234,6 +244,7 @@ public class ProductMapper {
                 product.getName(),
                 product.getDescription(),
                 categoryName,
+                subcategoryId,
                 subcategoryName,
                 product.getCompany().getId(),
                 product.getCompany().getName(),

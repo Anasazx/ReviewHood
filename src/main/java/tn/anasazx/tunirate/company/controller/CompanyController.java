@@ -62,11 +62,20 @@ public class CompanyController {
 
     //Admin method
     //TODO: remove the hard delete
+    /*
     @DeleteMapping("/{companyId}")
     public ResponseEntity<Void> deleteCompanyAsAdmin(@PathVariable Long companyId) {
         companyService.deleteCompany(companyId);
         return ResponseEntity.noContent().build();
     }
+    */
+
+    @PostMapping("/{companyId}/archive")
+    public ResponseEntity<Void> archiveCompanyAsAdmin(@PathVariable Long companyId) {
+        companyService.archiveCompanyAsAdmin(companyId);
+        return ResponseEntity.noContent().build();
+    }
+
 
     @GetMapping("/by-product/{productId}")
     public ResponseEntity<CompanyResponse> getCompanyByProductId(@PathVariable Long productId) {

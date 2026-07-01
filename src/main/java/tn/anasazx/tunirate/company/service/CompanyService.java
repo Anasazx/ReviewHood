@@ -4,7 +4,6 @@ import org.springframework.web.multipart.MultipartFile;
 import tn.anasazx.tunirate.company.dto.AdminCompanyRequest;
 import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
-import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.enums.CompanyImageType;
 
 import java.util.List;
@@ -27,11 +26,9 @@ public interface CompanyService {
 
     CompanyResponse updateCompanyAsAdmin(Long companyId, AdminCompanyRequest request);
 
-    void deleteCompany(Long companyId);
+    void archiveCompanyAsAdmin(Long companyId);
 
     CompanyResponse getCompanyByProductId(Long productId);
-
-    Company getCompanyEntityById(Long companyId);
 
     List<CompanyResponse> search(String query);
 
