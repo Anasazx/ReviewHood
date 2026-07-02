@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.anasazx.tunirate.company.dto.AdminCompanyRequest;
 import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
+import tn.anasazx.tunirate.company.dto.CompanyDetailResponse;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.service.CompanyService;
 import tn.anasazx.tunirate.enums.CompanyImageType;
@@ -24,6 +25,11 @@ public class CompanyController {
     @GetMapping("/{companyId}")
     public ResponseEntity<CompanyResponse> getCompanyById(@PathVariable Long companyId) {
         return ResponseEntity.ok(companyService.getCompanyById(companyId));
+    }
+
+    @GetMapping("/details/{companyId}")
+    public ResponseEntity<CompanyDetailResponse> getCompanyDetailsById(@PathVariable Long companyId) {
+        return ResponseEntity.ok(companyService.getCompanyDetailsById(companyId));
     }
 
     @GetMapping("/my")
@@ -43,7 +49,7 @@ public class CompanyController {
     }
 
     //Admin method
-    @GetMapping("/details/{companyId}")
+    @GetMapping("/op/details/{companyId}")
     public ResponseEntity<AdminCompanyResponse> getCompanyDetailsByIdAsAdmin(@PathVariable Long companyId) {
         return ResponseEntity.ok(companyService.getCompanyDetailsByIdAsAdmin(companyId));
     }
@@ -60,31 +66,18 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.updateCompanyAsAdmin(companyId, request));
     }
 
-    //Admin method
-    //TODO: remove the hard delete
-    /*
-    @DeleteMapping("/{companyId}")
-    public ResponseEntity<Void> deleteCompanyAsAdmin(@PathVariable Long companyId) {
-        companyService.deleteCompany(companyId);
-        return ResponseEntity.noContent().build();
-    }
-    */
-
     @PostMapping("/{companyId}/archive")
     public ResponseEntity<Void> archiveCompanyAsAdmin(@PathVariable Long companyId) {
         companyService.archiveCompanyAsAdmin(companyId);
         return ResponseEntity.noContent().build();
     }
 
-
     @GetMapping("/by-product/{productId}")
     public ResponseEntity<CompanyResponse> getCompanyByProductId(@PathVariable Long productId) {
         return ResponseEntity.ok(companyService.getCompanyByProductId(productId));
     }
 
-
     //IMAGE CONTROLLER
-
     @PostMapping("/{id}/logo")
     public ResponseEntity<Void> uploadLogo(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
         companyService.uploadImage(id, file, CompanyImageType.LOGO);
@@ -108,8 +101,5 @@ public class CompanyController {
         companyService.deleteImage(id, CompanyImageType.BANNER);
         return ResponseEntity.noContent().build();
     }
-
-
-
 
 }

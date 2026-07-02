@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import tn.anasazx.tunirate.company.dto.AdminCompanyRequest;
 import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
+import tn.anasazx.tunirate.company.dto.CompanyDetailResponse;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.company.mapper.CompanyMapper;
@@ -39,6 +40,11 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public CompanyResponse getCompanyById(Long id) {
         return CompanyMapper.toResponse(findCompany(id));
+    }
+
+    @Override
+    public CompanyDetailResponse getCompanyDetailsById(Long id) {
+        return CompanyMapper.toDetailResponse(findCompany(id));
     }
 
     @Override
