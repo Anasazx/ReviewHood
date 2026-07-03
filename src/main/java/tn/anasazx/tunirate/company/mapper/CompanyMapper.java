@@ -1,6 +1,7 @@
 package tn.anasazx.tunirate.company.mapper;
 
 import org.springframework.stereotype.Component;
+import tn.anasazx.tunirate.CompanySocialLink.mapper.CompanySocialLinkMapper;
 import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
 import tn.anasazx.tunirate.company.dto.CompanyDetailResponse;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
@@ -39,7 +40,7 @@ public class CompanyMapper {
                 company.getAddress(),
                 company.getCountry(),
                 company.getIndustry(),
-                company.getSocialLinks(),
+                company.getSocialLinks().stream().map(CompanySocialLinkMapper::toResponse).toList(),
                 company.getProducts().stream().map(ProductMapper::toResponse).toList(),
                 company.getStatus()
         );
@@ -65,7 +66,7 @@ public class CompanyMapper {
 
                 company.getPhoneNumber(),
                 company.getWebsiteUrl(),
-                company.getSocialLinks(),
+                company.getSocialLinks().stream().map(CompanySocialLinkMapper::toResponse).toList(),
                 company.getAddress(),
                 company.getCountry(),
                 company.getIndustry(),

@@ -103,4 +103,20 @@ public class Company extends Actor {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void addSocialLink(CompanySocialLink link) {
+        socialLinks.add(link);
+        link.setCompany(this);
+    }
+
+    public void removeSocialLink(CompanySocialLink link) {
+        socialLinks.remove(link);
+        link.setCompany(null);
+    }
+
+    public void clearSocialLinks() {
+        for (CompanySocialLink link : new ArrayList<>(socialLinks)) {
+            removeSocialLink(link);
+        }
+    }
+
 }

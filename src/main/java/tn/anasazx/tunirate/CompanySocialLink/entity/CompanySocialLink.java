@@ -1,11 +1,13 @@
 package tn.anasazx.tunirate.CompanySocialLink.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.enums.SocialPlatform;
 
 @Entity
 @Table(name = "company_social_links")
+@Data
 public class CompanySocialLink {
 
     @Id

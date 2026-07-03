@@ -1,6 +1,6 @@
 package tn.anasazx.tunirate.company.dto;
 
-import tn.anasazx.tunirate.CompanySocialLink.entity.CompanySocialLink;
+import tn.anasazx.tunirate.CompanySocialLink.dto.CompanySocialLinkResponse;
 import tn.anasazx.tunirate.enums.CompanyStatus;
 import tn.anasazx.tunirate.enums.Country;
 import tn.anasazx.tunirate.enums.Industry;
@@ -19,7 +19,7 @@ public record CompanyDetailResponse(
         String address,
         Country country,
         Industry industry,
-        List<CompanySocialLink> socialLinks,
+        List<CompanySocialLinkResponse> socialLinks,
         List<ProductResponse> products,
         CompanyStatus status
 ) {}

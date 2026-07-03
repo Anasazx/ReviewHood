@@ -5,6 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import tn.anasazx.tunirate.CompanySocialLink.entity.CompanySocialLink;
+import tn.anasazx.tunirate.CompanySocialLink.mapper.CompanySocialLinkMapper;
 import tn.anasazx.tunirate.company.dto.AdminCompanyRequest;
 import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
 import tn.anasazx.tunirate.company.dto.CompanyDetailResponse;
@@ -122,6 +124,7 @@ public class CompanyServiceImpl implements CompanyService {
 
         User currentUser = findUser(currentUserId);
 
+
         company.setName(request.name());
         company.setDescription(request.description());
         company.setPhoneNumber(request.phoneNumber());
@@ -131,11 +134,26 @@ public class CompanyServiceImpl implements CompanyService {
         company.setIndustry(request.industry());
         company.setUpdatedBy(currentUser);
 
+        if (request.socialLinks() != null) {
+
+            // 1. safely remove all old links
+            company.clearSocialLinks();
+
+            // 2. add new ones properly (bidirectional safe)
+            request.socialLinks().forEach(req -> {
+                CompanySocialLink link = CompanySocialLinkMapper.toEntity(req);
+                company.addSocialLink(link);
+            });
+
+        }
+
+
         if (request.status() == CompanyStatus.ARCHIVED && !company.getProducts().isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company has products");
 
         company.setStatus(request.status());
 
         return CompanyMapper.toResponse(companyRepository.save(company));
+
     }
 
     @Override
@@ -229,9 +247,7 @@ public class CompanyServiceImpl implements CompanyService {
 
 
 
-
-
-
+    // Method helpers
     private Company findCompany(Long id) {
         return companyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
