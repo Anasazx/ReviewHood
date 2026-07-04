@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tn.anasazx.tunirate.user.dto.UserResponse;
+import tn.anasazx.tunirate.user.dto.updateUserRequest;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.service.UserService;
 
@@ -19,6 +20,7 @@ public class UserController {
     private final UserService userService;
 
     // Get user by ID
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
@@ -33,14 +35,28 @@ public class UserController {
 
 
     // Update user profile
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody User user) {
         return ResponseEntity.ok(userService.updateUser(id, user));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/search")
     public ResponseEntity<List<UserResponse>> searchUsers(@RequestParam String q) {
         return ResponseEntity.ok(userService.searchUsers(q));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getMyProfile() {
+        return ResponseEntity.ok(userService.getCurrentUser());
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<UserResponse> updateMyProfile(updateUserRequest request) {
+        System.out.println("Update endpoint reached!");
+        System.out.println(request);
+        return null;
     }
 
 }

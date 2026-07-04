@@ -1,6 +1,6 @@
 package tn.anasazx.tunirate.user.mapper;
 
-import tn.anasazx.tunirate.user.dto.AuthUserDTO;
+import tn.anasazx.tunirate.user.dto.MinimizedUserResponse;
 import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.entity.User;
 
@@ -16,21 +16,20 @@ public class UserMapper {
                 user.getPhoneNumber(),
                 user.getCountry(),
                 user.getStatus(),
-                user.getGlobalRole(),
                 user.getCreatedAt()
         );
     }
 
-    public static AuthUserDTO toAuthResponse(User user) {
-        return new AuthUserDTO(
+    public static MinimizedUserResponse toAuthResponse(User user) {
+        return new MinimizedUserResponse(
                 user.getId(),
                 user.getName(),
                 user.getAvatarUrl()
         );
     }
 
-    public static AuthUserDTO toAuthResponse(UserResponse user) {
-        return new AuthUserDTO(
+    public static MinimizedUserResponse toAuthResponse(UserResponse user) {
+        return new MinimizedUserResponse(
                 user.id(),
                 user.name(),
                 user.avatarUrl()

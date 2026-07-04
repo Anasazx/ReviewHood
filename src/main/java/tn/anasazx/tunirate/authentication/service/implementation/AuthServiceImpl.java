@@ -10,8 +10,11 @@ import tn.anasazx.tunirate.authentication.mapper.AuthMapper;
 import tn.anasazx.tunirate.authentication.service.AuthService;
 import tn.anasazx.tunirate.exception.InvalidPasswordException;
 import tn.anasazx.tunirate.security.JwtService;
+import tn.anasazx.tunirate.security.SecurityUtils;
+import tn.anasazx.tunirate.user.dto.MinimizedUserResponse;
 import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.entity.User;
+import tn.anasazx.tunirate.user.mapper.UserMapper;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 import tn.anasazx.tunirate.user.service.UserService;
 
@@ -29,7 +32,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public RegisterResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) {
         
         //Check if the password valid or not
         if (!isStrongPassword(request.password())) {
@@ -49,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
         //Generate token
         String token = jwtService.generateToken(savedUser.id());
 
-        return AuthMapper.toRegisterResponse(token, savedUser);
+        return AuthMapper.toAuthResponse(token, savedUser);
     }
 
     private boolean isStrongPassword(String password) {
@@ -59,7 +62,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginResponse login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request) {
 
         //Find the user
         User user = userRepository.findByEmail(request.email()).orElseThrow(
@@ -74,8 +77,26 @@ public class AuthServiceImpl implements AuthService {
         //Token generation
         String token = jwtService.generateToken(user.getId());
 
-        return AuthMapper.toLoginResponse(token, user);
+        return AuthMapper.toAuthResponse(token, user);
 
     }
+
+
+    @Override
+    public MinimizedUserResponse authenticateUser() {
+
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
+        //Find the user
+        User user = userRepository.findFirstById(currentUserId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
+        );
+
+        return UserMapper.toAuthResponse(user);
+
+    }
+
+
+
 
 }

@@ -1,6 +1,6 @@
 package tn.anasazx.tunirate.user.dto;
 
-public record AuthUserDTO(
+public record MinimizedUserResponse(
         Long id,
         String name,
         String avatarUrl

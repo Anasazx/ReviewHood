@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.mapper.UserMapper;
@@ -34,12 +35,6 @@ public class UserServiceImpl implements UserService {
         );
     }
 
-    @Override
-    public UserResponse getUserByEmail(String email) {
-        return UserMapper.toResponse(userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"))
-        );
-    }
 
     @Override
     public UserResponse updateUser(Long id, User updatedUser) {
@@ -73,6 +68,20 @@ public class UserServiceImpl implements UserService {
                 .stream()
                 .map(UserMapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    public UserResponse getCurrentUser() {
+
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
+        return UserMapper.toResponse(
+                userRepository.findById(currentUserId)
+                        .orElseThrow(
+                                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
+                        )
+        );
+
     }
 
 
