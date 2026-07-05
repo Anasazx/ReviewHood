@@ -61,13 +61,6 @@ public class UserController {
     //TODO: Complete this endpoint logic
     @PutMapping("/me")
     public ResponseEntity<UserResponse> updateMyProfile(@RequestBody UpdateUserRequest request) {
-        System.out.println("Update endpoint reached!");
-        System.out.println("Request payload:");
-        System.out.println(request);
-        // Better structured logging (recommended)
-        System.out.println("Email: " + request.email());
-        System.out.println("Phone: " + request.phoneNumber());
-        System.out.println("Country: " + request.country().name());
-        return ResponseEntity.ok().build(); // temporary
+        return ResponseEntity.ok(userService.updateMyProfile(request)); // temporary
     }
 }

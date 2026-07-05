@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import tn.anasazx.tunirate.fileStorage.service.FileStorageService;
 import tn.anasazx.tunirate.security.SecurityUtils;
+import tn.anasazx.tunirate.user.dto.UpdateUserRequest;
 import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.mapper.UserMapper;
@@ -14,6 +15,7 @@ import tn.anasazx.tunirate.user.repository.UserRepository;
 import tn.anasazx.tunirate.user.service.UserService;
 
 import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +40,6 @@ public class UserServiceImpl implements UserService {
         );
     }
 
-
     @Override
     public UserResponse updateUser(Long id, User updatedUser) {
 
@@ -53,16 +54,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse createUser(User user) {
+    public UserResponse updateMyProfile(UpdateUserRequest request) {
 
-        //Check if user exists
-        if (userRepository.existsUserByEmailOrName(user.getEmail(), user.getName())) {
-            throw new RuntimeException("Email or name already exists");
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
+        User existingUser = userRepository.findById(currentUserId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        // Update country
+        existingUser.setCountry(request.country());
+
+        // Update email only if it changed
+        if (!existingUser.getEmail().equals(request.email())) {
+            existingUser.setEmail(request.email());
+            existingUser.setEmailVerified(false);
+
+            // TODO: Send verification email
         }
 
-        return UserMapper.toResponse(userRepository.save(user));
-    }
+        // Update phone
+        existingUser.setPhoneNumber(request.phoneNumber());
 
+        User savedUser = userRepository.save(existingUser);
+
+        return UserMapper.toResponse(savedUser);
+    }
 
     @Override
     public List<UserResponse> searchUsers(String query) {
@@ -108,8 +125,5 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toResponse(userRepository.save(currentUser));
 
     }
-
-
-
 
 }
