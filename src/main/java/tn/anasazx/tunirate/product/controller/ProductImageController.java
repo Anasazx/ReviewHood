@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.product.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,15 +11,11 @@ import tn.anasazx.tunirate.product.service.ProductImageService;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/productImage")
 public class ProductImageController {
 
-
     private final ProductImageService productImageService;
-
-    public ProductImageController(ProductImageService productImageService) {
-        this.productImageService = productImageService;
-    }
 
     @GetMapping("/{productId}")
     ResponseEntity<List<ProductImageResponse>> getImagesByProductId(@PathVariable Long productId){

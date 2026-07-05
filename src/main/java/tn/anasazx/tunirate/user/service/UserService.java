@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.user.service;
 
+import org.springframework.web.multipart.MultipartFile;
 import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.entity.User;
 
@@ -12,5 +13,8 @@ public interface UserService {
     UserResponse createUser(User user);
     List<UserResponse> searchUsers(String query);
     UserResponse getCurrentUser();
+
+    UserResponse uploadAvatar(MultipartFile file);
+
 
 }

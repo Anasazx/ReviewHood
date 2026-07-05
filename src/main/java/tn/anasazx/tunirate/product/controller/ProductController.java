@@ -18,8 +18,6 @@ public class ProductController {
 
     private final ProductService productService;
 
-
-
 	//public methods
 	@GetMapping
 	public ResponseEntity<List<ProductResponse>> getAllProducts() {

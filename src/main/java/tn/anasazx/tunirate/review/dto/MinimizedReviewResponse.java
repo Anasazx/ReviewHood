@@ -8,5 +8,6 @@ public record MinimizedReviewResponse(
         String content,
         String userName,
         String productName,
+        Long productId,
         LocalDateTime createdAt
 ) {}

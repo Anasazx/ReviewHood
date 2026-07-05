@@ -10,14 +10,14 @@ public class AuthMapper {
     public static AuthResponse toAuthResponse(String token, User user) {
         return new AuthResponse(
                 token,
-                UserMapper.toAuthResponse(user)
+                UserMapper.toMinimizedResponse(user)
         );
     }
 
     public static AuthResponse toAuthResponse(String token, UserResponse user) {
         return new AuthResponse(
                 token,
-                UserMapper.toAuthResponse(user)
+                UserMapper.toMinimizedResponse(user)
         );
     }
 

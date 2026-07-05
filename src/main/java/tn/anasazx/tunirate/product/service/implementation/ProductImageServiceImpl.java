@@ -26,10 +26,11 @@ public class ProductImageServiceImpl implements ProductImageService {
 
     @Override
     public ProductImageResponse addImage(Long productId, MultipartFile file) {
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        // 1. save file on disk
+        // 1. save the file on disk
         String fileName = fileStorageService.saveFile(file);
 
         // 2. create DB entity
@@ -73,4 +74,5 @@ public class ProductImageServiceImpl implements ProductImageService {
     public List<ProductImageResponse> getImagesByProductId(Long productId) {
         return ProductImageMapper.toDtoList(productImageRepository.findByProductId(productId));
     }
+
 }

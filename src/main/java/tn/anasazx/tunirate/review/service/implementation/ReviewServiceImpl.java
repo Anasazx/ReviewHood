@@ -15,6 +15,7 @@ import tn.anasazx.tunirate.membership.entity.CompanyMember;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
+import tn.anasazx.tunirate.review.dto.MinimizedReviewResponse;
 import tn.anasazx.tunirate.review.dto.ReviewRequest;
 import tn.anasazx.tunirate.review.dto.ReviewResponse;
 import tn.anasazx.tunirate.review.entity.Review;
@@ -82,24 +83,12 @@ public class ReviewServiceImpl implements ReviewService {
         return new PageImpl<>(merged, pageable, merged.size());
     }
 
-
-    //This methode perform a specific query to return the average rating for a specific product
-    public double getAverageRatingByProductId(Long productId) {
-        return reviewRepository.getAverageRatingByProductId(productId);
-    }
-
-    //This methode returns the number of review for a specific product
     @Override
-    public long countByProductId(Long productId) {
-        return reviewRepository.countByProductId(productId);
-    }
-
-    @Override
-    public Optional<ReviewResponse> getUserReviewForProduct(Long userId, Long productId) {
+    public List<MinimizedReviewResponse> getMyReviews() {
         Long currentUserId = SecurityUtils.getCurrentUserId();
-        return reviewRepository
-                .findByUserIdAndProductId(userId, productId)
-                .map((r) -> mapReview(r, currentUserId));
+        return reviewRepository.findReviewsByUserId(currentUserId).stream()
+                .map(ReviewMapper::toMinimizedResponse)
+                .toList();
     }
 
 

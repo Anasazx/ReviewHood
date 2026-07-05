@@ -47,12 +47,19 @@ public class CommentMapper {
             default -> false;
         };
 
+        String actorAvatarUrl = switch (actor.getType()) {
+            case USER -> ((User) actor).getAvatarUrl();
+            case COMPANY -> ((Company) actor).getLogoUrl();
+            default -> null;
+        };
+
         return new CommentResponse(
                 comment.getId(),
                 comment.getContent(),
                 actorName,
                 actor.getType(),
                 actor.getId(),
+                actorAvatarUrl,
                 comment.getReview().getId(),
                 repliedTo != null ? repliedTo.getId() : null,
                 mentionedActor != null ? mentionedActor.getId() : null,

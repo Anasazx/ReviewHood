@@ -1,4 +1,13 @@
 package tn.anasazx.tunirate.user.dto;
 
-public record updateUserRequest() {
-}
+import tn.anasazx.tunirate.enums.Country;
+
+public record updateUserRequest(
+        String name,
+        String email,
+        boolean emailVerified,
+        String password,
+        String avatarUrl,
+        String phoneNumber,
+        Country country
+) {}

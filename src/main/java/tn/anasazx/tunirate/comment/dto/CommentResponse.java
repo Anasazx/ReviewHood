@@ -8,9 +8,10 @@ import java.time.LocalDateTime;
 public record CommentResponse(
         Long id,
         String content,
-        String actorName,    // ← rename from userName, covers both User and Company
-        ActorType actorType,// ← lets the frontend know how to render it
+        String actorName,
+        ActorType actorType,
         Long actorId,
+        String actorAvatarUrl,
         Long reviewId,
         Long repliedToCommentId,
         Long repliedToActorId,

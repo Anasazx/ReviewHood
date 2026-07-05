@@ -5,6 +5,7 @@ import tn.anasazx.tunirate.review.dto.MinimizedReviewResponse;
 import tn.anasazx.tunirate.review.dto.ReviewResponse;
 import tn.anasazx.tunirate.review.entity.Review;
 import tn.anasazx.tunirate.security.SecurityUtils;
+import tn.anasazx.tunirate.user.mapper.UserMapper;
 
 import java.util.Objects;
 
@@ -21,7 +22,7 @@ public class ReviewMapper {
                 review.getId(),
                 review.getRating(),
                 review.getContent(),
-                review.getUser().getName(),
+                UserMapper.toMinimizedResponse(review.getUser()),
                 isMine,
                 commentsCount,
                 previewComment,
@@ -36,6 +37,7 @@ public class ReviewMapper {
                 review.getContent(),
                 review.getUser().getName(),
                 review.getProduct().getName(),
+                review.getProduct().getId(),
                 review.getCreatedAt()
         );
     }

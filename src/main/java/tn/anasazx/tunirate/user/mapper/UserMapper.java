@@ -20,7 +20,7 @@ public class UserMapper {
         );
     }
 
-    public static MinimizedUserResponse toAuthResponse(User user) {
+    public static MinimizedUserResponse toMinimizedResponse(User user) {
         return new MinimizedUserResponse(
                 user.getId(),
                 user.getName(),
@@ -28,7 +28,7 @@ public class UserMapper {
         );
     }
 
-    public static MinimizedUserResponse toAuthResponse(UserResponse user) {
+    public static MinimizedUserResponse toMinimizedResponse(UserResponse user) {
         return new MinimizedUserResponse(
                 user.id(),
                 user.name(),

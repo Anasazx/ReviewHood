@@ -92,7 +92,7 @@ public class AuthServiceImpl implements AuthService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
         );
 
-        return UserMapper.toAuthResponse(user);
+        return UserMapper.toMinimizedResponse(user);
 
     }
 

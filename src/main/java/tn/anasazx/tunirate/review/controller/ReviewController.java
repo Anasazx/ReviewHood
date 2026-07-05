@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tn.anasazx.tunirate.review.dto.MinimizedReviewResponse;
 import tn.anasazx.tunirate.review.dto.ReviewRequest;
 import tn.anasazx.tunirate.review.dto.ReviewResponse;
 import tn.anasazx.tunirate.review.service.ReviewService;
@@ -36,11 +37,15 @@ public class ReviewController {
 	}
 
 	@GetMapping("/my")
+	public ResponseEntity<List<MinimizedReviewResponse>> getMyReviews() {
+		return ResponseEntity.ok(reviewService.getMyReviews());
+	}
+
+	//TODO: UPDATE THE FRONT ENDPOINT , ITS CURRENTLY /REVIEWS/MY; BUT IT SHOULD BE /REVIEWS/C/MY
+	@GetMapping("/c/my")
 	public ResponseEntity<List<ReviewResponse>> getMyCompanyReviews() {
 		return ResponseEntity.ok(reviewService.getMyCompanyReviews());
 	}
-
-
 
 	@GetMapping("/by-user/{userId}")
 	public ResponseEntity<Page<ReviewResponse>> getReviewsByUserId(@PathVariable Long userId, Pageable pageable) {
@@ -62,4 +67,5 @@ public class ReviewController {
 		reviewService.deleteReview(id);
 		return ResponseEntity.noContent().build();
 	}
+
 }

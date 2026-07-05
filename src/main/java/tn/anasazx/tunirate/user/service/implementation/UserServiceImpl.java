@@ -3,7 +3,9 @@ package tn.anasazx.tunirate.user.service.implementation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import tn.anasazx.tunirate.fileStorage.service.FileStorageService;
 import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.entity.User;
@@ -18,6 +20,7 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
 
 
     @Override
@@ -83,6 +86,30 @@ public class UserServiceImpl implements UserService {
         );
 
     }
+
+    @Override
+    public UserResponse uploadAvatar(MultipartFile file) {
+
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
+        User currentUser = userRepository.findById(currentUserId).orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
+                );
+
+
+        String fileName = fileStorageService.saveFile(file);
+
+        if (currentUser.getAvatarUrl() != null) {
+            fileStorageService.deleteFile(currentUser.getAvatarUrl());
+        }
+
+        currentUser.setAvatarUrl(fileName);
+
+        return UserMapper.toResponse(userRepository.save(currentUser));
+
+    }
+
+
 
 
 }

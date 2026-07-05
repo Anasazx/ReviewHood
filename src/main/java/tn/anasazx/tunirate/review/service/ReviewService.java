@@ -3,11 +3,11 @@ package tn.anasazx.tunirate.review.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import tn.anasazx.tunirate.review.dto.MinimizedReviewResponse;
 import tn.anasazx.tunirate.review.dto.ReviewRequest;
 import tn.anasazx.tunirate.review.dto.ReviewResponse;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface ReviewService {
 
@@ -25,11 +25,7 @@ public interface ReviewService {
 
     Page<ReviewResponse> getReviewsByProductId(Long productId, Pageable pageable);
 
-    Optional<ReviewResponse> getUserReviewForProduct(Long userId, Long productId);
-
-    double getAverageRatingByProductId(Long productId);
-
-    long countByProductId(Long productId);
+    List<MinimizedReviewResponse> getMyReviews();
 
     List<ReviewResponse> getMyCompanyReviews();
 

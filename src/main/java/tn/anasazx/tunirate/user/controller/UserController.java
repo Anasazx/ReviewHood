@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.dto.updateUserRequest;
 import tn.anasazx.tunirate.user.entity.User;
@@ -41,6 +42,11 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(id, user));
     }
 
+    @PostMapping("/me/avatar")
+    public UserResponse uploadAvatar(@RequestParam("file") MultipartFile file) {
+        return userService.uploadAvatar(file);
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/search")
     public ResponseEntity<List<UserResponse>> searchUsers(@RequestParam String q) {
@@ -52,6 +58,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getCurrentUser());
     }
 
+    //TODO: Complete this endpoint logic
     @PutMapping("/me")
     public ResponseEntity<UserResponse> updateMyProfile(updateUserRequest request) {
         System.out.println("Update endpoint reached!");

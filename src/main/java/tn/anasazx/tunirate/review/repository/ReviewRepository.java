@@ -15,12 +15,14 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Optional<Review> findByUserIdAndProductId(Long userId, Long productId);
 
     //specific queries
+    /*
     @Query("""
         SELECT COALESCE(AVG(r.rating), 0)
         FROM Review r
         WHERE r.product.id = :productId
     """)
     Double getAverageRatingByProductId(Long productId);
+    */
 
     Long countByProductId(Long productId);
 
@@ -36,5 +38,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Double findAverageRatingByCompanyId(Long companyId);
 
     List<Review> findTop3ByProductCompanyIdOrderByCreatedAtDesc(Long productCompanyId);
+
+    List<Review> findReviewsByUserId(Long userId);
 
 }
