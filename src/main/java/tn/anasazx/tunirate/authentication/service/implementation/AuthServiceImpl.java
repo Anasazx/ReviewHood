@@ -16,7 +16,6 @@ import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.mapper.UserMapper;
 import tn.anasazx.tunirate.user.repository.UserRepository;
-import tn.anasazx.tunirate.user.service.UserService;
 
 
 @Service
@@ -27,7 +26,6 @@ public class AuthServiceImpl implements AuthService {
 
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final UserService userService;
     private final UserRepository userRepository;
 
 
@@ -38,16 +36,20 @@ public class AuthServiceImpl implements AuthService {
         if (!isStrongPassword(request.password())) {
             throw new InvalidPasswordException();
         }
+
+        if (userRepository.existsUserByEmailOrName(request.email(), request.name())) {
+            throw new RuntimeException("Email or name already exists");
+        }
         
         //Create a user instance
         User user = new User(
                 request.name(),
-                request.email(), 
+                request.email(),
+                request.country(),
                 passwordEncoder.encode(request.password())
         );
 
-        //call the creation user methode 
-        UserResponse savedUser = userService.createUser(user);
+        UserResponse savedUser = UserMapper.toResponse(userRepository.save(user));
 
         //Generate token
         String token = jwtService.generateToken(savedUser.id());

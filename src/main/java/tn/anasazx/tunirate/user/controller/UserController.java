@@ -6,8 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tn.anasazx.tunirate.user.dto.UpdateUserRequest;
 import tn.anasazx.tunirate.user.dto.UserResponse;
-import tn.anasazx.tunirate.user.dto.updateUserRequest;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.service.UserService;
 
@@ -60,10 +60,14 @@ public class UserController {
 
     //TODO: Complete this endpoint logic
     @PutMapping("/me")
-    public ResponseEntity<UserResponse> updateMyProfile(updateUserRequest request) {
+    public ResponseEntity<UserResponse> updateMyProfile(@RequestBody UpdateUserRequest request) {
         System.out.println("Update endpoint reached!");
+        System.out.println("Request payload:");
         System.out.println(request);
-        return null;
+        // Better structured logging (recommended)
+        System.out.println("Email: " + request.email());
+        System.out.println("Phone: " + request.phoneNumber());
+        System.out.println("Country: " + request.country().name());
+        return ResponseEntity.ok().build(); // temporary
     }
-
 }

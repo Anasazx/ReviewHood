@@ -24,9 +24,10 @@ import java.time.LocalDateTime;
 @DiscriminatorValue("USER")
 public class User extends Actor {
 
-    public User(String name, String email, String password) {
+    public User(String name, String email, Country country, String password) {
         this.name = name;
         this.email = email;
+        this.country = country;
         this.password = password;
     }
 
@@ -71,7 +72,7 @@ public class User extends Actor {
     private LocalDateTime deletedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column
+    @Column(nullable = false)
     private Country country;
 
     @PrePersist
