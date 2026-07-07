@@ -1,4 +1,4 @@
-package tn.anasazx.tunirate.CompanySocialLink.dto;
+package tn.anasazx.tunirate.companySocialLink.dto;
 
 import tn.anasazx.tunirate.enums.SocialPlatform;
 

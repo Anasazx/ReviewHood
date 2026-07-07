@@ -8,10 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.anasazx.tunirate.review.dto.MinimizedReviewResponse;
+import tn.anasazx.tunirate.review.dto.ProductReviewsResponse;
 import tn.anasazx.tunirate.review.dto.ReviewRequest;
 import tn.anasazx.tunirate.review.dto.ReviewResponse;
 import tn.anasazx.tunirate.review.service.ReviewService;
-
 import java.util.List;
 
 @RestController
@@ -22,8 +22,8 @@ public class ReviewController {
 	private final ReviewService reviewService;
 
 	@GetMapping
-	public ResponseEntity<List<ReviewResponse>> getAllReviews() {
-		return ResponseEntity.ok(reviewService.getAllReviews());
+	public ResponseEntity<Page<ReviewResponse>> getAllReviews(Pageable pageable) {
+		return ResponseEntity.ok(reviewService.getAllReviews(pageable));
 	}
 
 	@GetMapping("/{id}")
@@ -31,17 +31,17 @@ public class ReviewController {
 		return ResponseEntity.ok(reviewService.getReviewById(id));
 	}
 
-	@GetMapping("/by-product/{productId}")
-	public ResponseEntity<Page<ReviewResponse>> getReviewsByProductId(@PathVariable Long productId, Pageable pageable) {
+	@GetMapping("/product/{productId}")
+	public ResponseEntity<ProductReviewsResponse> getReviewsByProductId(@PathVariable Long productId, Pageable pageable) {
 		return ResponseEntity.ok(reviewService.getReviewsByProductId(productId, pageable));
 	}
 
 	@GetMapping("/my")
-	public ResponseEntity<List<MinimizedReviewResponse>> getMyReviews() {
-		return ResponseEntity.ok(reviewService.getMyReviews());
+	public ResponseEntity<Page<MinimizedReviewResponse>> getMyReviews(Pageable pageable) {
+		return ResponseEntity.ok(reviewService.getMyReviews(pageable));
 	}
 
-	//TODO: UPDATE THE FRONT ENDPOINT , ITS CURRENTLY /REVIEWS/MY; BUT IT SHOULD BE /REVIEWS/C/MY
+	//TODO: Implement pagination
 	@GetMapping("/c/my")
 	public ResponseEntity<List<ReviewResponse>> getMyCompanyReviews() {
 		return ResponseEntity.ok(reviewService.getMyCompanyReviews());

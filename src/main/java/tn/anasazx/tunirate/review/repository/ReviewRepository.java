@@ -11,6 +11,9 @@ import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     Page<Review> findByProductId(Long productId, Pageable pageable);
+
+    List<Review> findAllByProductId(Long productId);
+
     Page<Review> findByUserId(Long userId, Pageable pageable);
     Optional<Review> findByUserIdAndProductId(Long userId, Long productId);
 
@@ -39,6 +42,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     List<Review> findTop3ByProductCompanyIdOrderByCreatedAtDesc(Long productCompanyId);
 
-    List<Review> findReviewsByUserId(Long userId);
+
+    Page<Review> findReviewsByUserId(Long userId, Pageable pageable);
+
 
 }

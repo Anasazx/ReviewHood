@@ -1,5 +1,7 @@
 package tn.anasazx.tunirate.product.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import tn.anasazx.tunirate.product.dto.*;
 
 import java.util.List;
@@ -8,9 +10,9 @@ public interface ProductService {
 
     //Public methods
     ProductDetailsResponse getProductDetailsById(Long productId);
-    List<ProductResponse> getAllProducts();
+    Page<ProductResponse> getAllProducts(Pageable pageable);
     ProductResponse getProductById(Long productId);
-    List<ProductResponse> getProductsByCompanyId(Long companyId);
+    Page<ProductResponse> getProductsByCompanyId(Long companyId, Pageable pageable);
 
     //Admin methods
     AdminProductDetailsResponse getProductDetailsByIdAsAdmin(Long productId);

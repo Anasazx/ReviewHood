@@ -1,8 +1,8 @@
-package tn.anasazx.tunirate.CompanySocialLink.mapper;
+package tn.anasazx.tunirate.companySocialLink.mapper;
 
-import tn.anasazx.tunirate.CompanySocialLink.dto.CompanySocialLinkRequest;
-import tn.anasazx.tunirate.CompanySocialLink.dto.CompanySocialLinkResponse;
-import tn.anasazx.tunirate.CompanySocialLink.entity.CompanySocialLink;
+import tn.anasazx.tunirate.companySocialLink.dto.CompanySocialLinkRequest;
+import tn.anasazx.tunirate.companySocialLink.dto.CompanySocialLinkResponse;
+import tn.anasazx.tunirate.companySocialLink.entity.CompanySocialLink;
 
 public class CompanySocialLinkMapper {
 

@@ -10,7 +10,6 @@ public record ReviewResponse(
         Integer rating,
         String content,
         MinimizedUserResponse user,
-        boolean isMine,
         Long commentsCount,
         CommentResponse previewComment,
         LocalDateTime createdAt

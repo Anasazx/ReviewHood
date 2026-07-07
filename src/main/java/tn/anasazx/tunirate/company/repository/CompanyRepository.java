@@ -11,9 +11,6 @@ import java.util.Optional;
 
 public interface CompanyRepository extends JpaRepository<Company, Long> {
 
-	//TODO: do not return companies with pending status to public
-
-
 	Optional<Company> findByNameIgnoreCase(String name);
 
 	@Query("""
@@ -23,7 +20,6 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
 	   OR LOWER(p.name) LIKE LOWER(CONCAT('%', :q, '%'))
 	""")
 	List<Company> search(@Param("q") String q);
-
 
 	Long countByStatus(CompanyStatus status);
 

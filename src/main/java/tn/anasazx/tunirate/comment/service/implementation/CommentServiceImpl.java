@@ -1,6 +1,8 @@
 package tn.anasazx.tunirate.comment.service.implementation;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -19,7 +21,6 @@ import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,16 +30,12 @@ public class CommentServiceImpl implements CommentService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final CompanyMemberRepository companyMemberRepository;
-    private final CommentMapper commentMapper;
-
 
     @Override
-    public List<CommentResponse> getCommentsByReviewId(Long reviewId) {
-        Long currentUserId = SecurityUtils.getCurrentUserId();
-        List<Comment> commentList = commentRepository.findByReview_Id(reviewId);
-        return commentMapper.toResponseList(commentList, currentUserId);
+    public Page<CommentResponse> getCommentsByReviewId(Long reviewId, Pageable pageable) {
+        return commentRepository.findByReview_Id(reviewId, pageable)
+                .map(CommentMapper::toResponse);
     }
-
 
     @Override
     public CommentResponse createComment(Long reviewId, String content) {
@@ -56,7 +53,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setActor(user);
         comment.setReview(review);
 
-        return commentMapper.toResponse(commentRepository.save(comment), currentUserId);
+        return CommentMapper.toResponse(commentRepository.save(comment));
     }
 
     @Override
@@ -81,9 +78,8 @@ public class CommentServiceImpl implements CommentService {
         comment.setPostedBy(user);
         comment.setReview(review);
 
-        return commentMapper.toResponse(commentRepository.save(comment), currentUserId);
+        return CommentMapper.toResponse(commentRepository.save(comment));
     }
-
 
     @Override
     public CommentResponse replyToComment(Long parentCommentId, String content) {
@@ -102,7 +98,7 @@ public class CommentServiceImpl implements CommentService {
         replyComment.setReview(parentComment.getReview());
         replyComment.setRepliedTo(parentComment);
 
-        return commentMapper.toResponse(commentRepository.save(replyComment), currentUserId);
+        return CommentMapper.toResponse(commentRepository.save(replyComment));
     }
 
     @Override
@@ -127,9 +123,8 @@ public class CommentServiceImpl implements CommentService {
         replyComment.setReview(parentComment.getReview());
         replyComment.setRepliedTo(parentComment);
 
-        return commentMapper.toResponse(commentRepository.save(replyComment), currentUserId);
+        return CommentMapper.toResponse(commentRepository.save(replyComment));
     }
-
 
     @Override
     public void deleteComment(Long commentId) {

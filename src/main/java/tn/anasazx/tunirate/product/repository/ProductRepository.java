@@ -1,5 +1,7 @@
 package tn.anasazx.tunirate.product.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,13 +20,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     """)
     List<Product> search(@Param("q") String q);
 
-    List<Product> findAllByOrderByCreatedAtAsc();
-
-    List<Product> findAllByStatusOrderByCreatedAtAsc(ProductStatus status);
+    Page<Product> findAllByStatus(ProductStatus status, Pageable pageable);
 
     List<Product> findByCompanyId(Long companyId);
 
-    List<Product> findByCompanyIdAndStatus(Long companyId, ProductStatus status);
+    Page<Product> findByCompanyIdAndStatus(Long companyId, ProductStatus status, Pageable pageable);
 
     Optional<Product> findByStatusAndId(ProductStatus status, Long id);
 

@@ -3,6 +3,8 @@ package tn.anasazx.tunirate.product.service.implementation;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -69,15 +71,12 @@ public class ProductServiceImpl implements ProductService {
         return ProductMapper.toAdminDetailsResponse(product, avgRating, reviewsCount);
     }
 
-    @Override
-    public List<ProductResponse> getAllProducts() {
-        return findAllProducts().stream()
-                .map(ProductMapper::toResponse)
-                .toList();
+    public Page<ProductResponse> getAllProducts(Pageable pageable) {
+        return productRepository
+                .findAllByStatus(ProductStatus.PUBLISHED, pageable)
+                .map(ProductMapper::toResponse);
     }
 
-    //This only return the basic info of a product without reviews...,
-    //there is another methode that return detailed product called getProductDetails
     @Override
     public ProductResponse getProductById(Long productId) {
 
@@ -173,11 +172,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponse> getProductsByCompanyId(Long companyId) {
-        return findProductsByCompanyId(companyId)
-                .stream()
-                .map(ProductMapper::toResponse)
-                .toList();
+    public Page<ProductResponse> getProductsByCompanyId(Long companyId, Pageable pageable) {
+        return productRepository.findByCompanyIdAndStatus(companyId,  ProductStatus.PUBLISHED, pageable)
+                .map(ProductMapper::toResponse);
     }
 
     @Override
@@ -241,11 +238,6 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
-    Product findProductByIdAsCompany(Long productId){
-        return productRepository.findById(productId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-    }
-
     Product findProductByIdStatusPublished(Long productId){
         return productRepository.findByStatusAndId(ProductStatus.PUBLISHED, productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -258,14 +250,6 @@ public class ProductServiceImpl implements ProductService {
 
     List<Product> findProductsByCompanyIdAsCompany(Long companyId){
         return productRepository.findByCompanyId(companyId);
-    }
-
-    List<Product> findProductsByCompanyId(Long companyId){
-        return productRepository.findByCompanyIdAndStatus(companyId,  ProductStatus.PUBLISHED);
-    }
-
-    List<Product> findAllProducts(){
-        return productRepository.findAllByStatusOrderByCreatedAtAsc(ProductStatus.PUBLISHED);
     }
 
     List<Product> findAllProductsAsAdmin(){

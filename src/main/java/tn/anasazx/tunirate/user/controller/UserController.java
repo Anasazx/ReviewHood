@@ -58,9 +58,8 @@ public class UserController {
         return ResponseEntity.ok(userService.getCurrentUser());
     }
 
-    //TODO: Complete this endpoint logic
     @PutMapping("/me")
     public ResponseEntity<UserResponse> updateMyProfile(@RequestBody UpdateUserRequest request) {
-        return ResponseEntity.ok(userService.updateMyProfile(request)); // temporary
+        return ResponseEntity.ok(userService.updateMyProfile(request));
     }
 }

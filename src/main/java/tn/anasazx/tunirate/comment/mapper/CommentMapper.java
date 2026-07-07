@@ -7,18 +7,12 @@ import tn.anasazx.tunirate.comment.entity.Comment;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.user.entity.User;
 
-import java.util.List;
 
 @Component
 public class CommentMapper {
 
-    public List<CommentResponse> toResponseList(List<Comment> comments, Long currentUserId) {
-        return comments.stream()
-                .map(c -> toResponse(c, currentUserId))
-                .toList();
-    }
+    public static CommentResponse toResponse(Comment comment) {
 
-    public CommentResponse toResponse(Comment comment, Long currentUserId) {
         Actor actor = comment.getActor();
 
         Comment repliedTo = comment.getRepliedTo();
@@ -41,12 +35,6 @@ public class CommentMapper {
             };
         }
 
-        boolean isMine = switch (actor.getType()) {
-            case USER -> actor.getId().equals(currentUserId);
-            case COMPANY -> false;
-            default -> false;
-        };
-
         String actorAvatarUrl = switch (actor.getType()) {
             case USER -> ((User) actor).getAvatarUrl();
             case COMPANY -> ((Company) actor).getLogoUrl();
@@ -65,7 +53,6 @@ public class CommentMapper {
                 mentionedActor != null ? mentionedActor.getId() : null,
                 mentionedActor != null ? mentionedActor.getType() : null,
                 repliedToActorName,
-                isMine,
                 comment.getCreatedAt()
         );
     }

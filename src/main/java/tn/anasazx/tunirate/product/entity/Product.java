@@ -51,6 +51,11 @@ public class Product {
     private Company company;
 
 
+    /*
+    @Column(nullable = false)
+    private Double ratingScore = 0.0;
+    */
+
     @ManyToOne
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
@@ -62,7 +67,6 @@ public class Product {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProductStatus status = ProductStatus.DRAFT;
-
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

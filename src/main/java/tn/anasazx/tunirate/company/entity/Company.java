@@ -2,7 +2,7 @@ package tn.anasazx.tunirate.company.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import tn.anasazx.tunirate.CompanySocialLink.entity.CompanySocialLink;
+import tn.anasazx.tunirate.companySocialLink.entity.CompanySocialLink;
 import tn.anasazx.tunirate.actor.entity.Actor;
 import tn.anasazx.tunirate.enums.CompanyStatus;
 import tn.anasazx.tunirate.enums.Country;

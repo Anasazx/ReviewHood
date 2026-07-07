@@ -2,6 +2,8 @@ package tn.anasazx.tunirate.product.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,8 +22,8 @@ public class ProductController {
 
 	//public methods
 	@GetMapping
-	public ResponseEntity<List<ProductResponse>> getAllProducts() {
-		return ResponseEntity.ok(productService.getAllProducts());
+	public ResponseEntity<Page<ProductResponse>> getAllProducts(Pageable pageable) {
+		return ResponseEntity.ok(productService.getAllProducts(pageable));
 	}
 
 	@GetMapping("/{productId}")
@@ -29,17 +31,15 @@ public class ProductController {
 		return ResponseEntity.ok(productService.getProductById(productId));
 	}
 
-
 	@GetMapping("/{productId}/details")
 	public ResponseEntity<ProductDetailsResponse> getProductDetails(@PathVariable Long productId){
 		return ResponseEntity.ok(productService.getProductDetailsById(productId));
 	}
 
 	@GetMapping("/company/{companyId}")
-	public ResponseEntity<List<ProductResponse>> getProductsByCompanyId(@PathVariable Long companyId) {
-		return ResponseEntity.ok(productService.getProductsByCompanyId(companyId));
+	public ResponseEntity<Page<ProductResponse>> getProductsByCompanyId(@PathVariable Long companyId, Pageable pageable) {
+		return ResponseEntity.ok(productService.getProductsByCompanyId(companyId, pageable));
 	}
-
 
 	//Admin methods
 	//Only the admin can use this

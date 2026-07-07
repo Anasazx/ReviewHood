@@ -1,12 +1,13 @@
 package tn.anasazx.tunirate.comment.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import tn.anasazx.tunirate.comment.dto.CommentResponse;
 
-import java.util.List;
 
 public interface CommentService {
 
-    List<CommentResponse> getCommentsByReviewId(Long reviewId);
+    Page<CommentResponse> getCommentsByReviewId(Long reviewId, Pageable pageable);
 
     CommentResponse createComment(Long reviewId, String content);
 

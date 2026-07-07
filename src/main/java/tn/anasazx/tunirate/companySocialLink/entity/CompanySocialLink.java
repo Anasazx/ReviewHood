@@ -1,4 +1,4 @@
-package tn.anasazx.tunirate.CompanySocialLink.entity;
+package tn.anasazx.tunirate.companySocialLink.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;

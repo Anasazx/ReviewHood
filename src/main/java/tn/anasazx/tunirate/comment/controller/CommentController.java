@@ -2,13 +2,14 @@ package tn.anasazx.tunirate.comment.controller;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import tn.anasazx.tunirate.comment.dto.CommentRequest;
 import tn.anasazx.tunirate.comment.dto.CommentResponse;
 import tn.anasazx.tunirate.comment.service.CommentService;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/comments")
@@ -20,9 +21,11 @@ public class CommentController {
     //Get all comments for a review
     @GetMapping("/review/{reviewId}")
     @ResponseStatus(HttpStatus.OK)
-    public List<CommentResponse> getCommentByReviewId(@PathVariable Long reviewId) {
-        return commentService.getCommentsByReviewId(reviewId);
+    public Page<CommentResponse> getCommentByReviewId(@PathVariable Long reviewId, Pageable pageable) {
+        return commentService.getCommentsByReviewId(reviewId, pageable);
     }
+
+    //TODO: Add get my comments endpoint - ofc with pagination
 
     //Create comment
     @PostMapping("/review/{reviewId}")
