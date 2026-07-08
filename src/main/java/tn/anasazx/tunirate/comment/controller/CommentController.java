@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tn.anasazx.tunirate.comment.dto.CommentRequest;
 import tn.anasazx.tunirate.comment.dto.CommentResponse;
@@ -34,11 +35,13 @@ public class CommentController {
         return commentService.createComment(reviewId, request.content());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/c/review/{reviewId}")
     @ResponseStatus(HttpStatus.CREATED)
     public CommentResponse createCommentAsCompany(@PathVariable Long reviewId, @RequestBody CommentRequest request) {
         return commentService.createCommentAsCompany(reviewId, request.content());
     }
+
 
     @PostMapping("/reply/{parentCommentId}")
     @ResponseStatus(HttpStatus.CREATED)
@@ -46,6 +49,7 @@ public class CommentController {
         return commentService.replyToComment(parentCommentId, request.content());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/c/reply/{parentCommentId}")
     @ResponseStatus(HttpStatus.CREATED)
     public CommentResponse replyToCommentAsCompany(@PathVariable Long parentCommentId, @RequestBody CommentRequest request) {
@@ -53,6 +57,7 @@ public class CommentController {
     }
 
     //Delete comment
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteComment(@PathVariable Long commentId) {

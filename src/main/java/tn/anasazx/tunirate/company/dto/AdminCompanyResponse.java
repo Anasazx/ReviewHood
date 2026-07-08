@@ -18,7 +18,6 @@ public record AdminCompanyResponse(
         String logoUrl,
         String bannerUrl,
         String phoneNumber,
-        String websiteUrl,
         List<CompanySocialLinkResponse> socialLinks,
         String address,
         Country country,

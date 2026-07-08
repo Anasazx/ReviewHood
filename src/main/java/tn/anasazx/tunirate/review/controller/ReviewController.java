@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tn.anasazx.tunirate.review.dto.MinimizedReviewResponse;
 import tn.anasazx.tunirate.review.dto.ProductReviewsResponse;
@@ -21,11 +22,13 @@ public class ReviewController {
 
 	private final ReviewService reviewService;
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping
 	public ResponseEntity<Page<ReviewResponse>> getAllReviews(Pageable pageable) {
 		return ResponseEntity.ok(reviewService.getAllReviews(pageable));
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/{id}")
 	public ResponseEntity<ReviewResponse> getReviewById(@PathVariable Long id) {
 		return ResponseEntity.ok(reviewService.getReviewById(id));
@@ -42,11 +45,13 @@ public class ReviewController {
 	}
 
 	//TODO: Implement pagination
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/c/my")
 	public ResponseEntity<List<ReviewResponse>> getMyCompanyReviews() {
 		return ResponseEntity.ok(reviewService.getMyCompanyReviews());
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/by-user/{userId}")
 	public ResponseEntity<Page<ReviewResponse>> getReviewsByUserId(@PathVariable Long userId, Pageable pageable) {
 		return ResponseEntity.ok(reviewService.getReviewsByUserId(userId, pageable));

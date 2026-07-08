@@ -26,6 +26,8 @@ public class ProductController {
 		return ResponseEntity.ok(productService.getAllProducts(pageable));
 	}
 
+	//On the public front this is not used, maybe in the future, then I will remove the preAuthorize
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/{productId}")
 	public ResponseEntity<ProductResponse> getProductById(@PathVariable Long productId) {
 		return ResponseEntity.ok(productService.getProductById(productId));
@@ -77,16 +79,21 @@ public class ProductController {
 
 	//Company methods
 	//This is for companies
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/c")
 	public ResponseEntity<CompanyProductResponse> createProductAsCompany(@Valid @RequestBody CompanyProductRequest request) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProductAsCompany(request));
 	}
 
+
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/my")
 	public ResponseEntity<List<CompanyProductResponse>> getProductsAsCompany() {
 		return ResponseEntity.ok(productService.getProductsAsCompany());
 	}
 
+
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/c/{productId}")
 	public ResponseEntity<CompanyProductResponse> getProductByIdAsCompany(@PathVariable Long productId) {
 		return ResponseEntity.ok(productService.getProductByIdAsCompany(productId));

@@ -36,7 +36,6 @@ public class CompanyMapper {
                 company.getLogoUrl(),
                 company.getBannerUrl(),
                 company.getPhoneNumber(),
-                company.getWebsiteUrl(),
                 company.getAddress(),
                 company.getCountry(),
                 company.getIndustry(),
@@ -62,9 +61,7 @@ public class CompanyMapper {
                 company.getDescription(),
                 company.getLogoUrl(),
                 company.getBannerUrl(),
-
                 company.getPhoneNumber(),
-                company.getWebsiteUrl(),
                 company.getSocialLinks().stream().map(CompanySocialLinkMapper::toResponse).toList(),
                 company.getAddress(),
                 company.getCountry(),

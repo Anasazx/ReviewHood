@@ -2,6 +2,7 @@ package tn.anasazx.tunirate.invitation.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tn.anasazx.tunirate.invitation.dto.CompanyInvitationRequest;
 import tn.anasazx.tunirate.invitation.dto.CompanyInvitationResponse;
@@ -17,6 +18,7 @@ public class CompanyInvitationController {
     private final CompanyInvitationService service;
 
     // CREATE invitation (company sends invite)
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<Void> sendInvitation(@RequestBody CompanyInvitationRequest request) {
         service.sendInvitation(request);
@@ -24,6 +26,7 @@ public class CompanyInvitationController {
     }
 
     // GET invitations for company (HEAD only handled in service)
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/company")
     public ResponseEntity<List<CompanyInvitationResponse>> getCompanyInvitations() {
         return ResponseEntity.ok(service.getCompanyInvitations());
@@ -48,6 +51,7 @@ public class CompanyInvitationController {
     }
 
     // CANCEL invitation (company head only)
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{invitationId}/cancel")
     public ResponseEntity<CompanyInvitationResponse> cancelInvitation(@PathVariable Long invitationId) {
         return ResponseEntity.ok(service.cancelInvitation(invitationId));

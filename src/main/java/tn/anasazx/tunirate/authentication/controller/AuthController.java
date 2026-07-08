@@ -30,4 +30,5 @@ public class AuthController {
     public ResponseEntity<MinimizedUserResponse> authenticateUser() {
         return ResponseEntity.ok(authService.authenticateUser());
     }
+
 }

@@ -14,7 +14,6 @@ public record CompanyDetailResponse(
         String logoUrl,
         String bannerUrl,
         String phoneNumber,
-        String websiteUrl,
         String address,
         Country country,
         Industry industry,

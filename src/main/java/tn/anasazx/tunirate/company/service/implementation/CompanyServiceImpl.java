@@ -99,7 +99,6 @@ public class CompanyServiceImpl implements CompanyService {
         company.setName(request.name());
         company.setDescription(request.description());
         company.setPhoneNumber(request.phoneNumber());
-        company.setWebsiteUrl(request.websiteUrl());
         company.setAddress(request.address());
         company.setCountry(request.country());
         company.setIndustry(request.industry());
@@ -128,7 +127,6 @@ public class CompanyServiceImpl implements CompanyService {
         company.setName(request.name());
         company.setDescription(request.description());
         company.setPhoneNumber(request.phoneNumber());
-        company.setWebsiteUrl(request.websiteUrl());
         company.setAddress(request.address());
         company.setCountry(request.country());
         company.setIndustry(request.industry());

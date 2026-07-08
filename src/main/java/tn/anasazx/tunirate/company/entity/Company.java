@@ -46,8 +46,6 @@ public class Company extends Actor {
     @Column(length = 30)
     private String phoneNumber;
 
-    @Column(length = 500)
-    private String websiteUrl;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CompanySocialLink> socialLinks = new ArrayList<>();
