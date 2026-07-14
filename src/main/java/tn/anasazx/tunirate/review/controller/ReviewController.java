@@ -36,6 +36,7 @@ public class ReviewController {
 
 	@GetMapping("/product/{productId}")
 	public ResponseEntity<ProductReviewsResponse> getReviewsByProductId(@PathVariable Long productId, Pageable pageable) {
+		System.out.println("get reviews by product id endpoint called!");
 		return ResponseEntity.ok(reviewService.getReviewsByProductId(productId, pageable));
 	}
 

@@ -56,12 +56,17 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public  ProductReviewsResponse getReviewsByProductId(Long productId, Pageable pageable) {
 
-        Long currentUserId = SecurityUtils.getCurrentUserId();
+        ReviewResponse myReview = null;
 
-        ReviewResponse myReview = reviewRepository
-                .findByUserIdAndProductId(currentUserId, productId)
-                .map(this::mapReview)
-                .orElse(null);
+        if (SecurityUtils.getCurrentUserIdOrNull() != null){
+            Long currentUserId = SecurityUtils.getCurrentUserId();
+
+            myReview = reviewRepository
+                    .findByUserIdAndProductId(currentUserId, productId)
+                    .map(this::mapReview)
+                    .orElse(null);
+        }
+
 
         Page<ReviewResponse> reviews = reviewRepository
                 .findByProductId(productId, pageable)
