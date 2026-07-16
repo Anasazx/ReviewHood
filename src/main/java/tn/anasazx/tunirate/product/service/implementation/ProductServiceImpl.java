@@ -90,32 +90,6 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
-    /*
-    @Override
-    public AdminProductResponse createProductAsAdmin(AdminProductRequest request) {
-
-        Company company = findCompanyById(request.companyId());
-
-        Subcategory subcategory = request.subcategoryId() == null ? null : findSubcategoryById(request.subcategoryId());
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
-
-        User currentUser = findUserByUserId(currentUserId);
-
-        Product product =  new Product();
-
-        product.setName(request.name());
-        product.setDescription(request.description());
-        product.setCompany(company);
-        product.setSubcategory(subcategory);
-        product.setCreatedBy(currentUser);
-        product.setStatus(request.status() != null ? request.status() : ProductStatus.PENDING_REVIEW);
-        System.out.println("this is the current status ; " + request.status());
-
-        return ProductMapper.toAdminResponse(productRepository.save(product));
-    }
-
-     */
     @Override
     @Transactional
     public AdminProductResponse createProductAsAdmin(AdminProductRequest request, List<MultipartFile> images) {
@@ -189,34 +163,73 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
-    //This methode is only for the admin
     //TODO: we need an update product for the company
     @Override
-    public AdminProductResponse updateProductAsAdmin(Long productId, AdminProductRequest request) {
-
+    @Transactional
+    public AdminProductResponse updateProductAsAdmin(Long productId, AdminProductRequest request, List<MultipartFile> images) {
 
         Product product = findProductByIdAsAdmin(productId);
 
-        Company company = findCompanyById(request.companyId());
+        Company company = companyRepository.findById(request.companyId())
+                .orElseThrow(() ->
+                        new RuntimeException("Company not found")
+                );
 
-        Subcategory subcategory = findSubcategoryById(request.subcategoryId());
+        Subcategory subcategory = null;
+
+        if (request.subcategoryId() != null) {
+            subcategory = subcategoryRepository.findById(request.subcategoryId())
+                    .orElseThrow(() -> new RuntimeException("Subcategory not found"));
+        }
 
         product.setName(request.name());
         product.setDescription(request.description());
-        product.setSubcategory(subcategory);
         product.setCompany(company);
+        product.setSubcategory(subcategory);
 
-        if (request.status() != null) product.setStatus(request.status());
+        if (request.status() != null) {
+            product.setStatus(request.status());
+        }
 
-        return ProductMapper.toAdminResponse(productRepository.save(product));
+        /*
+         * Add new images
+         */
+        if (images != null && !images.isEmpty()) {
 
+            boolean hasMainImage = product.getImages()
+                    .stream()
+                    .anyMatch(ProductImage::isMain);
+
+            for (MultipartFile file : images) {
+
+                String fileName = fileStorageService.saveFile(file);
+
+                ProductImage image = new ProductImage();
+
+                image.setProduct(product);
+                image.setUrl(fileName);
+
+                // if a product has no main image, the first new image becomes the main
+                image.setMain(!hasMainImage);
+
+                if (!hasMainImage) {
+                    hasMainImage = true;
+                }
+
+                product.getImages().add(image);
+            }
+        }
+
+        productRepository.save(product);
+
+        return ProductMapper.toAdminResponse(product);
     }
 
 
     @Override
-    public void archiveProductAsAdmin(Long productId) {
+    public void updateProductStatusAsAdmin(Long productId, ProductStatus productStatus) {
         Product product = findProductById(productId);
-        product.setStatus(ProductStatus.ARCHIVED);
+        product.setStatus(productStatus);
         productRepository.save(product);
     }
 

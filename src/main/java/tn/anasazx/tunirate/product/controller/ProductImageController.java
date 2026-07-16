@@ -38,7 +38,6 @@ public class ProductImageController {
 
     }
 
-
     @PostMapping("/{imageId}/main")
     ResponseEntity<Void> setMainImage(@PathVariable Long imageId, @RequestParam Long productId){
         productImageService.setMainImage(productId,  imageId);
