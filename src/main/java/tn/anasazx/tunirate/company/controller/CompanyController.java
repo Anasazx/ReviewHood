@@ -1,8 +1,8 @@
 package tn.anasazx.tunirate.company.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +12,7 @@ import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
 import tn.anasazx.tunirate.company.dto.CompanyDetailResponse;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.service.CompanyService;
-import tn.anasazx.tunirate.enums.CompanyImageType;
+import tn.anasazx.tunirate.enums.CompanyStatus;
 
 import java.util.List;
 
@@ -46,6 +46,12 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.getCompanyByName(companyName));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/by-product/{productId}")
+    public ResponseEntity<CompanyResponse> getCompanyByProductId(@PathVariable Long productId) {
+        return ResponseEntity.ok(companyService.getCompanyByProductId(productId));
+    }
+
     //Admin method
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
@@ -60,59 +66,36 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.getCompanyDetailsByIdAsAdmin(companyId));
     }
 
-    //Admin method
+
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
-    public ResponseEntity<CompanyResponse> createCompanyAsAdmin(@Valid @RequestBody AdminCompanyRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(companyService.createCompanyAsAdmin(request));
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CompanyResponse> createCompanyAsAdmin(
+            @RequestPart("data") AdminCompanyRequest request,
+            @RequestPart(value = "logo", required = false) MultipartFile logo,
+            @RequestPart(value = "banner", required = false) MultipartFile banner
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(companyService.createCompanyAsAdmin(request, logo, banner));
     }
 
     //Admin method
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{companyId}")
-    public ResponseEntity<CompanyResponse> updateCompanyAsAdmin(@PathVariable Long companyId, @Valid @RequestBody AdminCompanyRequest request) {
-        return ResponseEntity.ok(companyService.updateCompanyAsAdmin(companyId, request));
+    @PutMapping(value = "/{companyId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CompanyResponse> updateCompanyAsAdmin(
+            @PathVariable Long companyId,
+            @RequestPart("data") AdminCompanyRequest request,
+            @RequestPart(value = "logo", required = false) MultipartFile logo,
+            @RequestPart(value = "banner", required = false) MultipartFile banner
+    ) {
+        return ResponseEntity.ok(
+                companyService.updateCompanyAsAdmin(companyId, request, logo, banner)
+        );
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/{companyId}/archive")
-    public ResponseEntity<Void> archiveCompanyAsAdmin(@PathVariable Long companyId) {
-        companyService.archiveCompanyAsAdmin(companyId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/by-product/{productId}")
-    public ResponseEntity<CompanyResponse> getCompanyByProductId(@PathVariable Long productId) {
-        return ResponseEntity.ok(companyService.getCompanyByProductId(productId));
-    }
-
-    //IMAGE CONTROLLER
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/{id}/logo")
-    public ResponseEntity<Void> uploadLogo(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
-        companyService.uploadImage(id, file, CompanyImageType.LOGO);
-        return ResponseEntity.ok().build();
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/{id}/banner")
-    public ResponseEntity<Void> uploadBanner(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
-        companyService.uploadImage(id, file, CompanyImageType.BANNER);
-        return ResponseEntity.ok().build();
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{id}/logo")
-    public ResponseEntity<Void> deleteLogo(@PathVariable Long id) {
-        companyService.deleteImage(id, CompanyImageType.LOGO);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{id}/banner")
-    public ResponseEntity<Void> deleteBanner(@PathVariable Long id) {
-        companyService.deleteImage(id, CompanyImageType.BANNER);
+    @PatchMapping("/{companyId}/status")
+    public ResponseEntity<Void> updateCompanyStatusAsAdmin(@PathVariable Long companyId, @RequestBody CompanyStatus companyStatus) {
+        companyService.updateCompanyStatusAsAdmin(companyId, companyStatus);
         return ResponseEntity.noContent().build();
     }
 

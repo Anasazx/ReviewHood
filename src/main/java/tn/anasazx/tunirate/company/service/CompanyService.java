@@ -5,7 +5,7 @@ import tn.anasazx.tunirate.company.dto.AdminCompanyRequest;
 import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
 import tn.anasazx.tunirate.company.dto.CompanyDetailResponse;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
-import tn.anasazx.tunirate.enums.CompanyImageType;
+import tn.anasazx.tunirate.enums.CompanyStatus;
 
 import java.util.List;
 
@@ -25,18 +25,15 @@ public interface CompanyService {
     AdminCompanyResponse getCompanyDetailsByIdAsAdmin(Long companyId);
 
 
-    CompanyResponse createCompanyAsAdmin(AdminCompanyRequest request);
+    CompanyResponse createCompanyAsAdmin(AdminCompanyRequest request, MultipartFile logo, MultipartFile banner);
 
-    CompanyResponse updateCompanyAsAdmin(Long companyId, AdminCompanyRequest request);
+    CompanyResponse updateCompanyAsAdmin(Long companyId, AdminCompanyRequest request, MultipartFile logo, MultipartFile banner);
 
-    void archiveCompanyAsAdmin(Long companyId);
+    void updateCompanyStatusAsAdmin(Long companyId, CompanyStatus companyStatus);
 
     CompanyResponse getCompanyByProductId(Long productId);
 
     List<CompanyResponse> search(String query);
 
-    //FOR LOGO AND BANNER :
-    void uploadImage(Long companyId, MultipartFile file, CompanyImageType type);
-    void deleteImage(Long companyId, CompanyImageType type);
 }
 

@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.company.service.implementation;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,6 @@ import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.company.mapper.CompanyMapper;
 import tn.anasazx.tunirate.company.repository.CompanyRepository;
 import tn.anasazx.tunirate.company.service.CompanyService;
-import tn.anasazx.tunirate.enums.CompanyImageType;
 import tn.anasazx.tunirate.enums.CompanyStatus;
 import tn.anasazx.tunirate.fileStorage.service.FileStorageService;
 import tn.anasazx.tunirate.membership.entity.CompanyMember;
@@ -84,46 +84,101 @@ public class CompanyServiceImpl implements CompanyService {
         return CompanyMapper.toAdminResponse(company);
     }
 
-    @Override
-    public CompanyResponse createCompanyAsAdmin(AdminCompanyRequest request) {
+    /*
+        @Override
+        public CompanyResponse createCompanyAsAdmin(AdminCompanyRequest request) {
 
-        companyRepository.findByNameIgnoreCase(request.name()).ifPresent(existing -> {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Company name already exists");
-        });
+            companyRepository.findByNameIgnoreCase(request.name()).ifPresent(existing -> {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Company name already exists");
+            });
+
+            Long currentUserId = SecurityUtils.getCurrentUserId();
+
+            User currentUser = findUser(currentUserId);
+
+            Company company = new Company();
+            company.setName(request.name());
+            company.setDescription(request.description());
+            company.setPhoneNumber(request.phoneNumber());
+            company.setAddress(request.address());
+            company.setCountry(request.country());
+            company.setIndustry(request.industry());
+            company.setCreatedBy(currentUser);
+            company.setStatus(request.status() != null ? request.status() : CompanyStatus.PENDING);
+
+
+            return CompanyMapper.toResponse(companyRepository.save(company));
+        }
+    */
+
+    @Override
+    @Transactional
+    public CompanyResponse createCompanyAsAdmin(
+            AdminCompanyRequest request,
+            MultipartFile logo,
+            MultipartFile banner
+    ) {
+
+        companyRepository.findByNameIgnoreCase(request.name())
+                .ifPresent(existing -> {
+                    throw new ResponseStatusException(
+                            HttpStatus.CONFLICT,
+                            "Company name already exists"
+                    );
+                });
 
         Long currentUserId = SecurityUtils.getCurrentUserId();
-
         User currentUser = findUser(currentUserId);
 
         Company company = new Company();
+
         company.setName(request.name());
         company.setDescription(request.description());
         company.setPhoneNumber(request.phoneNumber());
         company.setAddress(request.address());
         company.setCountry(request.country());
         company.setIndustry(request.industry());
+
         company.setCreatedBy(currentUser);
-        company.setStatus(request.status() != null ? request.status() : CompanyStatus.PENDING);
+        company.setStatus(
+                request.status() != null
+                        ? request.status()
+                        : CompanyStatus.PENDING
+        );
 
+        if (logo != null && !logo.isEmpty()) {
+            company.setLogoUrl(fileStorageService.saveFile(logo));
+        }
 
-        return CompanyMapper.toResponse(companyRepository.save(company));
+        if (banner != null && !banner.isEmpty()) {
+            company.setBannerUrl(fileStorageService.saveFile(banner));
+        }
+
+        companyRepository.save(company);
+
+        return CompanyMapper.toResponse(company);
     }
 
     @Override
-    public CompanyResponse updateCompanyAsAdmin(Long id, AdminCompanyRequest request) {
-        Company company = findCompany(id);
+    @Transactional
+    public CompanyResponse updateCompanyAsAdmin(Long companyId, AdminCompanyRequest request, MultipartFile logo, MultipartFile banner) {
 
+        Company company = findCompany(companyId);
+
+        // Prevent duplicate names
         companyRepository.findByNameIgnoreCase(request.name())
-                .filter(existing -> !existing.getId().equals(id))
+                .filter(existing -> !existing.getId().equals(companyId))
                 .ifPresent(existing -> {
-                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Company name already exists");
+                    throw new ResponseStatusException(
+                            HttpStatus.CONFLICT,
+                            "Company name already exists"
+                    );
                 });
 
         Long currentUserId = SecurityUtils.getCurrentUserId();
-
         User currentUser = findUser(currentUserId);
 
-
+        // Basic fields
         company.setName(request.name());
         company.setDescription(request.description());
         company.setPhoneNumber(request.phoneNumber());
@@ -132,44 +187,87 @@ public class CompanyServiceImpl implements CompanyService {
         company.setIndustry(request.industry());
         company.setUpdatedBy(currentUser);
 
+
+        // Social links
         if (request.socialLinks() != null) {
 
-            // 1. safely remove all old links
             company.clearSocialLinks();
 
-            // 2. add new ones properly (bidirectional safe)
             request.socialLinks().forEach(req -> {
-                CompanySocialLink link = CompanySocialLinkMapper.toEntity(req);
-                company.addSocialLink(link);
-            });
 
+                CompanySocialLink link =
+                        CompanySocialLinkMapper.toEntity(req);
+
+                company.addSocialLink(link);
+
+            });
         }
 
 
-        if (request.status() == CompanyStatus.ARCHIVED && !company.getProducts().isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company has products");
+
+        // Status validation
+        if (request.status() == CompanyStatus.ARCHIVED
+                && !company.getProducts().isEmpty()) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Company has products"
+            );
+        }
 
         company.setStatus(request.status());
 
-        return CompanyMapper.toResponse(companyRepository.save(company));
 
+
+        // Logo replacement
+        if (logo != null && !logo.isEmpty()) {
+
+            if (company.getLogoUrl() != null) {
+                fileStorageService.deleteFile(company.getLogoUrl());
+            }
+
+            company.setLogoUrl(
+                    fileStorageService.saveFile(logo)
+            );
+        }
+
+
+
+        // Banner replacement
+        if (banner != null && !banner.isEmpty()) {
+
+            if (company.getBannerUrl() != null) {
+                fileStorageService.deleteFile(company.getBannerUrl());
+            }
+
+            company.setBannerUrl(
+                    fileStorageService.saveFile(banner)
+            );
+        }
+
+
+
+        return CompanyMapper.toResponse(
+                companyRepository.save(company)
+        );
     }
 
     @Override
-    public void archiveCompanyAsAdmin(Long id) {
-
-        Company company = findCompany(id);
-
-        if (!company.getProducts().isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company has products");
-
-        company.setStatus(CompanyStatus.ARCHIVED);
-
+    @Transactional
+    public void updateCompanyStatusAsAdmin(Long companyId, CompanyStatus status) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
+        if (status == CompanyStatus.ARCHIVED && !company.getProducts().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot archive company with products");
+        }
+        company.setStatus(status);
+        companyRepository.save(company);
     }
 
     @Override
     public CompanyResponse getCompanyByProductId(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
-
         return CompanyMapper.toResponse(product.getCompany());
     }
 
@@ -187,63 +285,6 @@ public class CompanyServiceImpl implements CompanyService {
                 .map(CompanyMapper::toResponse)
                 .toList();
     }
-
-
-
-    @Override
-    public void uploadImage(Long companyId, MultipartFile file, CompanyImageType type) {
-
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        String fileName = fileStorageService.saveFile(file);
-
-        switch (type) {
-            case LOGO -> {
-                if (company.getLogoUrl() != null) {
-                    fileStorageService.deleteFile(company.getLogoUrl());
-                }
-                company.setLogoUrl(fileName);
-            }
-            case BANNER -> {
-                if (company.getBannerUrl() != null) {
-                    fileStorageService.deleteFile(company.getBannerUrl());
-                }
-                company.setBannerUrl(fileName);
-            }
-        }
-        companyRepository.save(company);
-    }
-
-
-
-    @Override
-    public void deleteImage(Long companyId, CompanyImageType type) {
-
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        switch (type) {
-            case LOGO -> {
-                if (company.getLogoUrl() != null) {
-                    fileStorageService.deleteFile(company.getLogoUrl());
-                    company.setLogoUrl(null);
-                }
-            }
-
-            case BANNER -> {
-                if (company.getBannerUrl() != null) {
-                    fileStorageService.deleteFile(company.getBannerUrl());
-                    company.setBannerUrl(null);
-                }
-            }
-        }
-
-        companyRepository.save(company);
-    }
-
-
-
 
     // Method helpers
     private Company findCompany(Long id) {

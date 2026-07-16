@@ -14,7 +14,6 @@ public record AdminCompanyRequest(
         @NotBlank String name,
         String description,
         String phoneNumber,
-        String websiteUrl,
         String address,
         @NotNull Country country,
         Industry industry,
