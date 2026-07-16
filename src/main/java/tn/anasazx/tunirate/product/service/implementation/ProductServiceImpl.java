@@ -1,17 +1,21 @@
 package tn.anasazx.tunirate.product.service.implementation;
 
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import tn.anasazx.tunirate.enums.ProductStatus;
+import tn.anasazx.tunirate.fileStorage.service.FileStorageService;
 import tn.anasazx.tunirate.membership.entity.CompanyMember;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.product.dto.*;
+import tn.anasazx.tunirate.product.entity.ProductImage;
 import tn.anasazx.tunirate.review.repository.ReviewRepository;
 import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.subcategory.entity.Subcategory;
@@ -40,7 +44,7 @@ public class ProductServiceImpl implements ProductService {
     private final CompanyMemberRepository companyMemberRepository;
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
-
+    private final FileStorageService fileStorageService;
 
     //This methode returns the product with his details such as reviews...
     //There is a methode that returns only the basic info of a product called getProductById
@@ -86,6 +90,7 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
+    /*
     @Override
     public AdminProductResponse createProductAsAdmin(AdminProductRequest request) {
 
@@ -108,6 +113,54 @@ public class ProductServiceImpl implements ProductService {
         System.out.println("this is the current status ; " + request.status());
 
         return ProductMapper.toAdminResponse(productRepository.save(product));
+    }
+
+     */
+    @Override
+    @Transactional
+    public AdminProductResponse createProductAsAdmin(AdminProductRequest request, List<MultipartFile> images) {
+
+        Company company = findCompanyById(request.companyId());
+
+        Subcategory subcategory = request.subcategoryId() == null ? null : findSubcategoryById(request.subcategoryId());
+
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
+        User currentUser = findUserByUserId(currentUserId);
+
+        Product product = new Product();
+
+        product.setName(request.name());
+        product.setDescription(request.description());
+        product.setCompany(company);
+        product.setSubcategory(subcategory);
+        product.setCreatedBy(currentUser);
+
+        product.setStatus(request.status() != null ? request.status() : ProductStatus.PENDING_REVIEW);
+
+        // Save first to generate product ID
+        productRepository.save(product);
+
+        if (images != null && !images.isEmpty()) {
+
+            for (int i = 0; i < images.size(); i++) {
+
+                MultipartFile file = images.get(i);
+
+                String fileName = fileStorageService.saveFile(file);
+
+                ProductImage image = new ProductImage();
+
+                image.setUrl(fileName);
+                image.setMain(i == 0);
+
+                product.addImage(image);
+            }
+        }
+
+        productRepository.save(product);
+
+        return ProductMapper.toAdminResponse(product);
     }
 
     @Override
@@ -162,13 +215,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void archiveProductAsAdmin(Long productId) {
-        System.out.println("1");
         Product product = findProductById(productId);
-        System.out.println("2");
         product.setStatus(ProductStatus.ARCHIVED);
-        System.out.println("3");
         productRepository.save(product);
-        System.out.println("4");
     }
 
     @Override

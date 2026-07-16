@@ -5,9 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import tn.anasazx.tunirate.product.dto.*;
 import tn.anasazx.tunirate.product.service.ProductService;
 
@@ -20,7 +22,7 @@ public class ProductController {
 
     private final ProductService productService;
 
-	//public methods
+
 	@GetMapping
 	public ResponseEntity<Page<ProductResponse>> getAllProducts(Pageable pageable) {
 		return ResponseEntity.ok(productService.getAllProducts(pageable));
@@ -43,18 +45,36 @@ public class ProductController {
 		return ResponseEntity.ok(productService.getProductsByCompanyId(companyId, pageable));
 	}
 
-	//Admin methods
-	//Only the admin can use this
+	@PreAuthorize("hasRole('ADMIN')")
+	@GetMapping("/op/{productId}/details")
+	public ResponseEntity<AdminProductDetailsResponse> getProductDetailsAsAdmin(@PathVariable Long productId){
+		return ResponseEntity.ok(productService.getProductDetailsByIdAsAdmin(productId));
+	}
+
 	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/op")
 	public ResponseEntity<List<AdminProductResponse>> getProductsAsAdmin() {
 		return ResponseEntity.ok(productService.getProductsAsAdmin());
 	}
 
+	/*
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
 	public ResponseEntity<AdminProductResponse> createProductAsAdmin(@Valid @RequestBody AdminProductRequest request) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProductAsAdmin(request));
+	}
+
+	 */
+
+	@PreAuthorize("hasRole('ADMIN')")
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<AdminProductResponse> createProductAsAdmin(
+			@RequestPart("data") @Valid AdminProductRequest request,
+			@RequestPart(value = "images", required = false) List<MultipartFile> images
+	) {
+		return ResponseEntity
+				.status(HttpStatus.CREATED)
+				.body(productService.createProductAsAdmin(request, images));
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")
@@ -63,6 +83,7 @@ public class ProductController {
 		return ResponseEntity.ok(productService.updateProductAsAdmin(id, request));
 	}
 
+	//TODO: This needs to be updateProductStatus and get status as a param;
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/op/{productId}/archive")
 	public ResponseEntity<Void> archiveProductAsAdmin(@PathVariable Long productId) {
@@ -70,11 +91,7 @@ public class ProductController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@PreAuthorize("hasRole('ADMIN')")
-	@GetMapping("/op/{productId}/details")
-	public ResponseEntity<AdminProductDetailsResponse> getProductDetailsAsAdmin(@PathVariable Long productId){
-		return ResponseEntity.ok(productService.getProductDetailsByIdAsAdmin(productId));
-	}
+
 
 
 	//Company methods

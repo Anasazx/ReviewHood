@@ -2,6 +2,7 @@ package tn.anasazx.tunirate.product.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 import tn.anasazx.tunirate.product.dto.*;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public interface ProductService {
     //Admin methods
     AdminProductDetailsResponse getProductDetailsByIdAsAdmin(Long productId);
     List<AdminProductResponse> getProductsAsAdmin();
-    AdminProductResponse createProductAsAdmin(AdminProductRequest request);
+    AdminProductResponse createProductAsAdmin(AdminProductRequest request, List<MultipartFile> images);
     AdminProductResponse updateProductAsAdmin(Long id, AdminProductRequest request);
     void archiveProductAsAdmin(Long productId);
 
