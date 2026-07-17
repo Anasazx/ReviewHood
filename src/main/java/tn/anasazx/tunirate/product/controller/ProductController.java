@@ -22,7 +22,6 @@ public class ProductController {
 
     private final ProductService productService;
 
-	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping
 	public ResponseEntity<Page<ProductResponse>> getAllProducts(Pageable pageable) {
 		return ResponseEntity.ok(productService.getAllProducts(pageable));
