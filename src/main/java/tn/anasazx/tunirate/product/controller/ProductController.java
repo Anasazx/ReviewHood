@@ -59,7 +59,6 @@ public class ProductController {
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<AdminProductResponse> createProductAsAdmin(@RequestPart("data") @Valid AdminProductRequest request, @RequestPart(value = "images", required = false) List<MultipartFile> images) {
-		System.out.println("checkpoint one");
 		return ResponseEntity
 				.status(HttpStatus.CREATED)
 				.body(productService.createProductAsAdmin(request, images));
