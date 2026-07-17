@@ -49,4 +49,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             sudo systemctl restart tunirate
+            sleep 5
+            sudo systemctl is-active tunirate
             sudo systemctl status tunirate
+            
