@@ -56,7 +56,7 @@ public class ProductController {
 		return ResponseEntity.ok(productService.getProductsAsAdmin());
 	}
 
-	//@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<AdminProductResponse> createProductAsAdmin(@RequestPart("data") @Valid AdminProductRequest request, @RequestPart(value = "images", required = false) List<MultipartFile> images) {
 		System.out.println("createProductAsAdmin called!");
