@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import tn.anasazx.tunirate.enums.ProductStatus;
 import tn.anasazx.tunirate.product.dto.*;
 import tn.anasazx.tunirate.product.service.ProductService;
 
@@ -61,6 +60,7 @@ public class ProductController {
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<AdminProductResponse> createProductAsAdmin(@RequestPart("data") @Valid AdminProductRequest request, @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+		System.out.println("checkpoint one");
 		return ResponseEntity
 				.status(HttpStatus.CREATED)
 				.body(productService.createProductAsAdmin(request, images));
@@ -74,8 +74,8 @@ public class ProductController {
 
 	@PreAuthorize("hasRole('ADMIN')")
 	@PatchMapping("/op/{productId}/status")
-	public ResponseEntity<Void> updateProductStatusAsAdmin(@PathVariable Long productId, @RequestBody ProductStatus productStatus) {
-		productService.updateProductStatusAsAdmin(productId, productStatus);
+	public ResponseEntity<Void> updateProductStatusAsAdmin(@PathVariable Long productId, @RequestBody ProductStatusRequest request) {
+		productService.updateProductStatusAsAdmin(productId, request.status());
 		return ResponseEntity.noContent().build();
 	}
 

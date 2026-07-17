@@ -7,12 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import tn.anasazx.tunirate.company.dto.AdminCompanyRequest;
-import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
-import tn.anasazx.tunirate.company.dto.CompanyDetailResponse;
-import tn.anasazx.tunirate.company.dto.CompanyResponse;
+import tn.anasazx.tunirate.company.dto.*;
 import tn.anasazx.tunirate.company.service.CompanyService;
-import tn.anasazx.tunirate.enums.CompanyStatus;
 
 import java.util.List;
 
@@ -94,8 +90,8 @@ public class CompanyController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{companyId}/status")
-    public ResponseEntity<Void> updateCompanyStatusAsAdmin(@PathVariable Long companyId, @RequestBody CompanyStatus companyStatus) {
-        companyService.updateCompanyStatusAsAdmin(companyId, companyStatus);
+    public ResponseEntity<Void> updateCompanyStatusAsAdmin(@PathVariable Long companyId, @RequestBody CompanyStatusRequest request) {
+        companyService.updateCompanyStatusAsAdmin(companyId, request.status());
         return ResponseEntity.noContent().build();
     }
 
