@@ -75,7 +75,32 @@ public class ProductServiceImpl implements ProductService {
         return ProductMapper.toAdminDetailsResponse(product, avgRating, reviewsCount);
     }
 
-    public Page<ProductResponse> getAllProducts(Pageable pageable) {
+    public Page<ProductResponse> getAllProducts(
+            Long categoryId,
+            Long subcategoryId,
+            Pageable pageable
+    ) {
+
+        if (subcategoryId != null) {
+            return productRepository
+                    .findAllByStatusAndSubcategoryId(
+                            ProductStatus.PUBLISHED,
+                            subcategoryId,
+                            pageable
+                    )
+                    .map(ProductMapper::toResponse);
+
+        }
+        else if (categoryId != null) {
+            return productRepository
+                    .findAllByStatusAndSubcategoryCategoryId(
+                            ProductStatus.PUBLISHED,
+                            categoryId,
+                            pageable
+                    )
+                    .map(ProductMapper::toResponse);
+        }
+
         return productRepository
                 .findAllByStatus(ProductStatus.PUBLISHED, pageable)
                 .map(ProductMapper::toResponse);

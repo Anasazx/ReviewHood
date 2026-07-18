@@ -23,8 +23,16 @@ public class ProductController {
     private final ProductService productService;
 
 	@GetMapping
-	public ResponseEntity<Page<ProductResponse>> getAllProducts(Pageable pageable) {
-		return ResponseEntity.ok(productService.getAllProducts(pageable));
+	public ResponseEntity<Page<ProductResponse>> getAllProducts(
+			Pageable pageable,
+			@RequestParam(required = false) Long categoryId,
+			@RequestParam(required = false) Long subcategoryId
+	) {
+		System.out.println(categoryId);
+		System.out.println(subcategoryId);
+		return ResponseEntity.ok(
+				productService.getAllProducts(categoryId, subcategoryId, pageable)
+		);
 	}
 
 	//On the public front this is not used, maybe in the future, then I will remove the preAuthorize
@@ -59,7 +67,6 @@ public class ProductController {
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<AdminProductResponse> createProductAsAdmin(@RequestPart("data") @Valid AdminProductRequest request, @RequestPart(value = "images", required = false) List<MultipartFile> images) {
-		System.out.println("createProductAsAdmin called!");
 		return ResponseEntity
 				.status(HttpStatus.CREATED)
 				.body(productService.createProductAsAdmin(request, images));

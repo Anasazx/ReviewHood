@@ -12,7 +12,7 @@ public interface ProductService {
 
     //Public methods
     ProductDetailsResponse getProductDetailsById(Long productId);
-    Page<ProductResponse> getAllProducts(Pageable pageable);
+    Page<ProductResponse> getAllProducts(Long categoryId, Long subcategoryId, Pageable pageable);
     ProductResponse getProductById(Long productId);
     Page<ProductResponse> getProductsByCompanyId(Long companyId, Pageable pageable);
 
