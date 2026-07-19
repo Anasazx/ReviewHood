@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import tn.anasazx.tunirate.actor.entity.Actor;
 import tn.anasazx.tunirate.company.entity.Company;
+import tn.anasazx.tunirate.enums.AuthProvider;
 import tn.anasazx.tunirate.enums.Country;
 import tn.anasazx.tunirate.enums.GlobalRole;
 import tn.anasazx.tunirate.enums.UserStatus;
@@ -72,8 +73,12 @@ public class User extends Actor {
     private LocalDateTime deletedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column
     private Country country;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AuthProvider provider = AuthProvider.LOCAL;
 
     @PrePersist
     public void prePersist() {

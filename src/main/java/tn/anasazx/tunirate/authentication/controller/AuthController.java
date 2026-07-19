@@ -26,6 +26,13 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> googleLogin(@RequestBody GoogleLoginRequest request) {
+        return ResponseEntity.ok(
+                authService.googleLogin(request)
+        );
+    }
+
     @GetMapping("/me")
     public ResponseEntity<MinimizedUserResponse> authenticateUser() {
         return ResponseEntity.ok(authService.authenticateUser());

@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.authentication.service.implementation;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -8,6 +9,9 @@ import org.springframework.web.server.ResponseStatusException;
 import tn.anasazx.tunirate.authentication.dto.*;
 import tn.anasazx.tunirate.authentication.mapper.AuthMapper;
 import tn.anasazx.tunirate.authentication.service.AuthService;
+import tn.anasazx.tunirate.authentication.service.GoogleAuthService;
+import tn.anasazx.tunirate.enums.AuthProvider;
+import tn.anasazx.tunirate.enums.Country;
 import tn.anasazx.tunirate.exception.InvalidPasswordException;
 import tn.anasazx.tunirate.security.JwtService;
 import tn.anasazx.tunirate.security.SecurityUtils;
@@ -17,16 +21,17 @@ import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.mapper.UserMapper;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
+import java.util.UUID;
+
 
 @Service
-
 @RequiredArgsConstructor
-
 public class AuthServiceImpl implements AuthService {
 
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final GoogleAuthService googleAuthService;
 
 
     @Override
@@ -98,6 +103,38 @@ public class AuthServiceImpl implements AuthService {
 
     }
 
+
+
+    @Override
+    public AuthResponse googleLogin(GoogleLoginRequest request) {
+
+        GoogleIdToken.Payload payload = googleAuthService.verifyToken(request.idToken());
+
+
+        String email = payload.getEmail();
+        String name = (String) payload.get("name");
+        String picture = (String) payload.get("picture");
+
+        User user = userRepository.findByEmail(email)
+
+                .orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setEmail(email);
+                    newUser.setName(name);
+                    newUser.setAvatarUrl(picture);
+                    newUser.setPassword(
+                            passwordEncoder.encode(UUID.randomUUID().toString())
+                    );
+                    newUser.setCountry(Country.OTHER);
+                    newUser.setProvider(AuthProvider.GOOGLE);
+                    return userRepository.save(newUser);
+
+                });
+
+        String token = jwtService.generateToken(user.getId());
+
+        return AuthMapper.toAuthResponse(token, user);
+    }
 
 
 

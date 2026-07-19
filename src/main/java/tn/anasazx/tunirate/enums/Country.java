@@ -4,5 +4,6 @@ public enum Country {
     TUNISIA,
     ALGERIA,
     MOROCCO,
-    FRANCE
+    FRANCE,
+    OTHER
 }
