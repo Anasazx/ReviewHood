@@ -122,6 +122,7 @@ public class AuthServiceImpl implements AuthService {
                     newUser.setEmail(email);
                     newUser.setName(name);
                     newUser.setAvatarUrl(picture);
+                    newUser.setEmailVerified(true);
                     newUser.setPassword(
                             passwordEncoder.encode(UUID.randomUUID().toString())
                     );
