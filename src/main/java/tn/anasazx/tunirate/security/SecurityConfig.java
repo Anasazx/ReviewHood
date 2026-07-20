@@ -47,7 +47,8 @@ public class SecurityConfig {
                                 "/subcategories/**",
                                 "/membership/**",
                                 "/search/**",
-                                "/comments/**"
+                                "/comments/**",
+                                "/suggestions/**"
                         ).permitAll()
                         .requestMatchers("/uploads/**").permitAll()
 
