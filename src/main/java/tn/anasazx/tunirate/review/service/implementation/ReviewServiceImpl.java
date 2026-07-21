@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.review.service.implementation;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,7 +53,6 @@ public class ReviewServiceImpl implements ReviewService {
         return this.mapReview(findReviewEntity(id));
     }
 
-
     @Override
     public  ProductReviewsResponse getReviewsByProductId(Long productId, Pageable pageable) {
 
@@ -82,7 +82,6 @@ public class ReviewServiceImpl implements ReviewService {
                 .map(ReviewMapper::toMinimizedResponse);
     }
 
-
     @Override
     public Page<ReviewResponse> getReviewsByUserId(Long userId, Pageable pageable) {
         return reviewRepository.findByUserId(userId, pageable)
@@ -106,6 +105,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     }
 
+    @Transactional
     @Override
     public ReviewResponse createReview(ReviewRequest request) {
 
@@ -129,14 +129,33 @@ public class ReviewServiceImpl implements ReviewService {
 
 
         Review review = new Review();
+
         review.setRating(request.rating());
+
         review.setContent(request.content());
+
         review.setUser(user);
+
         review.setProduct(product);
 
-        return this.mapReview(reviewRepository.save(review));
+        int oldCount = product.getReviewCount();
+
+        if ((oldCount + 1) <= 0) {
+            throw new IllegalStateException("Invalid review count");
+        }
+
+        double newAverage = ((product.getReviewsAvg() * oldCount) + review.getRating()) / (oldCount + 1);
+
+        Review savedReview = reviewRepository.save(review);
+
+        product.setReviewsAvg(newAverage);
+
+        product.setReviewCount(oldCount + 1);
+
+        return mapReview(savedReview);
     }
 
+    @Transactional
     @Override
     public ReviewResponse updateReview(Long id, ReviewRequest request) {
 
@@ -144,42 +163,68 @@ public class ReviewServiceImpl implements ReviewService {
 
         Long currentUserId = SecurityUtils.getCurrentUserId();
 
-        User user = findUserEntity(currentUserId);
+        if (!review.getUser().getId().equals(currentUserId)){
+             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
 
-        Product product = findProductEntity(request.productId());
+        Product product = review.getProduct();
 
-        reviewRepository.findByUserIdAndProductId(SecurityUtils.getCurrentUserId(), request.productId())
-                .filter(existing -> !existing.getId().equals(id))
-                .ifPresent(existing -> {
-                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Review already exists for this user and product");
-                });
+        int oldRating = review.getRating();
+
+        int reviewCount = product.getReviewCount();
+
+        if (reviewCount <= 0) {
+            throw new IllegalStateException("Invalid review count");
+        }
+
+        double newAverage = ((product.getReviewsAvg() * reviewCount) - oldRating + request.rating()) / reviewCount;
+
+        product.setReviewsAvg(newAverage);
 
         review.setRating(request.rating());
-        review.setContent(request.content());
-        review.setUser(user);
-        review.setProduct(product);
 
-        return this.mapReview(reviewRepository.save(review));
+        review.setContent(request.content());
+
+        productRepository.save(product);
+
+        return mapReview(reviewRepository.save(review));
     }
 
+    @Transactional
     @Override
     public void deleteReview(Long id) {
-        reviewRepository.delete(findReviewEntity(id));
+
+        Review review = findReviewEntity(id);
+
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
+        if (!review.getUser().getId().equals(currentUserId)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        Product product = review.getProduct();
+        int oldReviewCount = product.getReviewCount();
+        int newReviewCount = oldReviewCount - 1;
+        product.setReviewCount(newReviewCount);
+
+        if (newReviewCount > 0) {
+            double newAverage = ((product.getReviewsAvg() * oldReviewCount) - review.getRating()) / newReviewCount;
+            product.setReviewsAvg(newAverage);
+        }
+        else if (newReviewCount == 0) {
+            product.setReviewsAvg(0.0);
+        }
+        else {
+            throw new IllegalStateException("Invalid review count");
+        }
+
+        productRepository.save(product);
+        reviewRepository.delete(review);
     }
 
     private Review findReviewEntity(Long id) {
         return reviewRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found"));
-    }
-
-    private User findUserEntity(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-    }
-
-    private Product findProductEntity(Long productId) {
-        return productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
     }
 
     private ReviewResponse mapReview(Review review) {

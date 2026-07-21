@@ -66,6 +66,12 @@ public class Product {
     private Double ratingScore = 0.0;
     */
 
+    @Column(nullable=false)
+    private Double reviewsAvg = 0.0;
+
+    @Column(nullable=false)
+    private Integer reviewCount = 0;
+
     @ManyToOne
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;

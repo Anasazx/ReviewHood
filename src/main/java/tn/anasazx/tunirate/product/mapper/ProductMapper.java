@@ -45,6 +45,8 @@ public class ProductMapper {
                 companyIsVerified,
                 product.getCompany().getLogoUrl(),
                 imageUrl.orElse(null),
+                product.getReviewsAvg(),
+                product.getReviewCount(),
                 product.getCreatedAt()
         );
 

@@ -14,5 +14,7 @@ public record ProductResponse(
         boolean companyIsVerified,
         String companyLogoUrl,
         String imageUrl,
+        double reviewsAvg,
+        int reviewCount,
         LocalDateTime createdAt
 ) {}
