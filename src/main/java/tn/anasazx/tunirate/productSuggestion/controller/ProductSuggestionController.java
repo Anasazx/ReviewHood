@@ -37,7 +37,7 @@ public class ProductSuggestionController {
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<ProductSuggestionResponse> updateStatus(@PathVariable Long id, @RequestBody UpdateStatusRequest request) {
-        return ResponseEntity.ok(productSuggestionService.updateStatus(id, request.status()));
+        return ResponseEntity.ok(productSuggestionService.updateStatus(id, request));
     }
 
 }

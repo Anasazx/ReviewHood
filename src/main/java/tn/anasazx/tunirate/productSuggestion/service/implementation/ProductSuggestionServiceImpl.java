@@ -3,8 +3,11 @@ package tn.anasazx.tunirate.productSuggestion.service.implementation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tn.anasazx.tunirate.enums.SuggestionStatus;
+import tn.anasazx.tunirate.product.entity.Product;
+import tn.anasazx.tunirate.product.repository.ProductRepository;
 import tn.anasazx.tunirate.productSuggestion.dto.ProductSuggestionRequest;
 import tn.anasazx.tunirate.productSuggestion.dto.ProductSuggestionResponse;
+import tn.anasazx.tunirate.productSuggestion.dto.UpdateStatusRequest;
 import tn.anasazx.tunirate.productSuggestion.entity.ProductSuggestion;
 import tn.anasazx.tunirate.productSuggestion.mapper.ProductSuggestionMapper;
 import tn.anasazx.tunirate.productSuggestion.repository.ProductSuggestionRepository;
@@ -22,6 +25,7 @@ public class ProductSuggestionServiceImpl implements ProductSuggestionService {
     private final ProductSuggestionRepository productSuggestionRepository;
     private final UserRepository userRepository;
     private final ProductSuggestionMapper productSuggestionMapper;
+    private final ProductRepository productRepository;
 
     @Override
     public ProductSuggestionResponse createSuggestion(ProductSuggestionRequest request) {
@@ -62,15 +66,24 @@ public class ProductSuggestionServiceImpl implements ProductSuggestionService {
     }
 
     @Override
-    public ProductSuggestionResponse updateStatus(Long id, SuggestionStatus status) {
+    public ProductSuggestionResponse updateStatus(Long id, UpdateStatusRequest request) {
 
         ProductSuggestion suggestion = productSuggestionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Suggestion not found"));
 
-        suggestion.setStatus(status);
+        if (request.status() == SuggestionStatus.APPROVED) {
+            if (request.productId() == null) {
+                throw new RuntimeException("Product id is required when approving a suggestion");
+            }
+
+            Product product = productRepository.findById(request.productId())
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+            suggestion.setProduct(product);
+        }
+
+        suggestion.setStatus(request.status());
 
         return productSuggestionMapper.toResponse(productSuggestionRepository.save(suggestion));
-
     }
 
     private User getCurrentUser(){

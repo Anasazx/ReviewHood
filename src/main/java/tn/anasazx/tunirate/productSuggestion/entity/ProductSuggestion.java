@@ -3,6 +3,7 @@ package tn.anasazx.tunirate.productSuggestion.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import tn.anasazx.tunirate.enums.SuggestionStatus;
+import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.user.entity.User;
 
 import java.time.LocalDateTime;
@@ -36,6 +37,10 @@ public class ProductSuggestion {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
 
     private LocalDateTime createdAt;
 

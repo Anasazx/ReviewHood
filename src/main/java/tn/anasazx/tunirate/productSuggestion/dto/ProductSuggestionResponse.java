@@ -8,5 +8,8 @@ public record ProductSuggestionResponse(
         String companyName,
         String description,
         String status,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        Long productId,
+        String productName
+
 ) {}
