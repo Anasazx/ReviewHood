@@ -17,22 +17,27 @@ public class ProductMapper {
 
     public static ProductResponse toResponse(Product product) {
 
-        Optional<String> imageUrl = product.getImages().stream()
+        ProductImage mainImage = product.getImages().stream()
                 .filter(ProductImage::isMain)
-                .map(ProductImage::getUrl)
                 .findFirst()
-                .or(() -> product.getImages().stream()
-                        .map(ProductImage::getUrl)
-                        .findFirst());
+                .orElse(null);
+
+        // fallback if no main image exists
+        if (mainImage == null && !product.getImages().isEmpty()) {
+            mainImage = product.getImages().getFirst();
+        }
+
         String categoryName = Optional.ofNullable(product.getSubcategory())
                 .map(Subcategory::getCategory)
                 .map(Category::getName)
                 .orElse(null);
+
         String subcategoryName = Optional.ofNullable(product.getSubcategory())
                 .map(Subcategory::getName)
                 .orElse(null);
 
-        boolean companyIsVerified =  product.getCompany().getStatus() == CompanyStatus.ACTIVE;
+        boolean companyIsVerified =
+                product.getCompany().getStatus() == CompanyStatus.ACTIVE;
 
         return new ProductResponse(
                 product.getId(),
@@ -44,23 +49,25 @@ public class ProductMapper {
                 product.getCompany().getName(),
                 companyIsVerified,
                 product.getCompany().getLogoUrl(),
-                imageUrl.orElse(null),
+                mainImage == null ? null : ProductImageMapper.toResponse(mainImage),
                 product.getReviewsAvg(),
                 product.getReviewCount(),
                 product.getCreatedAt()
         );
-
     }
 
     public static CompanyProductResponse toCompanyResponse(Product product) {
 
-        Optional<String> imageUrl = product.getImages().stream()
+        ProductImage mainImage = product.getImages().stream()
                 .filter(ProductImage::isMain)
-                .map(ProductImage::getUrl)
                 .findFirst()
-                .or(() -> product.getImages().stream()
-                        .map(ProductImage::getUrl)
-                        .findFirst());
+                .orElse(null);
+
+        // fallback if no main image exists
+        if (mainImage == null && !product.getImages().isEmpty()) {
+            mainImage = product.getImages().getFirst();
+        }
+
         String categoryName = Optional.ofNullable(product.getSubcategory())
                 .map(Subcategory::getCategory)
                 .map(Category::getName)
@@ -101,7 +108,7 @@ public class ProductMapper {
                 product.getCompany().getName(),
                 companyIsVerified,
                 product.getCompany().getLogoUrl(),
-                imageUrl.orElse(null),
+                mainImage == null ? null : ProductImageMapper.toResponse(mainImage),
                 product.getCreatedAt(),
                 createdByName,
                 updatedByName,
@@ -112,13 +119,16 @@ public class ProductMapper {
 
     public static AdminProductResponse toAdminResponse(Product product) {
 
-        Optional<String> imageUrl = product.getImages().stream()
+        ProductImage mainImage = product.getImages().stream()
                 .filter(ProductImage::isMain)
-                .map(ProductImage::getUrl)
                 .findFirst()
-                .or(() -> product.getImages().stream()
-                        .map(ProductImage::getUrl)
-                        .findFirst());
+                .orElse(null);
+
+        // fallback if no main image exists
+        if (mainImage == null && !product.getImages().isEmpty()) {
+            mainImage = product.getImages().getFirst();
+        }
+
         String categoryName = Optional.ofNullable(product.getSubcategory())
                 .map(Subcategory::getCategory)
                 .map(Category::getName)
@@ -156,7 +166,7 @@ public class ProductMapper {
                 product.getCompany().getName(),
                 companyIsVerified,
                 product.getCompany().getLogoUrl(),
-                imageUrl.orElse(null),
+                mainImage == null ? null : ProductImageMapper.toResponse(mainImage),
                 product.getCreatedAt(),
                 product.getCreatedBy().getName(),
                 product.getCreatedBy().getId(),
@@ -171,11 +181,7 @@ public class ProductMapper {
 
         List<ProductImageResponse> images = product.getImages()
                 .stream()
-                .map(img -> new ProductImageResponse(
-                        img.getId(),
-                        img.getUrl(),
-                        img.isMain()
-                ))
+                .map(ProductImageMapper::toResponse)
                 .toList();
 
 
@@ -210,11 +216,7 @@ public class ProductMapper {
 
         List<ProductImageResponse> images = product.getImages()
                 .stream()
-                .map(img -> new ProductImageResponse(
-                        img.getId(),
-                        img.getUrl(),
-                        img.isMain()
-                ))
+                .map(ProductImageMapper::toResponse)
                 .toList();
 
 

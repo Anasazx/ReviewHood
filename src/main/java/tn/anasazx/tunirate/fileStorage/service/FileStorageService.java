@@ -14,19 +14,11 @@ public class FileStorageService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    @Value("${file.base-url}")
-    private String baseUrl;
-
-
-    //This is saving the file with the whole name even with the host name
-    //TODO: fix this to save only the file name
     public String saveFile(MultipartFile file) {
 
         try {
 
-            String fileName =
-                    UUID.randomUUID() + "_" + file.getOriginalFilename();
-
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
             Path uploadPath = Paths.get(uploadDir);
 
@@ -34,15 +26,10 @@ public class FileStorageService {
                 Files.createDirectories(uploadPath);
             }
 
-
             Path filePath = uploadPath.resolve(fileName);
-
-
             file.transferTo(filePath.toFile());
 
-
-            // Return public URL
-            return baseUrl + fileName;
+            return fileName;
 
 
         } catch (IOException e) {
@@ -51,23 +38,18 @@ public class FileStorageService {
     }
 
 
-    public void deleteFile(String fileUrl) {
+    public void deleteFile(String fileName) {
 
         try {
-
-            String fileName =
-                    fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
-
 
             Path filePath =
                     Paths.get(uploadDir).resolve(fileName);
 
-
             Files.deleteIfExists(filePath);
-
 
         } catch (IOException e) {
             throw new RuntimeException("File delete failed", e);
         }
     }
+
 }

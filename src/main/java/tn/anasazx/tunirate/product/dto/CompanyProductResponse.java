@@ -14,7 +14,7 @@ public record CompanyProductResponse(
         String companyName,
         boolean companyIsVerified,
         String companyLogoUrl,
-        String imageUrl,
+        ProductImageResponse image,
         LocalDateTime createdAt,
         String createdByName,
         String updatedByName,

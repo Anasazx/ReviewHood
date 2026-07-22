@@ -13,7 +13,7 @@ public record ProductResponse(
         String companyName,
         boolean companyIsVerified,
         String companyLogoUrl,
-        String imageUrl,
+        ProductImageResponse imageUrl,
         double reviewsAvg,
         int reviewCount,
         LocalDateTime createdAt

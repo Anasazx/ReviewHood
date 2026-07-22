@@ -43,7 +43,7 @@ public class ProductImageServiceImpl implements ProductImageService {
         image.setMain(!hasImages);
 
         // 4. save
-        return ProductImageMapper.toDto(productImageRepository.save(image));
+        return ProductImageMapper.toResponse(productImageRepository.save(image));
     }
 
     @Override
@@ -72,7 +72,7 @@ public class ProductImageServiceImpl implements ProductImageService {
 
     @Override
     public List<ProductImageResponse> getImagesByProductId(Long productId) {
-        return ProductImageMapper.toDtoList(productImageRepository.findByProductId(productId));
+        return ProductImageMapper.toResponseList(productImageRepository.findByProductId(productId));
     }
 
 }

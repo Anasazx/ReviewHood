@@ -15,7 +15,7 @@ public record AdminProductResponse(
         String companyName,
         boolean companyIsVerified,
         String companyLogoUrl,
-        String imageUrl,
+        ProductImageResponse image,
         LocalDateTime createdAt,
         String createdByName,
         Long createdById,

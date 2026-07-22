@@ -7,19 +7,20 @@ import java.util.List;
 
 public class ProductImageMapper {
 
-    // single entity → DTO
-    public static ProductImageResponse toDto(ProductImage image) {
+    private static final String UPLOAD_URL = "/uploads/";
+
+    public static ProductImageResponse toResponse(ProductImage image) {
+        System.out.println("response exemple: " + UPLOAD_URL + image.getUrl());
         return new ProductImageResponse(
                 image.getId(),
-                image.getUrl(),
+                UPLOAD_URL + image.getUrl(),
                 image.isMain()
         );
     }
 
-    // list of entities → list of DTOs
-    public static List<ProductImageResponse> toDtoList(List<ProductImage> images) {
+    public static List<ProductImageResponse> toResponseList(List<ProductImage> images) {
         return images.stream()
-                .map(ProductImageMapper::toDto)
+                .map(ProductImageMapper::toResponse)
                 .toList();
     }
 }
