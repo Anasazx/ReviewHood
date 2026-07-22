@@ -45,6 +45,7 @@ public class ProductServiceImpl implements ProductService {
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
     private final FileStorageService fileStorageService;
+    private final ProductMapper productMapper;
 
     //This methode returns the product with his details such as reviews...
     //There is a methode that returns only the basic info of a product called getProductById
@@ -58,7 +59,7 @@ public class ProductServiceImpl implements ProductService {
 
         long reviewsCount = reviewRepository.countByProductId(ProductId);
 
-        return ProductMapper.toDetailsResponse(product, avgRating, reviewsCount);
+        return productMapper.toDetailsResponse(product, avgRating, reviewsCount);
     }
 
     @Override
@@ -72,7 +73,7 @@ public class ProductServiceImpl implements ProductService {
 
         long reviewsCount = reviewRepository.countByProductId(ProductId);
 
-        return ProductMapper.toAdminDetailsResponse(product, avgRating, reviewsCount);
+        return productMapper.toAdminDetailsResponse(product, avgRating, reviewsCount);
     }
 
     public Page<ProductResponse> getAllProducts(
@@ -88,7 +89,7 @@ public class ProductServiceImpl implements ProductService {
                             subcategoryId,
                             pageable
                     )
-                    .map(ProductMapper::toResponse);
+                    .map(productMapper::toResponse);
 
         }
         else if (categoryId != null) {
@@ -98,12 +99,12 @@ public class ProductServiceImpl implements ProductService {
                             categoryId,
                             pageable
                     )
-                    .map(ProductMapper::toResponse);
+                    .map(productMapper::toResponse);
         }
 
         return productRepository
                 .findAllByStatus(ProductStatus.PUBLISHED, pageable)
-                .map(ProductMapper::toResponse);
+                .map(productMapper::toResponse);
     }
 
     @Override
@@ -111,7 +112,7 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = findProductByIdStatusPublished(productId);
 
-        return ProductMapper.toResponse(product);
+        return productMapper.toResponse(product);
 
     }
 
@@ -159,7 +160,7 @@ public class ProductServiceImpl implements ProductService {
 
         productRepository.save(product);
 
-        return ProductMapper.toAdminResponse(product);
+        return productMapper.toAdminResponse(product);
     }
 
     @Override
@@ -184,7 +185,7 @@ public class ProductServiceImpl implements ProductService {
         product.setCreatedBy(currentUser);
         if (request.status() == ProductStatus.DRAFT) product.setStatus(ProductStatus.DRAFT);
 
-        return ProductMapper.toCompanyResponse(productRepository.save(product));
+        return productMapper.toCompanyResponse(productRepository.save(product));
 
     }
 
@@ -247,7 +248,7 @@ public class ProductServiceImpl implements ProductService {
 
         productRepository.save(product);
 
-        return ProductMapper.toAdminResponse(product);
+        return productMapper.toAdminResponse(product);
     }
 
 
@@ -261,7 +262,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Page<ProductResponse> getProductsByCompanyId(Long companyId, Pageable pageable) {
         return productRepository.findByCompanyIdAndStatus(companyId,  ProductStatus.PUBLISHED, pageable)
-                .map(ProductMapper::toResponse);
+                .map(productMapper::toResponse);
     }
 
     @Override
@@ -275,7 +276,7 @@ public class ProductServiceImpl implements ProductService {
 
         return findProductsByCompanyIdAsCompany(companyId)
                 .stream()
-                .map(ProductMapper::toCompanyResponse)
+                .map(productMapper::toCompanyResponse)
                 .toList();
     }
 
@@ -283,7 +284,7 @@ public class ProductServiceImpl implements ProductService {
     public List<AdminProductResponse> getProductsAsAdmin() {
         return findAllProductsAsAdmin()
                 .stream()
-                .map(ProductMapper::toAdminResponse)
+                .map(productMapper::toAdminResponse)
                 .toList();
     }
 
@@ -292,7 +293,7 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = findProductByIdStatusPublished(productId);
 
-        return ProductMapper.toCompanyResponse(product);
+        return productMapper.toCompanyResponse(product);
 
     }
 

@@ -37,16 +37,17 @@ public class CompanyServiceImpl implements CompanyService {
     private final CompanyMemberRepository companyMemberRepository;
     private final FileStorageService fileStorageService;
     private final UserRepository userRepository;
+    private final CompanyMapper companyMapper;
 
 
     @Override
     public CompanyResponse getCompanyById(Long id) {
-        return CompanyMapper.toResponse(findCompany(id));
+        return companyMapper.toResponse(findCompany(id));
     }
 
     @Override
     public CompanyDetailResponse getCompanyDetailsById(Long id) {
-        return CompanyMapper.toDetailResponse(findCompany(id));
+        return companyMapper.toDetailResponse(findCompany(id));
     }
 
     @Override
@@ -59,7 +60,7 @@ public class CompanyServiceImpl implements CompanyService {
         //Extract company entity from the membership response
         Company company = membership.getCompany();
 
-        return CompanyMapper.toResponse(company);
+        return companyMapper.toResponse(company);
     }
 
 
@@ -68,12 +69,12 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = companyRepository.findByNameIgnoreCase(name)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
 
-        return CompanyMapper.toResponse(company);
+        return companyMapper.toResponse(company);
     }
 
     @Override
     public List<CompanyResponse> getAllCompanies() {
-        return companyRepository.findAll().stream().map(CompanyMapper::toResponse).toList();
+        return companyRepository.findAll().stream().map(companyMapper::toResponse).toList();
     }
 
     @Override
@@ -81,43 +82,12 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = companyRepository.findById(companyId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found")
         );
-        return CompanyMapper.toAdminResponse(company);
+        return companyMapper.toAdminResponse(company);
     }
-
-    /*
-        @Override
-        public CompanyResponse createCompanyAsAdmin(AdminCompanyRequest request) {
-
-            companyRepository.findByNameIgnoreCase(request.name()).ifPresent(existing -> {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Company name already exists");
-            });
-
-            Long currentUserId = SecurityUtils.getCurrentUserId();
-
-            User currentUser = findUser(currentUserId);
-
-            Company company = new Company();
-            company.setName(request.name());
-            company.setDescription(request.description());
-            company.setPhoneNumber(request.phoneNumber());
-            company.setAddress(request.address());
-            company.setCountry(request.country());
-            company.setIndustry(request.industry());
-            company.setCreatedBy(currentUser);
-            company.setStatus(request.status() != null ? request.status() : CompanyStatus.PENDING);
-
-
-            return CompanyMapper.toResponse(companyRepository.save(company));
-        }
-    */
 
     @Override
     @Transactional
-    public CompanyResponse createCompanyAsAdmin(
-            AdminCompanyRequest request,
-            MultipartFile logo,
-            MultipartFile banner
-    ) {
+    public CompanyResponse createCompanyAsAdmin(AdminCompanyRequest request, MultipartFile logo, MultipartFile banner) {
 
         companyRepository.findByNameIgnoreCase(request.name())
                 .ifPresent(existing -> {
@@ -156,7 +126,7 @@ public class CompanyServiceImpl implements CompanyService {
 
         companyRepository.save(company);
 
-        return CompanyMapper.toResponse(company);
+        return companyMapper.toResponse(company);
     }
 
     @Override
@@ -247,7 +217,7 @@ public class CompanyServiceImpl implements CompanyService {
 
 
 
-        return CompanyMapper.toResponse(
+        return companyMapper.toResponse(
                 companyRepository.save(company)
         );
     }
@@ -268,7 +238,7 @@ public class CompanyServiceImpl implements CompanyService {
     public CompanyResponse getCompanyByProductId(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
-        return CompanyMapper.toResponse(product.getCompany());
+        return companyMapper.toResponse(product.getCompany());
     }
 
     @Override
@@ -282,7 +252,7 @@ public class CompanyServiceImpl implements CompanyService {
 
         return companyRepository.search(q)
                 .stream()
-                .map(CompanyMapper::toResponse)
+                .map(companyMapper::toResponse)
                 .toList();
     }
 

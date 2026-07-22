@@ -19,6 +19,8 @@ public class SearchServiceImpl implements SearchService {
 
     private final ProductRepository productRepository;
     private final CompanyRepository companyRepository;
+    private final ProductMapper productMapper;
+    private final CompanyMapper companyMapper;
 
     @Override
     public SearchResponseDTO search(String query) {
@@ -49,7 +51,7 @@ public class SearchServiceImpl implements SearchService {
         return productRepository
                 .search(q)
                 .stream()
-                .map(ProductMapper::toResponse)
+                .map(productMapper::toResponse)
                 .toList();
     }
 
@@ -63,7 +65,7 @@ public class SearchServiceImpl implements SearchService {
 
         return companyRepository.search(q)
                 .stream()
-                .map(CompanyMapper::toResponse)
+                .map(companyMapper::toResponse)
                 .toList();
     }
 

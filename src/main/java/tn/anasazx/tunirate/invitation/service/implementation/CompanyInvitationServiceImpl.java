@@ -50,7 +50,7 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
             return;
         }
 
-        Long companyId = membership.company().id();
+        Long companyId = membership.companyId();
 
         Optional<Company> companyOpt = companyRepository.findById(companyId);
         Optional<User> inviterOpt = userRepository.findById(inviterId);
@@ -198,7 +198,7 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
             throw new RuntimeException("User is not part of any company");
         }
 
-        Long companyId = membership.company().id();
+        Long companyId = membership.companyId();
 
         if (membership.companyRole() != CompanyRole.HEAD) {
             throw new RuntimeException("Not allowed");

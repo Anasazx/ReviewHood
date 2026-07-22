@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.company.mapper;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import tn.anasazx.tunirate.companySocialLink.mapper.CompanySocialLinkMapper;
 import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
@@ -14,9 +15,13 @@ import tn.anasazx.tunirate.user.mapper.UserMapper;
 import java.time.LocalDateTime;
 
 @Component
+@RequiredArgsConstructor
 public class CompanyMapper {
 
-    public static CompanyResponse toResponse(Company company) {
+    private final ProductMapper productMapper;
+    private final CompanyMemberMapper companyMemberMapper;
+
+    public CompanyResponse toResponse(Company company) {
         return new CompanyResponse(
                 company.getId(),
                 company.getName(),
@@ -28,7 +33,7 @@ public class CompanyMapper {
         );
     }
 
-    public static CompanyDetailResponse toDetailResponse(Company company) {
+    public CompanyDetailResponse toDetailResponse(Company company) {
         return new CompanyDetailResponse(
                 company.getId(),
                 company.getName(),
@@ -44,7 +49,7 @@ public class CompanyMapper {
         );
     }
 
-    public static AdminCompanyResponse toAdminResponse(Company company) {
+    public AdminCompanyResponse toAdminResponse(Company company) {
 
         UserResponse verifiedBy = null;
         LocalDateTime verifiedAt = null;
@@ -71,8 +76,8 @@ public class CompanyMapper {
                 verifiedAt,
                 UserMapper.toResponse(company.getCreatedBy()),
                 company.getCreatedAt(),
-                company.getMembers().stream().map(CompanyMemberMapper::toResponse).toList(),
-                company.getProducts().stream().map(ProductMapper::toAdminResponse).toList()
+                company.getMembers().stream().map(companyMemberMapper::toResponse).toList(),
+                company.getProducts().stream().map(productMapper::toAdminResponse).toList()
         );
     }
 

@@ -26,6 +26,7 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
     private final CompanyMemberRepository companyMemberRepository;
     private final UserRepository userRepository;
     private final CompanyRepository companyRepository;
+    private final CompanyMemberMapper companyMemberMapper;
 
     @Override
     public CompanyMemberResponse assignUserToCompany(Long userId, Long companyId) {
@@ -49,7 +50,7 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
 
         CompanyMember saved = companyMemberRepository.save(member);
 
-        return CompanyMemberMapper.toResponse(saved);
+        return companyMemberMapper.toResponse(saved);
     }
 
     //this is for the global admin , normal user shouldn't provide a company id
@@ -63,14 +64,14 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
     public List<CompanyMemberResponse> getMembersByCompanyId(Long companyId) {
         return companyMemberRepository.findByCompanyId(companyId)
                 .stream()
-                .map(CompanyMemberMapper::toResponse)
+                .map(companyMemberMapper::toResponse)
                 .toList();
     }
 
     @Override
     public CompanyMemberResponse getCompanyByUserId(Long userId) {
         return companyMemberRepository.findFirstByUserId(userId)
-                .map(CompanyMemberMapper::toResponse)
+                .map(companyMemberMapper::toResponse)
                 .orElse(null);
     }
 
@@ -96,9 +97,9 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
         }
 
         return companyMemberRepository
-                .findByCompanyId(membership.company().id())
+                .findByCompanyId(membership.companyId())
                 .stream()
-                .map(CompanyMemberMapper::toResponse)
+                .map(companyMemberMapper::toResponse)
                 .toList();
 
     }
@@ -114,7 +115,7 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
 
         CompanyMember saved = companyMemberRepository.save(membership);
 
-        return CompanyMemberMapper.toResponse(saved);
+        return companyMemberMapper.toResponse(saved);
     }
 
 
@@ -133,7 +134,7 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
         }
 
 
-        companyMemberRepository.findByUserIdAndCompanyId(removedUserId, membership.company().id())
+        companyMemberRepository.findByUserIdAndCompanyId(removedUserId, membership.companyId())
                 .ifPresent(companyMemberRepository::delete);
     }
 
