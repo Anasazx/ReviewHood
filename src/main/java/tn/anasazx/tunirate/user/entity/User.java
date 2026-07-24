@@ -25,10 +25,9 @@ import java.time.LocalDateTime;
 @DiscriminatorValue("USER")
 public class User extends Actor {
 
-    public User(String name, String email, Country country, String password) {
+    public User(String name, String email, String password) {
         this.name = name;
         this.email = email;
-        this.country = country;
         this.password = password;
     }
 
@@ -42,7 +41,7 @@ public class User extends Actor {
     private boolean emailVerified = false;
 
     @JsonIgnore
-    @Column(nullable = false)
+    @Column
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -74,7 +73,10 @@ public class User extends Actor {
 
     @Enumerated(EnumType.STRING)
     @Column
-    private Country country;
+    private Country country = Country.OTHER;
+
+    @Column(unique = true)
+    private String googleId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

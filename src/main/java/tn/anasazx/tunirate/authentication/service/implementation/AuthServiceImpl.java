@@ -21,7 +21,6 @@ import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.mapper.UserMapper;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
-import java.util.UUID;
 
 
 @Service
@@ -36,21 +35,19 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse register(RegisterRequest request) {
-        
-        //Check if the password valid or not
+
         if (!isStrongPassword(request.password())) {
             throw new InvalidPasswordException();
         }
 
-        if (userRepository.existsUserByEmailOrName(request.email(), request.name())) {
-            throw new RuntimeException("Email or name already exists");
+        if (userRepository.existsUserByEmail(request.email())) {
+            throw new RuntimeException("Email already exists");
         }
         
         //Create a user instance
         User user = new User(
                 request.name(),
                 request.email(),
-                request.country(),
                 passwordEncoder.encode(request.password())
         );
 
@@ -110,27 +107,41 @@ public class AuthServiceImpl implements AuthService {
 
         GoogleIdToken.Payload payload = googleAuthService.verifyToken(request.idToken());
 
+        if (!payload.getEmailVerified()) {
+            throw new RuntimeException("Google email is not verified");
+        }
 
+        String googleId = payload.getSubject();
         String email = payload.getEmail();
         String name = (String) payload.get("name");
         String picture = (String) payload.get("picture");
 
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByGoogleId(googleId)
+                .orElseGet(() -> userRepository.findByEmail(email)
+                        .map(existingUser -> {
 
-                .orElseGet(() -> {
-                    User newUser = new User();
-                    newUser.setEmail(email);
-                    newUser.setName(name);
-                    newUser.setAvatarUrl(picture);
-                    newUser.setEmailVerified(true);
-                    newUser.setPassword(
-                            passwordEncoder.encode(UUID.randomUUID().toString())
-                    );
-                    newUser.setCountry(Country.OTHER);
-                    newUser.setProvider(AuthProvider.GOOGLE);
-                    return userRepository.save(newUser);
+                            // Link Google account
+                            existingUser.setGoogleId(googleId);
+                            existingUser.setProvider(AuthProvider.GOOGLE);
+                            existingUser.setEmailVerified(true);
 
-                });
+                            return userRepository.save(existingUser);
+
+                        })
+                        .orElseGet(() -> {
+
+                            User newUser = new User();
+
+                            newUser.setEmail(email);
+                            newUser.setName(name);
+                            newUser.setAvatarUrl(picture);
+                            newUser.setGoogleId(googleId);
+                            newUser.setEmailVerified(true);
+                            newUser.setCountry(Country.OTHER);
+                            newUser.setProvider(AuthProvider.GOOGLE);
+
+                            return userRepository.save(newUser);
+                        }));
 
         String token = jwtService.generateToken(user.getId());
 
