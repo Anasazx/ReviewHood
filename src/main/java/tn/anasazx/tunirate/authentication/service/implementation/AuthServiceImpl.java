@@ -10,6 +10,7 @@ import tn.anasazx.tunirate.authentication.dto.*;
 import tn.anasazx.tunirate.authentication.mapper.AuthMapper;
 import tn.anasazx.tunirate.authentication.service.AuthService;
 import tn.anasazx.tunirate.authentication.service.GoogleAuthService;
+import tn.anasazx.tunirate.emailVerification.service.EmailVerificationService;
 import tn.anasazx.tunirate.enums.AuthProvider;
 import tn.anasazx.tunirate.enums.Country;
 import tn.anasazx.tunirate.exception.InvalidPasswordException;
@@ -31,6 +32,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final GoogleAuthService googleAuthService;
+    private final EmailVerificationService emailVerificationService;
 
 
     @Override
@@ -51,7 +53,12 @@ public class AuthServiceImpl implements AuthService {
                 passwordEncoder.encode(request.password())
         );
 
-        UserResponse savedUser = UserMapper.toResponse(userRepository.save(user));
+        User saved = userRepository.save(user);
+
+        // Send verification code
+        emailVerificationService.requestVerificationCode(saved);
+
+        UserResponse savedUser = UserMapper.toResponse(saved);
 
         //Generate token
         String token = jwtService.generateToken(savedUser.id());

@@ -24,6 +24,7 @@ public class UserMapper {
         return new MinimizedUserResponse(
                 user.getId(),
                 user.getName(),
+                user.getEmail(),
                 user.getAvatarUrl()
         );
     }
@@ -32,6 +33,7 @@ public class UserMapper {
         return new MinimizedUserResponse(
                 user.id(),
                 user.name(),
+                user.email(),
                 user.avatarUrl()
         );
     }

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<body style="
+    font-family: Arial, sans-serif;
+    background:#f8fafc;
+    padding:30px;
+">
+
+<div style="
+    max-width:500px;
+    margin:auto;
+    background:white;
+    padding:30px;
+    border-radius:16px;
+    text-align:center;
+">
+
+    <!-- Preview appears in notifications -->
+    <p style="
+        margin:0;
+        font-size:18px;
+        font-weight:bold;
+        color:#0f172a;
+    ">
+        Code:
+        <span th:text="${code}">000000</span>
+    </p>
+
+    <p style="
+        margin-top:4px;
+        color:#64748b;
+        font-size:13px;
+    ">
+        Valid for 10 minutes.
+    </p>
+
+    <hr style="margin:25px 0; border:none; border-top:1px solid #e2e8f0;">
+
+    <h2 style="color:#0284c7; margin-top:0;">
+        Verify your email
+    </h2>
+
+    <p style="color:#475569;">
+        Enter the following verification code in ReviewHood:
+    </p>
+
+    <div style="
+        margin:25px 0;
+        font-size:36px;
+        font-weight:bold;
+        letter-spacing:10px;
+        color:#0f172a;
+    ">
+        <span th:text="${code}">000000</span>
+    </div>
+
+    <p style="
+        color:#64748b;
+        font-size:14px;
+    ">
+        This code expires in 10 minutes.
+    </p>
+
+    <p style="
+        color:#94a3b8;
+        font-size:13px;
+        margin-top:25px;
+    ">
+        ReviewHood Team
+    </p>
+
+</div>
+
+</body>
+</html>
