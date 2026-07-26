@@ -79,7 +79,6 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
 
     }
 
-    @Transactional
     @Override
     public void verifyEmail(VerifyEmailRequest request) {
 
@@ -101,8 +100,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         }
 
         if (!encoder.matches(request.code(), verification.getCodeHash())) {
-            verification.setAttempts(verification.getAttempts() + 1);
-            emailVerificationRepository.save(verification);
+            increaseAttempts(verification);
             throw new RuntimeException("Invalid verification code");
         }
 
@@ -121,6 +119,11 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     private String generateCode() {
         SecureRandom random = new SecureRandom();
         return String.format("%06d", random.nextInt(1000000));
+    }
+
+    public void increaseAttempts(EmailVerification verification) {
+        verification.setAttempts(verification.getAttempts() + 1);
+        emailVerificationRepository.save(verification);
     }
 
 }
