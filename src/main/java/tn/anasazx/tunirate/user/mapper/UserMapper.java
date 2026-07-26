@@ -25,6 +25,7 @@ public class UserMapper {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
+                user.isEmailVerified(),
                 user.getAvatarUrl()
         );
     }
@@ -34,6 +35,7 @@ public class UserMapper {
                 user.id(),
                 user.name(),
                 user.email(),
+                user.emailVerified(),
                 user.avatarUrl()
         );
     }
