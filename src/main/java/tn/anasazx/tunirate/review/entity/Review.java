@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
 @Entity
 @Table(
         name = "reviews",
@@ -33,6 +32,10 @@ public class Review {
     @Column(nullable = false)
     private Integer rating; // 1 to 5
 
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
     @Column(columnDefinition = "TEXT")
     private String content;
 
@@ -41,15 +44,9 @@ public class Review {
 
     private LocalDateTime updatedAt;
 
-    // Relationships
-
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
 
     @PrePersist
     public void prePersist() {
