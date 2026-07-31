@@ -13,11 +13,11 @@ import tn.anasazx.tunirate.comment.mapper.CommentMapper;
 import tn.anasazx.tunirate.comment.repository.CommentRepository;
 import tn.anasazx.tunirate.comment.service.CommentService;
 import tn.anasazx.tunirate.company.entity.Company;
+import tn.anasazx.tunirate.like.commentLike.repository.CommentLikeRepository;
 import tn.anasazx.tunirate.membership.entity.CompanyMember;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.review.entity.Review;
 import tn.anasazx.tunirate.review.repository.ReviewRepository;
-import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
@@ -30,17 +30,19 @@ public class CommentServiceImpl implements CommentService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final CompanyMemberRepository companyMemberRepository;
+    private final CommentLikeRepository commentLikeRepository;
 
     @Override
-    public Page<CommentResponse> getCommentsByReviewId(Long reviewId, Pageable pageable) {
+    public Page<CommentResponse> getCommentsByReviewId(Long reviewId, Pageable pageable, Long currentUserId) {
         return commentRepository.findByReview_Id(reviewId, pageable)
-                .map(CommentMapper::toResponse);
+                .map(comment -> {
+                    boolean liked = currentUserId != null && commentLikeRepository.existsByComment_IdAndUser_Id(comment.getId(), currentUserId);
+                    return CommentMapper.toResponse(comment, liked);
+                });
     }
 
     @Override
-    public CommentResponse createComment(Long reviewId, String content) {
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
+    public CommentResponse createComment(Long reviewId, String content, Long currentUserId) {
 
         User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -48,23 +50,20 @@ public class CommentServiceImpl implements CommentService {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found"));
 
+
         Comment comment = new Comment();
         comment.setContent(content);
         comment.setActor(user);
         comment.setReview(review);
 
-        return CommentMapper.toResponse(commentRepository.save(comment));
+        return CommentMapper.toResponse(commentRepository.save(comment), false);
     }
 
     @Override
-    public CommentResponse createCommentAsCompany(Long reviewId, String content) {
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
+    public CommentResponse createCommentAsCompany(Long reviewId, String content, Long currentUserId) {
 
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found"));
-
-        System.out.println("reviewId: " + reviewId);
 
         CompanyMember membership = companyMemberRepository.findFirstByUserId(currentUserId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not belong to any company"));
@@ -72,19 +71,18 @@ public class CommentServiceImpl implements CommentService {
         Company company = membership.getCompany( );
         User user = membership.getUser( );
 
+
         Comment comment = new Comment();
         comment.setContent(content);
         comment.setActor(company);
         comment.setPostedBy(user);
         comment.setReview(review);
 
-        return CommentMapper.toResponse(commentRepository.save(comment));
+        return CommentMapper.toResponse(commentRepository.save(comment), false);
     }
 
     @Override
-    public CommentResponse replyToComment(Long parentCommentId, String content) {
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
+    public CommentResponse replyToComment(Long parentCommentId, String content, Long currentUserId) {
 
         User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -98,13 +96,11 @@ public class CommentServiceImpl implements CommentService {
         replyComment.setReview(parentComment.getReview());
         replyComment.setRepliedTo(parentComment);
 
-        return CommentMapper.toResponse(commentRepository.save(replyComment));
+        return CommentMapper.toResponse(commentRepository.save(replyComment), false);
     }
 
     @Override
-    public CommentResponse replyToCommentAsCompany(Long parentCommentId, String content) {
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
+    public CommentResponse replyToCommentAsCompany(Long parentCommentId, String content, Long currentUserId) {
 
         Comment parentComment = commentRepository.findById(parentCommentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent comment not found"));
@@ -123,13 +119,11 @@ public class CommentServiceImpl implements CommentService {
         replyComment.setReview(parentComment.getReview());
         replyComment.setRepliedTo(parentComment);
 
-        return CommentMapper.toResponse(commentRepository.save(replyComment));
+        return CommentMapper.toResponse(commentRepository.save(replyComment), false);
     }
 
     @Override
-    public void deleteComment(Long commentId) {
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
+    public void deleteComment(Long commentId, Long currentUserId) {
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));

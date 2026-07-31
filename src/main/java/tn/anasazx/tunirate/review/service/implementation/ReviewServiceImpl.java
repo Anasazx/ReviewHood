@@ -11,6 +11,8 @@ import tn.anasazx.tunirate.comment.dto.CommentResponse;
 import tn.anasazx.tunirate.comment.mapper.CommentMapper;
 import tn.anasazx.tunirate.comment.repository.CommentRepository;
 import tn.anasazx.tunirate.enums.ActorType;
+import tn.anasazx.tunirate.like.commentLike.repository.CommentLikeRepository;
+import tn.anasazx.tunirate.like.reviewLike.repository.ReviewLikeRepository;
 import tn.anasazx.tunirate.membership.entity.CompanyMember;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.product.entity.Product;
@@ -23,7 +25,6 @@ import tn.anasazx.tunirate.review.entity.Review;
 import tn.anasazx.tunirate.review.mapper.ReviewMapper;
 import tn.anasazx.tunirate.review.repository.ReviewRepository;
 import tn.anasazx.tunirate.review.service.ReviewService;
-import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
@@ -39,45 +40,110 @@ public class ReviewServiceImpl implements ReviewService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final CommentRepository commentRepository;
-
+    private final ReviewLikeRepository reviewLikeRepository;
+    private final CommentLikeRepository commentLikeRepository;
 
     @Override
     public Page<ReviewResponse> getAllReviews(Pageable pageable) {
         return reviewRepository
                 .findAll(pageable)
-                .map(this::mapReview);
+                .map(r -> mapReview(r, null));
     }
 
     @Override
     public ReviewResponse getReviewById(Long id) {
-        return this.mapReview(findReviewEntity(id));
+        return this.mapReview(findReviewEntity(id), null);
+    }
+
+    @Transactional
+    @Override
+    public ReviewResponse createReview(ReviewRequest request, Long currentUserId) {
+
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Product product = productRepository.findById(request.productId())
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        reviewRepository
+                .findByUserIdAndProductId(currentUserId, request.productId())
+                .ifPresent(existing -> {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Review already exists for this user and product");
+                });
+
+        Review review = new Review();
+        review.setRating(request.rating());
+        review.setContent(request.content());
+        review.setUser(user);
+        review.setProduct(product);
+
+        Review savedReview = reviewRepository.save(review);
+
+        productRepository.recalculateReviewStats(product.getId());
+
+        return mapReview(savedReview, currentUserId);
+    }
+
+    @Transactional
+    @Override
+    public ReviewResponse updateReview(Long id, ReviewRequest request, Long currentUserId) {
+
+        Review review = findReviewEntity(id);
+
+        if (!review.getUser().getId().equals(currentUserId)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        review.setRating(request.rating());
+        review.setContent(request.content());
+
+        Review savedReview = reviewRepository.save(review);
+
+        productRepository.recalculateReviewStats(review.getProduct().getId());
+
+        return mapReview(savedReview, currentUserId);
+    }
+
+    @Transactional
+    @Override
+    public void deleteReview(Long id, Long currentUserId) {
+
+        Review review = findReviewEntity(id);
+
+        if (!review.getUser().getId().equals(currentUserId)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        Long productId = review.getProduct().getId();
+
+        reviewRepository.delete(review);
+
+        productRepository.recalculateReviewStats(productId);
     }
 
     @Override
-    public  ProductReviewsResponse getReviewsByProductId(Long productId, Pageable pageable) {
+    public ProductReviewsResponse getReviewsByProductId(Long productId, Pageable pageable, Long currentUserId) {
 
         ReviewResponse myReview = null;
 
-        if (SecurityUtils.getCurrentUserIdOrNull() != null){
-            Long currentUserId = SecurityUtils.getCurrentUserId();
+        if (currentUserId != null){
 
             myReview = reviewRepository
                     .findByUserIdAndProductId(currentUserId, productId)
-                    .map(this::mapReview)
+                    .map(r -> mapReview(r, currentUserId))
                     .orElse(null);
         }
 
 
         Page<ReviewResponse> reviews = reviewRepository
                 .findByProductId(productId, pageable)
-                .map(this::mapReview);
+                .map(r -> mapReview(r, currentUserId));
 
         return new ProductReviewsResponse(myReview, reviews);
     }
 
     @Override
-    public Page<MinimizedReviewResponse> getMyReviews(Pageable pageable) {
-        Long currentUserId = SecurityUtils.getCurrentUserId();
+    public Page<MinimizedReviewResponse> getMyReviews(Pageable pageable, Long currentUserId) {
         return reviewRepository.findReviewsByUserId(currentUserId, pageable)
                 .map(ReviewMapper::toMinimizedResponse);
     }
@@ -85,13 +151,11 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public Page<ReviewResponse> getReviewsByUserId(Long userId, Pageable pageable) {
         return reviewRepository.findByUserId(userId, pageable)
-                .map(this::mapReview);
+                .map(r -> mapReview(r, null));
     }
 
     @Override
-    public List<ReviewResponse> getMyCompanyReviews() {
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
+    public List<ReviewResponse> getMyCompanyReviews(Long currentUserId) {
 
         Optional<CompanyMember> membershipOpt = companyMemberRepository.findFirstByUserId(currentUserId);
 
@@ -100,126 +164,8 @@ public class ReviewServiceImpl implements ReviewService {
         Long companyId = membershipOpt.get().getCompany().getId();
 
         return reviewRepository.findByProductCompanyId(companyId).stream()
-                .map(this::mapReview)
+                .map(r -> mapReview(r, currentUserId))
                 .toList();
-
-    }
-
-    @Transactional
-    @Override
-    public ReviewResponse createReview(ReviewRequest request) {
-
-        //This gets the users id from the token
-        Long currentUserId = SecurityUtils.getCurrentUserId();
-        User user = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        //This checks if the product exists or not; it takes the product id from the request in the params
-        Product product = productRepository.findById(request.productId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-        /*
-        From our business model each user has the right for one review per product, so
-        this methode throws an exception if a user has already made a review
-        */
-        reviewRepository
-                .findByUserIdAndProductId(SecurityUtils.getCurrentUserId(), request.productId())
-                .ifPresent(existing -> {
-                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Review already exists for this user and product");
-                });
-
-
-        Review review = new Review();
-
-        review.setRating(request.rating());
-
-        review.setContent(request.content());
-
-        review.setUser(user);
-
-        review.setProduct(product);
-
-        int oldCount = product.getReviewCount();
-
-        if ((oldCount + 1) <= 0) {
-            throw new IllegalStateException("Invalid review count");
-        }
-
-        double newAverage = ((product.getReviewsAvg() * oldCount) + review.getRating()) / (oldCount + 1);
-
-        Review savedReview = reviewRepository.save(review);
-
-        product.setReviewsAvg(newAverage);
-
-        product.setReviewCount(oldCount + 1);
-
-        return mapReview(savedReview);
-    }
-
-    @Transactional
-    @Override
-    public ReviewResponse updateReview(Long id, ReviewRequest request) {
-
-        Review review = findReviewEntity(id);
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
-
-        if (!review.getUser().getId().equals(currentUserId)){
-             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-
-        Product product = review.getProduct();
-
-        int oldRating = review.getRating();
-
-        int reviewCount = product.getReviewCount();
-
-        if (reviewCount <= 0) {
-            throw new IllegalStateException("Invalid review count");
-        }
-
-        double newAverage = ((product.getReviewsAvg() * reviewCount) - oldRating + request.rating()) / reviewCount;
-
-        product.setReviewsAvg(newAverage);
-
-        review.setRating(request.rating());
-
-        review.setContent(request.content());
-
-        productRepository.save(product);
-
-        return mapReview(reviewRepository.save(review));
-    }
-
-    @Transactional
-    @Override
-    public void deleteReview(Long id) {
-
-        Review review = findReviewEntity(id);
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
-
-        if (!review.getUser().getId().equals(currentUserId)){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-
-        Product product = review.getProduct();
-        int oldReviewCount = product.getReviewCount();
-        int newReviewCount = oldReviewCount - 1;
-        product.setReviewCount(newReviewCount);
-
-        if (newReviewCount > 0) {
-            double newAverage = ((product.getReviewsAvg() * oldReviewCount) - review.getRating()) / newReviewCount;
-            product.setReviewsAvg(newAverage);
-        }
-        else if (newReviewCount == 0) {
-            product.setReviewsAvg(0.0);
-        }
-        else {
-            throw new IllegalStateException("Invalid review count");
-        }
-
-        productRepository.save(product);
-        reviewRepository.delete(review);
     }
 
     private Review findReviewEntity(Long id) {
@@ -227,29 +173,45 @@ public class ReviewServiceImpl implements ReviewService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found"));
     }
 
-    private ReviewResponse mapReview(Review review) {
+    private ReviewResponse mapReview(Review review, Long currentUserId) {
 
         Long commentsCount = commentRepository.countByReview_Id(review.getId());
 
-        CommentResponse previewComment = getPreviewComment(review);
+        CommentResponse previewComment = getPreviewComment(review, currentUserId);
+
+        boolean liked = false;
+
+        if (currentUserId != null) liked = reviewLikeRepository.existsByReview_IdAndUser_Id(review.getId(), currentUserId);
 
         return ReviewMapper.toResponse(
                 review,
                 commentsCount,
-                previewComment
+                previewComment,
+                liked
         );
     }
 
-    private CommentResponse getPreviewComment(Review review){
+    private CommentResponse getPreviewComment(Review review, Long currentUserId) {
 
         Long companyId = review.getProduct().getCompany().getId();
 
         return commentRepository
-                .findFirstByReview_IdAndActor_TypeAndActor_IdOrderByCreatedAtDesc(review.getId(), ActorType.COMPANY, companyId)
-                .map(CommentMapper::toResponse)
+                .findFirstByReview_IdAndActor_TypeAndActor_IdOrderByCreatedAtDesc(
+                        review.getId(),
+                        ActorType.COMPANY,
+                        companyId
+                )
+                .map(comment -> {
+                    boolean liked = currentUserId != null &&
+                            commentLikeRepository.existsByComment_IdAndUser_Id(
+                                    comment.getId(),
+                                    currentUserId
+                            );
+
+                    return CommentMapper.toResponse(comment, liked);
+                })
                 .orElse(null);
     }
-
 
 }
 

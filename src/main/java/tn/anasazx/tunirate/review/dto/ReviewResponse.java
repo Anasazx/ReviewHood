@@ -12,6 +12,8 @@ public record ReviewResponse(
         MinimizedUserResponse user,
         Long commentsCount,
         CommentResponse previewComment,
+        Long likeCount,
+        boolean liked,
         LocalDateTime createdAt
 ) {}
 

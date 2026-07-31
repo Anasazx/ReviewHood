@@ -17,6 +17,8 @@ public record CommentResponse(
         Long repliedToActorId,
         ActorType repliedToActorType,
         String repliedToActorName,
+        Long likeCount,
+        boolean liked,
         LocalDateTime createdAt
 ) {}
 

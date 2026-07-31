@@ -42,6 +42,7 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.updateCategory(id, request));
     }
 
+    //TODO: Remove the delete and make it soft delete
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

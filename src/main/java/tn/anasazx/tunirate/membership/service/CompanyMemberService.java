@@ -14,10 +14,10 @@ public interface CompanyMemberService {
 
     boolean isUserHeadInCompany(Long userId, Long companyId);
 
-    List<CompanyMemberResponse> getMyCompanyMembers();
+    List<CompanyMemberResponse> getMyCompanyMembers(Long currentUserId);
 
     CompanyMemberResponse updateRole(Long  userId, Long companyId, CompanyRole role);
 
-    void removeUserFromMyCompany(Long removedUserId);
+    void removeUserFromMyCompany(Long removedUserId, Long currentUserId);
 
 }

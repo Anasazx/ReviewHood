@@ -4,6 +4,6 @@ import tn.anasazx.tunirate.dashboard.companyDashboard.dto.CompanyDashboardRespon
 
 public interface CompanyDashboardService {
 
-    CompanyDashboardResponse getMyCompanyDashboard();
+    CompanyDashboardResponse getMyCompanyDashboard(Long currentUserId);
 
 }

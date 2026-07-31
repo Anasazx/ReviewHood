@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tn.anasazx.tunirate.emailVerification.dto.VerifyEmailRequest;
 import tn.anasazx.tunirate.emailVerification.service.EmailVerificationService;
+import tn.anasazx.tunirate.security.SecurityUtils;
 
 import java.util.Map;
 
@@ -20,7 +21,8 @@ public class EmailVerificationController {
 
     @PostMapping("/request")
     public ResponseEntity<?> requestVerificationCode() {
-        emailVerificationService.requestVerificationCode();
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        emailVerificationService.requestVerificationCode(currentUserId);
         return ResponseEntity.ok(
                 Map.of("message", "Verification code sent successfully" )
         );
@@ -28,7 +30,8 @@ public class EmailVerificationController {
 
     @PostMapping("/verify")
     public ResponseEntity<?> verifyEmail(@RequestBody VerifyEmailRequest request) {
-        emailVerificationService.verifyEmail(request);
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        emailVerificationService.verifyEmail(request, currentUserId);
         return ResponseEntity.ok(
                 Map.of("message", "Email verified successfully")
         );

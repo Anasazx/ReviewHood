@@ -10,6 +10,6 @@ import tn.anasazx.tunirate.user.dto.MinimizedUserResponse;
 public interface AuthService {
     AuthResponse register(RegisterRequest request);
     AuthResponse login(LoginRequest request);
-    MinimizedUserResponse authenticateUser ();
+    MinimizedUserResponse authenticateUser (Long currentUserId);
     AuthResponse googleLogin(GoogleLoginRequest request);
 }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.anasazx.tunirate.company.dto.*;
 import tn.anasazx.tunirate.company.service.CompanyService;
+import tn.anasazx.tunirate.security.SecurityUtils;
 
 import java.util.List;
 
@@ -33,7 +34,8 @@ public class CompanyController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/my")
     public ResponseEntity<CompanyResponse> getMyCompany() {
-        return ResponseEntity.ok(companyService.getMyCompany());
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(companyService.getMyCompany(currentUserId));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -70,8 +72,9 @@ public class CompanyController {
             @RequestPart(value = "logo", required = false) MultipartFile logo,
             @RequestPart(value = "banner", required = false) MultipartFile banner
     ) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(companyService.createCompanyAsAdmin(request, logo, banner));
+                .body(companyService.createCompanyAsAdmin(request, logo, banner, currentUserId));
     }
 
     //Admin method
@@ -83,8 +86,9 @@ public class CompanyController {
             @RequestPart(value = "logo", required = false) MultipartFile logo,
             @RequestPart(value = "banner", required = false) MultipartFile banner
     ) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(
-                companyService.updateCompanyAsAdmin(companyId, request, logo, banner)
+                companyService.updateCompanyAsAdmin(companyId, request, logo, banner, currentUserId)
         );
     }
 

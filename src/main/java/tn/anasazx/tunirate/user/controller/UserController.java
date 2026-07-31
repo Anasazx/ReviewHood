@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.dto.UpdateUserRequest;
 import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.entity.User;
@@ -44,22 +45,26 @@ public class UserController {
 
     @PostMapping("/me/avatar")
     public UserResponse uploadAvatar(@RequestParam("file") MultipartFile file) {
-        return userService.uploadAvatar(file);
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return userService.uploadAvatar(file, currentUserId);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/search")
     public ResponseEntity<List<UserResponse>> searchUsers(@RequestParam String q) {
-        return ResponseEntity.ok(userService.searchUsers(q));
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(userService.searchUsers(q, currentUserId));
     }
 
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getMyProfile() {
-        return ResponseEntity.ok(userService.getCurrentUser());
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(userService.getCurrentUser(currentUserId));
     }
 
     @PutMapping("/me")
     public ResponseEntity<UserResponse> updateMyProfile(@RequestBody UpdateUserRequest request) {
-        return ResponseEntity.ok(userService.updateMyProfile(request));
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(userService.updateMyProfile(request, currentUserId));
     }
 }

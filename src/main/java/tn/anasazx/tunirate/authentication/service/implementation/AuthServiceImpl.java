@@ -15,7 +15,6 @@ import tn.anasazx.tunirate.enums.AuthProvider;
 import tn.anasazx.tunirate.enums.Country;
 import tn.anasazx.tunirate.exception.InvalidPasswordException;
 import tn.anasazx.tunirate.security.JwtService;
-import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.dto.MinimizedUserResponse;
 import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.entity.User;
@@ -61,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
         UserResponse savedUser = UserMapper.toResponse(saved);
 
         //Generate token
-        String token = jwtService.generateToken(savedUser.id());
+        String token = jwtService.generateToken(saved);
 
         return AuthMapper.toAuthResponse(token, savedUser);
     }
@@ -86,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         //Token generation
-        String token = jwtService.generateToken(user.getId());
+        String token = jwtService.generateToken(user);
 
         return AuthMapper.toAuthResponse(token, user);
 
@@ -94,9 +93,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public MinimizedUserResponse authenticateUser() {
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
+    public MinimizedUserResponse authenticateUser(Long currentUserId) {
 
         //Find the user
         User user = userRepository.findFirstById(currentUserId).orElseThrow(
@@ -150,7 +147,7 @@ public class AuthServiceImpl implements AuthService {
                             return userRepository.save(newUser);
                         }));
 
-        String token = jwtService.generateToken(user.getId());
+        String token = jwtService.generateToken(user);
 
         return AuthMapper.toAuthResponse(token, user);
     }

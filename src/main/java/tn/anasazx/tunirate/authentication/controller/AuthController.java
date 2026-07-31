@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.anasazx.tunirate.authentication.dto.*;
 import tn.anasazx.tunirate.authentication.service.AuthService;
+import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.dto.MinimizedUserResponse;
 
 @RestController
@@ -33,7 +34,8 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<MinimizedUserResponse> authenticateUser() {
-        return ResponseEntity.ok(authService.authenticateUser());
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(authService.authenticateUser(currentUserId));
     }
 
 }

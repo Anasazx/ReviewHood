@@ -22,7 +22,6 @@ import tn.anasazx.tunirate.membership.entity.CompanyMember;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
-import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
@@ -51,8 +50,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public CompanyResponse getMyCompany() {
-        long currentUserId = SecurityUtils.getCurrentUserId();
+    public CompanyResponse getMyCompany(Long currentUserId) {
         CompanyMember membership = companyMemberRepository.findFirstByUserId(currentUserId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User doesn't belong to any company!")
         );
@@ -87,7 +85,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @Transactional
-    public CompanyResponse createCompanyAsAdmin(AdminCompanyRequest request, MultipartFile logo, MultipartFile banner) {
+    public CompanyResponse createCompanyAsAdmin(AdminCompanyRequest request, MultipartFile logo, MultipartFile banner, Long currentUserId) {
 
         companyRepository.findByNameIgnoreCase(request.name())
                 .ifPresent(existing -> {
@@ -97,7 +95,6 @@ public class CompanyServiceImpl implements CompanyService {
                     );
                 });
 
-        Long currentUserId = SecurityUtils.getCurrentUserId();
         User currentUser = findUser(currentUserId);
 
         Company company = new Company();
@@ -131,7 +128,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @Transactional
-    public CompanyResponse updateCompanyAsAdmin(Long companyId, AdminCompanyRequest request, MultipartFile logo, MultipartFile banner) {
+    public CompanyResponse updateCompanyAsAdmin(Long companyId, AdminCompanyRequest request, MultipartFile logo, MultipartFile banner, Long currentUserId) {
 
         Company company = findCompany(companyId);
 
@@ -145,7 +142,6 @@ public class CompanyServiceImpl implements CompanyService {
                     );
                 });
 
-        Long currentUserId = SecurityUtils.getCurrentUserId();
         User currentUser = findUser(currentUserId);
 
         // Basic fields

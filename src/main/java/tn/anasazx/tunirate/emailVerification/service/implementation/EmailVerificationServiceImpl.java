@@ -9,7 +9,6 @@ import tn.anasazx.tunirate.emailVerification.dto.VerifyEmailRequest;
 import tn.anasazx.tunirate.emailVerification.entity.EmailVerification;
 import tn.anasazx.tunirate.emailVerification.repository.EmailVerificationRepository;
 import tn.anasazx.tunirate.emailVerification.service.EmailVerificationService;
-import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
@@ -27,8 +26,8 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
 
     @Transactional
     @Override
-    public void requestVerificationCode() {
-        User user = getCurrentUser();
+    public void requestVerificationCode(Long currentUserId) {
+        User user = getCurrentUser(currentUserId);
         requestVerificationCode(user);
     }
 
@@ -80,9 +79,9 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     }
 
     @Override
-    public void verifyEmail(VerifyEmailRequest request) {
+    public void verifyEmail(VerifyEmailRequest request, Long currentUserId) {
 
-        User user = getCurrentUser();
+        User user = getCurrentUser(currentUserId);
 
         if (user.isEmailVerified()) {
             throw new RuntimeException("Email already verified");
@@ -110,8 +109,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
 
     }
 
-    private User getCurrentUser() {
-        Long userId = SecurityUtils.getCurrentUserId();
+    private User getCurrentUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }

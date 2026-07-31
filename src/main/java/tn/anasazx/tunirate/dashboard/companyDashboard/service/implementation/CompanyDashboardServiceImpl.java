@@ -6,13 +6,11 @@ import org.springframework.stereotype.Service;
 import tn.anasazx.tunirate.dashboard.companyDashboard.dto.CompanyDashboardResponse;
 import tn.anasazx.tunirate.dashboard.companyDashboard.mapper.CompanyDashboardMapper;
 import tn.anasazx.tunirate.dashboard.companyDashboard.service.CompanyDashboardService;
-
 import tn.anasazx.tunirate.membership.entity.CompanyMember;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
 import tn.anasazx.tunirate.review.entity.Review;
 import tn.anasazx.tunirate.review.repository.ReviewRepository;
-import tn.anasazx.tunirate.security.SecurityUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,8 +24,7 @@ public class CompanyDashboardServiceImpl implements CompanyDashboardService {
     private final ReviewRepository reviewRepository;
 
     @Override
-    public CompanyDashboardResponse getMyCompanyDashboard() {
-        Long currentUserId = SecurityUtils.getCurrentUserId();
+    public CompanyDashboardResponse getMyCompanyDashboard(Long currentUserId) {
 
         CompanyMember membership = companyMemberRepository.findFirstByUserId(currentUserId).orElseThrow(
                 () -> new RuntimeException("User doesnt belong to any company")

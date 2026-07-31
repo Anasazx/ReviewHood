@@ -7,15 +7,15 @@ import tn.anasazx.tunirate.comment.dto.CommentResponse;
 
 public interface CommentService {
 
-    Page<CommentResponse> getCommentsByReviewId(Long reviewId, Pageable pageable);
+    Page<CommentResponse> getCommentsByReviewId(Long reviewId, Pageable pageable, Long currentUserId);
 
-    CommentResponse createComment(Long reviewId, String content);
+    CommentResponse createComment(Long reviewId, String content, Long currentUserId);
 
-    CommentResponse createCommentAsCompany(Long reviewId, String content);
+    CommentResponse createCommentAsCompany(Long reviewId, String content, Long currentUserId);
 
-    CommentResponse replyToComment(Long parentCommentId, String content);
-    CommentResponse replyToCommentAsCompany(Long parentCommentId, String content);
+    CommentResponse replyToComment(Long parentCommentId, String content, Long currentUserId);
+    CommentResponse replyToCommentAsCompany(Long parentCommentId, String content, Long currentUserId);
 
-    void deleteComment(Long commentId);
+    void deleteComment(Long commentId, Long currentUserId);
 
 }

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tn.anasazx.tunirate.dashboard.companyDashboard.dto.CompanyDashboardResponse;
 import tn.anasazx.tunirate.dashboard.companyDashboard.service.CompanyDashboardService;
+import tn.anasazx.tunirate.security.SecurityUtils;
 
 @RestController
 @RequestMapping("/dashboard")
@@ -17,7 +18,8 @@ public class CompanyDashboardController {
 
     @GetMapping
     public ResponseEntity<CompanyDashboardResponse> getMyCompanyDashboard() {
-        return ResponseEntity.ok(companyDashboardService.getMyCompanyDashboard());
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(companyDashboardService.getMyCompanyDashboard(currentUserId));
     }
 
 }

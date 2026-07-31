@@ -8,6 +8,7 @@ import tn.anasazx.tunirate.membership.dto.CompanyMemberRequest;
 import tn.anasazx.tunirate.membership.dto.CompanyMemberResponse;
 import tn.anasazx.tunirate.membership.dto.UpdateMemberRoleRequest;
 import tn.anasazx.tunirate.membership.service.CompanyMemberService;
+import tn.anasazx.tunirate.security.SecurityUtils;
 
 import java.util.List;
 
@@ -34,7 +35,8 @@ public class CompanyMemberController {
 
     @DeleteMapping
     public ResponseEntity<Void> removeMemberFromMyCompany(@RequestParam Long userId) {
-        service.removeUserFromMyCompany(userId);
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        service.removeUserFromMyCompany(userId, currentUserId);
         return ResponseEntity.noContent().build();
     }
 
@@ -54,7 +56,8 @@ public class CompanyMemberController {
 
     @GetMapping
     public ResponseEntity<List<CompanyMemberResponse>> getMyCompanyMembers() {
-        return ResponseEntity.ok(service.getMyCompanyMembers());
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(service.getMyCompanyMembers(currentUserId));
     }
 
     @PatchMapping("/role")

@@ -16,8 +16,6 @@ import tn.anasazx.tunirate.membership.entity.CompanyMember;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.product.dto.*;
 import tn.anasazx.tunirate.product.entity.ProductImage;
-import tn.anasazx.tunirate.review.repository.ReviewRepository;
-import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.subcategory.entity.Subcategory;
 import tn.anasazx.tunirate.subcategory.repository.SubcategoryRepository;
 import tn.anasazx.tunirate.company.entity.Company;
@@ -30,7 +28,6 @@ import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 
 @Slf4j
@@ -43,7 +40,6 @@ public class ProductServiceImpl implements ProductService {
     private final SubcategoryRepository subcategoryRepository;
     private final CompanyMemberRepository companyMemberRepository;
     private final UserRepository userRepository;
-    private final ReviewRepository reviewRepository;
     private final FileStorageService fileStorageService;
     private final ProductMapper productMapper;
 
@@ -52,53 +48,25 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDetailsResponse getProductDetailsById(Long ProductId) {
         Product product = findProductByIdStatusPublished(ProductId);
-
-        Long companyId = product.getCompany().getId();
-
-        double avgRating = Optional.ofNullable(reviewRepository.findAverageRatingByCompanyId(companyId)).orElse(0.0);
-
-        long reviewsCount = reviewRepository.countByProductId(ProductId);
-
-        return productMapper.toDetailsResponse(product, avgRating, reviewsCount);
+        return productMapper.toDetailsResponse(product);
     }
 
     @Override
     public AdminProductDetailsResponse getProductDetailsByIdAsAdmin(Long ProductId) {
-
         Product product = findProductById(ProductId);
-
-        Long companyId = product.getCompany().getId();
-
-        double avgRating = Optional.ofNullable(reviewRepository.findAverageRatingByCompanyId(companyId)).orElse(0.0);
-
-        long reviewsCount = reviewRepository.countByProductId(ProductId);
-
-        return productMapper.toAdminDetailsResponse(product, avgRating, reviewsCount);
+        return productMapper.toAdminDetailsResponse(product);
     }
 
-    public Page<ProductResponse> getAllProducts(
-            Long categoryId,
-            Long subcategoryId,
-            Pageable pageable
-    ) {
+    public Page<ProductResponse> getAllProducts(Long categoryId, Long subcategoryId, Pageable pageable) {
 
         if (subcategoryId != null) {
             return productRepository
-                    .findAllByStatusAndSubcategoryId(
-                            ProductStatus.PUBLISHED,
-                            subcategoryId,
-                            pageable
-                    )
+                    .findAllByStatusAndSubcategoryId(ProductStatus.PUBLISHED, subcategoryId, pageable)
                     .map(productMapper::toResponse);
-
         }
         else if (categoryId != null) {
             return productRepository
-                    .findAllByStatusAndSubcategoryCategoryId(
-                            ProductStatus.PUBLISHED,
-                            categoryId,
-                            pageable
-                    )
+                    .findAllByStatusAndSubcategoryCategoryId(ProductStatus.PUBLISHED, categoryId, pageable)
                     .map(productMapper::toResponse);
         }
 
@@ -109,22 +77,17 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse getProductById(Long productId) {
-
         Product product = findProductByIdStatusPublished(productId);
-
         return productMapper.toResponse(product);
-
     }
 
     @Override
     @Transactional
-    public AdminProductResponse createProductAsAdmin(AdminProductRequest request, List<MultipartFile> images) {
+    public AdminProductResponse createProductAsAdmin(AdminProductRequest request, List<MultipartFile> images, Long currentUserId) {
 
         Company company = findCompanyById(request.companyId());
 
         Subcategory subcategory = request.subcategoryId() == null ? null : findSubcategoryById(request.subcategoryId());
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
 
         User currentUser = findUserByUserId(currentUserId);
 
@@ -164,9 +127,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public CompanyProductResponse createProductAsCompany(CompanyProductRequest request) {
-
-        Long currentUserId =  SecurityUtils.getCurrentUserId();
+    public CompanyProductResponse createProductAsCompany(CompanyProductRequest request, Long currentUserId) {
 
         CompanyMember membership = findMembershipByUserId(currentUserId);
         User currentUser = membership.getUser();
@@ -266,9 +227,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<CompanyProductResponse> getProductsAsCompany() {
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
+    public List<CompanyProductResponse> getProductsAsCompany(Long currentUserId) {
 
         CompanyMember membership = findMembershipByUserId(currentUserId);
 
@@ -298,7 +257,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // -- HELPERS --
-
     User findUserByUserId(Long userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED)

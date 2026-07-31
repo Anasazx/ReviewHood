@@ -4,6 +4,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import tn.anasazx.tunirate.user.entity.User;
 
 import java.security.Key;
 import java.util.Date;
@@ -19,9 +20,10 @@ public class JwtService {
 
 
     // Generate token
-    public String generateToken(Long id) {
+    public String generateToken(User user) {
         return Jwts.builder()
-                .setSubject(String.valueOf(id))
+                .setSubject(user.getId().toString())
+                .claim("role", user.getGlobalRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(
                         new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)
@@ -38,6 +40,12 @@ public class JwtService {
         );
     }
 
+    // Extract userRole
+    public String extractUserRole(String token) {
+        return parseClaims(token)
+                .getBody()
+                .get("role", String.class);
+    }
 
     // Validate token
     public boolean isTokenValid(String token) {
