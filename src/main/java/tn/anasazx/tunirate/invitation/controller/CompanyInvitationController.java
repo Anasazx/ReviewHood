@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import tn.anasazx.tunirate.invitation.dto.CompanyInvitationRequest;
 import tn.anasazx.tunirate.invitation.dto.CompanyInvitationResponse;
 import tn.anasazx.tunirate.invitation.service.CompanyInvitationService;
+import tn.anasazx.tunirate.security.SecurityUtils;
 
 import java.util.List;
 
@@ -21,7 +22,8 @@ public class CompanyInvitationController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<Void> sendInvitation(@RequestBody CompanyInvitationRequest request) {
-        service.sendInvitation(request);
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        service.sendInvitation(request, currentUserId);
         return ResponseEntity.ok().build();
     }
 
@@ -29,31 +31,36 @@ public class CompanyInvitationController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/company")
     public ResponseEntity<List<CompanyInvitationResponse>> getCompanyInvitations() {
-        return ResponseEntity.ok(service.getCompanyInvitations());
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(service.getCompanyInvitations(currentUserId));
     }
 
     // GET invitations for current user
     @GetMapping("/me")
     public ResponseEntity<List<CompanyInvitationResponse>> getMyInvitations() {
-        return ResponseEntity.ok(service.getUserInvitations());
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(service.getUserInvitations(currentUserId));
     }
 
     // ACCEPT invitation
     @PostMapping("/{invitationId}/accept")
     public ResponseEntity<CompanyInvitationResponse> acceptInvitation(@PathVariable Long invitationId) {
-        return ResponseEntity.ok(service.acceptInvitation(invitationId));
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(service.acceptInvitation(invitationId, currentUserId));
     }
 
     // REJECT invitation
     @PostMapping("/{invitationId}/reject")
     public ResponseEntity<CompanyInvitationResponse> rejectInvitation(@PathVariable Long invitationId) {
-        return ResponseEntity.ok(service.rejectInvitation(invitationId));
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(service.rejectInvitation(invitationId, currentUserId));
     }
 
     // CANCEL invitation (company head only)
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{invitationId}/cancel")
     public ResponseEntity<CompanyInvitationResponse> cancelInvitation(@PathVariable Long invitationId) {
-        return ResponseEntity.ok(service.cancelInvitation(invitationId));
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(service.cancelInvitation(invitationId, currentUserId));
     }
 }

@@ -11,7 +11,7 @@ import tn.anasazx.tunirate.user.entity.User;
 @Component
 public class CommentMapper {
 
-    public static CommentResponse toResponse(Comment comment) {
+    public static CommentResponse toResponse(Comment comment, boolean liked) {
 
         Actor actor = comment.getActor();
 
@@ -53,6 +53,8 @@ public class CommentMapper {
                 mentionedActor != null ? mentionedActor.getId() : null,
                 mentionedActor != null ? mentionedActor.getType() : null,
                 repliedToActorName,
+                comment.getLikeCount(),
+                liked,
                 comment.getCreatedAt()
         );
     }

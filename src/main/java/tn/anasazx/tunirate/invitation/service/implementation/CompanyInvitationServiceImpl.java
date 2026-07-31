@@ -16,7 +16,6 @@ import tn.anasazx.tunirate.invitation.repository.CompanyInvitationRepository;
 import tn.anasazx.tunirate.invitation.service.CompanyInvitationService;
 import tn.anasazx.tunirate.membership.dto.CompanyMemberResponse;
 import tn.anasazx.tunirate.membership.service.CompanyMemberService;
-import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
@@ -36,29 +35,28 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
     private static final List<InvitationStatus> USER_VISIBLE_STATUSES =  List.of(InvitationStatus.PENDING, InvitationStatus.ACCEPTED, InvitationStatus.REJECTED);
 
     @Override
-    public void sendInvitation(CompanyInvitationRequest request) {
+    public void sendInvitation(CompanyInvitationRequest request, Long currentUserId) {
 
-        Long inviterId = SecurityUtils.getCurrentUserId();
         String email = request.getInvitedUserEmail();
 
-        log.info("INVITATION_ATTEMPT inviterId={} email={}", inviterId, email);
+        log.info("INVITATION_ATTEMPT inviterId={} email={}", currentUserId, email);
 
-        CompanyMemberResponse membership = companyMemberService.getCompanyByUserId(inviterId);
+        CompanyMemberResponse membership = companyMemberService.getCompanyByUserId(currentUserId);
 
         if (membership == null) {
-            log.warn("INVITATION_BLOCKED: user {} not in any company", inviterId);
+            log.warn("INVITATION_BLOCKED: user {} not in any company", currentUserId);
             return;
         }
 
         Long companyId = membership.companyId();
 
         Optional<Company> companyOpt = companyRepository.findById(companyId);
-        Optional<User> inviterOpt = userRepository.findById(inviterId);
+        Optional<User> inviterOpt = userRepository.findById(currentUserId);
         Optional<User> invitedUserOpt = userRepository.findByEmail(email);
 
         if (companyOpt.isEmpty() || inviterOpt.isEmpty() || invitedUserOpt.isEmpty()) {
             log.warn("INVITATION_BLOCKED: missing data company={}, inviter={}, invitedEmail={}",
-                    companyId, inviterId, email);
+                    companyId, currentUserId, email);
             return;
         }
 
@@ -67,7 +65,7 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
         User invitedUser = invitedUserOpt.get();
 
         if (inviter.getEmail().equals(email)) {
-            log.warn("INVITATION_BLOCKED: self-invitation inviterId={}", inviterId);
+            log.warn("INVITATION_BLOCKED: self-invitation inviterId={}", currentUserId);
             return;
         }
 
@@ -103,17 +101,15 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
                 companyId, invitedUser.getId());
     }
 
-    @Override
     @Transactional
-    public CompanyInvitationResponse acceptInvitation(Long invitationId) {
-
-        Long userId = SecurityUtils.getCurrentUserId();
+    @Override
+    public CompanyInvitationResponse acceptInvitation(Long invitationId, Long currentUserId) {
 
         CompanyInvitation invitation = invitationRepository
                 .findById(invitationId)
                 .orElseThrow(() -> new RuntimeException("Invitation not found"));
 
-        if (!invitation.getUser().getId().equals(userId)) throw new RuntimeException("Not allowed");
+        if (!invitation.getUser().getId().equals(currentUserId)) throw new RuntimeException("Not allowed");
 
         if (invitation.getStatus() != InvitationStatus.PENDING) throw new RuntimeException("Invitation is not pending");
 
@@ -128,17 +124,15 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
         return CompanyInvitationMapper.toResponse(invitation);
     }
 
-    @Override
     @Transactional
-    public CompanyInvitationResponse rejectInvitation(Long invitationId) {
-
-        Long userId = SecurityUtils.getCurrentUserId();
+    @Override
+    public CompanyInvitationResponse rejectInvitation(Long invitationId, Long currentUserId) {
 
         CompanyInvitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new RuntimeException("Invitation not found"));
 
         // 1. Security check
-        if (!invitation.getUser().getId().equals(userId)) {
+        if (!invitation.getUser().getId().equals(currentUserId)) {
             throw new RuntimeException("Not allowed");
         }
 
@@ -158,11 +152,9 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
         return CompanyInvitationMapper.toResponse(invitation);
     }
 
-    @Override
     @Transactional
-    public CompanyInvitationResponse cancelInvitation(Long invitationId) {
-
-        Long userId = SecurityUtils.getCurrentUserId();
+    @Override
+    public CompanyInvitationResponse cancelInvitation(Long invitationId, Long currentUserId) {
 
         CompanyInvitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new RuntimeException("Invitation not found"));
@@ -170,7 +162,7 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
         Long companyId = invitation.getCompany().getId();
 
         // 1. Verify caller belongs to company (or is allowed role)
-        if (!companyMemberService.isUserHeadInCompany(userId, companyId)) {
+        if (!companyMemberService.isUserHeadInCompany(currentUserId, companyId)) {
             throw new RuntimeException("Not allowed");
         }
 
@@ -188,11 +180,9 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
     }
 
     @Override
-    public List<CompanyInvitationResponse> getCompanyInvitations() {
+    public List<CompanyInvitationResponse> getCompanyInvitations(Long currentUserId) {
 
-        Long userId = SecurityUtils.getCurrentUserId();
-
-        CompanyMemberResponse membership = companyMemberService.getCompanyByUserId(userId);
+        CompanyMemberResponse membership = companyMemberService.getCompanyByUserId(currentUserId);
 
         if (membership == null) {
             throw new RuntimeException("User is not part of any company");
@@ -211,11 +201,8 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
     }
 
     @Override
-    public List<CompanyInvitationResponse> getUserInvitations() {
-
-        Long userId = SecurityUtils.getCurrentUserId();
-
-        return invitationRepository.findAllByUserIdAndStatusInOrderByCreatedAtDesc(userId, USER_VISIBLE_STATUSES)
+    public List<CompanyInvitationResponse> getUserInvitations(Long currentUserId) {
+        return invitationRepository.findAllByUserIdAndStatusInOrderByCreatedAtDesc(currentUserId, USER_VISIBLE_STATUSES)
                 .stream()
                 .map(CompanyInvitationMapper::toResponse)
                 .toList();

@@ -8,6 +8,7 @@ import tn.anasazx.tunirate.productSuggestion.dto.ProductSuggestionRequest;
 import tn.anasazx.tunirate.productSuggestion.dto.ProductSuggestionResponse;
 import tn.anasazx.tunirate.productSuggestion.dto.UpdateStatusRequest;
 import tn.anasazx.tunirate.productSuggestion.service.ProductSuggestionService;
+import tn.anasazx.tunirate.security.SecurityUtils;
 
 import java.util.List;
 
@@ -20,12 +21,14 @@ public class ProductSuggestionController {
 
     @PostMapping
     public ResponseEntity<ProductSuggestionResponse> createSuggestion(@RequestBody ProductSuggestionRequest request) {
-        return ResponseEntity.ok(productSuggestionService.createSuggestion(request));
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(productSuggestionService.createSuggestion(request, currentUserId));
     }
 
     @GetMapping("/my")
     public ResponseEntity<List<ProductSuggestionResponse>> getMySuggestions() {
-        return ResponseEntity.ok(productSuggestionService.getMySuggestions());
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(productSuggestionService.getMySuggestions(currentUserId));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

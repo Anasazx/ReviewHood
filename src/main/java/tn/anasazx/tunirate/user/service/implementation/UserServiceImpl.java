@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import tn.anasazx.tunirate.fileStorage.service.FileStorageService;
-import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.dto.UpdateUserRequest;
 import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.entity.User;
@@ -54,9 +53,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse updateMyProfile(UpdateUserRequest request) {
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
+    public UserResponse updateMyProfile(UpdateUserRequest request, Long currentUserId) {
 
         User existingUser = userRepository.findById(currentUserId)
                 .orElseThrow(() ->
@@ -82,7 +79,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> searchUsers(String query) {
+    public List<UserResponse> searchUsers(String query, Long currentUserId) {
         return userRepository
                 .findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query)
                 .stream()
@@ -91,10 +88,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse getCurrentUser() {
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
-
+    public UserResponse getCurrentUser(Long currentUserId) {
         return UserMapper.toResponse(
                 userRepository.findById(currentUserId)
                         .orElseThrow(
@@ -105,9 +99,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse uploadAvatar(MultipartFile file) {
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
+    public UserResponse uploadAvatar(MultipartFile file, Long currentUserId) {
 
         User currentUser = userRepository.findById(currentUserId).orElseThrow(
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")

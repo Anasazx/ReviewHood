@@ -3,6 +3,7 @@ package tn.anasazx.tunirate.product.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import tn.anasazx.tunirate.enums.ProductStatus;
@@ -40,5 +41,33 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Long countByStatus(ProductStatus status);
 
-}
 
+    // --- review stats maintenance ---
+
+    @Modifying
+    @Query(value = """
+        UPDATE products p
+        SET reviews_avg = COALESCE((SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = :productId), 0),
+            review_count = (SELECT COUNT(*) FROM reviews r WHERE r.product_id = :productId)
+        WHERE p.id = :productId
+        """, nativeQuery = true)
+    void recalculateReviewStats(@Param("productId") Long productId);
+
+    @Modifying
+    @Query(value = """
+        UPDATE products p
+        SET reviews_avg = COALESCE((SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.id), 0),
+            review_count = (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id)
+        WHERE p.reviews_avg != COALESCE((SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.id), 0)
+           OR p.review_count != (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id)
+        """, nativeQuery = true)
+    int reconcileReviewStats();
+
+    @Modifying
+    @Query("UPDATE Product p SET p.reviewCount = p.reviewCount + 1 WHERE p.id = :productId")
+    void incrementReviewCount(@Param("productId") Long productId);
+
+    @Modifying
+    @Query("UPDATE Product p SET p.reviewCount = p.reviewCount - 1 WHERE p.id = :productId AND p.reviewCount > 0")
+    void decrementReviewCount(@Param("productId") Long productId);
+}

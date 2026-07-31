@@ -19,14 +19,14 @@ public interface ProductService {
     //Admin methods
     AdminProductDetailsResponse getProductDetailsByIdAsAdmin(Long productId);
     List<AdminProductResponse> getProductsAsAdmin();
-    AdminProductResponse createProductAsAdmin(AdminProductRequest request, List<MultipartFile> images);
+    AdminProductResponse createProductAsAdmin(AdminProductRequest request, List<MultipartFile> images, Long currentUserId);
     AdminProductResponse updateProductAsAdmin(Long id, AdminProductRequest request, List<MultipartFile> images);
     void updateProductStatusAsAdmin(Long productId, ProductStatus productStatus);
 
 
     //Company methods
-    List<CompanyProductResponse> getProductsAsCompany();
-    CompanyProductResponse createProductAsCompany(CompanyProductRequest request);
+    List<CompanyProductResponse> getProductsAsCompany(Long currentUserId);
+    CompanyProductResponse createProductAsCompany(CompanyProductRequest request, Long currentUserId);
     CompanyProductResponse getProductByIdAsCompany(Long productId);
 
 

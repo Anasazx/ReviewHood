@@ -3,7 +3,9 @@ package tn.anasazx.tunirate.review.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import tn.anasazx.tunirate.review.entity.Review;
 
 import java.util.List;
@@ -16,16 +18,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     Page<Review> findByUserId(Long userId, Pageable pageable);
     Optional<Review> findByUserIdAndProductId(Long userId, Long productId);
-
-    //specific queries
-    /*
-    @Query("""
-        SELECT COALESCE(AVG(r.rating), 0)
-        FROM Review r
-        WHERE r.product.id = :productId
-    """)
-    Double getAverageRatingByProductId(Long productId);
-    */
 
     Long countByProductId(Long productId);
 
@@ -44,6 +36,26 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
 
     Page<Review> findReviewsByUserId(Long userId, Pageable pageable);
+
+    @Modifying
+    @Query("UPDATE Review r SET r.likeCount = r.likeCount + 1 WHERE r.id = :reviewId")
+    void incrementLikeCount(@Param("reviewId") Long reviewId);
+
+    @Modifying
+    @Query("UPDATE Review r SET r.likeCount = r.likeCount - 1 WHERE r.id = :reviewId AND r.likeCount > 0")
+    void decrementLikeCount(@Param("reviewId") Long reviewId);
+
+    @Query("SELECT r.likeCount FROM Review r WHERE r.id = :reviewId")
+    Optional<Long> findLikeCountById(@Param("reviewId") Long reviewId);
+
+
+    @Modifying
+    @Query(value = """
+    UPDATE reviews r
+    SET like_count = (SELECT COUNT(*) FROM review_likes rl WHERE rl.review_id = r.id)
+    WHERE r.like_count != (SELECT COUNT(*) FROM review_likes rl WHERE rl.review_id = r.id)
+    """, nativeQuery = true)
+    int reconcileAllLikeCounts();
 
 
 }

@@ -11,10 +11,8 @@ public interface UserService {
     List<UserResponse> getAllUsers();
     UserResponse getUserById(Long id);
     UserResponse updateUser(Long id, User updatedUser);
-    List<UserResponse> searchUsers(String query);
-    UserResponse getCurrentUser();
-    UserResponse uploadAvatar(MultipartFile file);
-    UserResponse updateMyProfile(UpdateUserRequest request);
-
-
+    UserResponse updateMyProfile(UpdateUserRequest request, Long currentUserId);
+    List<UserResponse> searchUsers(String query, Long currentUserId);
+    UserResponse getCurrentUser(Long currentUserId);
+    UserResponse uploadAvatar(MultipartFile file, Long currentUserId);
 }

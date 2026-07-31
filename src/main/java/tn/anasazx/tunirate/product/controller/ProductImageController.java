@@ -23,7 +23,6 @@ public class ProductImageController {
     }
     @PostMapping("/{productId}")
     ResponseEntity<ProductImageResponse> addImage(@PathVariable Long productId, @RequestParam("file") MultipartFile file){
-        System.out.println("Adding image to product " + productId);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(productImageService.addImage(productId, file));

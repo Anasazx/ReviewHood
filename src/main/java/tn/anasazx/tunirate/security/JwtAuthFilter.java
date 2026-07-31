@@ -14,8 +14,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import tn.anasazx.tunirate.enums.GlobalRole;
-import tn.anasazx.tunirate.user.entity.User;
-import tn.anasazx.tunirate.user.repository.UserRepository;
+
 
 
 import java.io.IOException;
@@ -26,7 +25,6 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
@@ -34,11 +32,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
+
         String token = authHeader.substring(7);
         if (!jwtService.isTokenValid(token)) {
             filterChain.doFilter(request, response);
@@ -49,10 +49,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         Long currentUserId = jwtService.extractUserId(token);
 
         //Extract Role
-        GlobalRole role = extractUserRole(currentUserId);
+        GlobalRole role = GlobalRole.valueOf(jwtService.extractUserRole(token));
 
-        List<GrantedAuthority> authorities =
-                List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
 
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(
@@ -69,11 +68,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
 
-    }
-
-    GlobalRole extractUserRole(Long currentUserId){
-        User user = userRepository.findFirstById(currentUserId).orElseThrow(()-> new RuntimeException("User Not Found"));
-        return user.getGlobalRole();
     }
 
 }

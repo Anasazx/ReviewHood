@@ -9,7 +9,7 @@ import tn.anasazx.tunirate.user.mapper.UserMapper;
 
 public class ReviewMapper {
 
-    public static ReviewResponse toResponse(Review review, Long commentsCount, CommentResponse previewComment) {
+    public static ReviewResponse toResponse(Review review, Long commentsCount, CommentResponse previewComment, boolean liked) {
         return new ReviewResponse(
                 review.getId(),
                 review.getRating(),
@@ -17,6 +17,8 @@ public class ReviewMapper {
                 UserMapper.toMinimizedResponse(review.getUser()),
                 commentsCount,
                 previewComment,
+                review.getLikeCount(),
+                liked,
                 review.getCreatedAt()
         );
     }

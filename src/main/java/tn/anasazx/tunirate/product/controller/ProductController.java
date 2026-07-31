@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.anasazx.tunirate.product.dto.*;
 import tn.anasazx.tunirate.product.service.ProductService;
+import tn.anasazx.tunirate.security.SecurityUtils;
 
 import java.util.List;
 
@@ -28,8 +29,6 @@ public class ProductController {
 			@RequestParam(required = false) Long categoryId,
 			@RequestParam(required = false) Long subcategoryId
 	) {
-		System.out.println(categoryId);
-		System.out.println(subcategoryId);
 		return ResponseEntity.ok(
 				productService.getAllProducts(categoryId, subcategoryId, pageable)
 		);
@@ -67,9 +66,10 @@ public class ProductController {
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<AdminProductResponse> createProductAsAdmin(@RequestPart("data") @Valid AdminProductRequest request, @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+		Long currentUserId = SecurityUtils.getCurrentUserId();
 		return ResponseEntity
 				.status(HttpStatus.CREATED)
-				.body(productService.createProductAsAdmin(request, images));
+				.body(productService.createProductAsAdmin(request, images, currentUserId));
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")
@@ -90,13 +90,15 @@ public class ProductController {
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/c")
 	public ResponseEntity<CompanyProductResponse> createProductAsCompany(@Valid @RequestBody CompanyProductRequest request) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProductAsCompany(request));
+		Long currentUserId = SecurityUtils.getCurrentUserId();
+		return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProductAsCompany(request, currentUserId));
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/my")
 	public ResponseEntity<List<CompanyProductResponse>> getProductsAsCompany() {
-		return ResponseEntity.ok(productService.getProductsAsCompany());
+		Long currentUserId = SecurityUtils.getCurrentUserId();
+		return ResponseEntity.ok(productService.getProductsAsCompany(currentUserId));
 	}
 
 

@@ -12,7 +12,6 @@ import tn.anasazx.tunirate.productSuggestion.entity.ProductSuggestion;
 import tn.anasazx.tunirate.productSuggestion.mapper.ProductSuggestionMapper;
 import tn.anasazx.tunirate.productSuggestion.repository.ProductSuggestionRepository;
 import tn.anasazx.tunirate.productSuggestion.service.ProductSuggestionService;
-import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
@@ -28,9 +27,9 @@ public class ProductSuggestionServiceImpl implements ProductSuggestionService {
     private final ProductRepository productRepository;
 
     @Override
-    public ProductSuggestionResponse createSuggestion(ProductSuggestionRequest request) {
+    public ProductSuggestionResponse createSuggestion(ProductSuggestionRequest request, Long currentUserId) {
 
-        User user = getCurrentUser();
+        User user = getCurrentUser(currentUserId);
 
         ProductSuggestion suggestion = ProductSuggestion.builder()
                 .name(request.name())
@@ -44,9 +43,9 @@ public class ProductSuggestionServiceImpl implements ProductSuggestionService {
     }
 
     @Override
-    public List<ProductSuggestionResponse> getMySuggestions() {
+    public List<ProductSuggestionResponse> getMySuggestions(Long currentUserId) {
 
-        User user = getCurrentUser();
+        User user = getCurrentUser(currentUserId);
 
         return productSuggestionRepository.findAllByUserId(user.getId())
                 .stream()
@@ -86,10 +85,7 @@ public class ProductSuggestionServiceImpl implements ProductSuggestionService {
         return productSuggestionMapper.toResponse(productSuggestionRepository.save(suggestion));
     }
 
-    private User getCurrentUser(){
-
-        Long currentUserId = SecurityUtils.getCurrentUserId();
-
+    private User getCurrentUser(Long currentUserId){
         return userRepository.findById(currentUserId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }

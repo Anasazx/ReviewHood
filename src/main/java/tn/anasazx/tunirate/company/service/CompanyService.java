@@ -15,7 +15,7 @@ public interface CompanyService {
 
     CompanyDetailResponse getCompanyDetailsById(Long companyId);
 
-    CompanyResponse getMyCompany();
+    CompanyResponse getMyCompany(Long currentUserId);
 
     CompanyResponse getCompanyByName(String companyName);
 
@@ -25,9 +25,9 @@ public interface CompanyService {
     AdminCompanyResponse getCompanyDetailsByIdAsAdmin(Long companyId);
 
 
-    CompanyResponse createCompanyAsAdmin(AdminCompanyRequest request, MultipartFile logo, MultipartFile banner);
+    CompanyResponse createCompanyAsAdmin(AdminCompanyRequest request, MultipartFile logo, MultipartFile banner, Long currentUserId);
 
-    CompanyResponse updateCompanyAsAdmin(Long companyId, AdminCompanyRequest request, MultipartFile logo, MultipartFile banner);
+    CompanyResponse updateCompanyAsAdmin(Long companyId, AdminCompanyRequest request, MultipartFile logo, MultipartFile banner, Long currentUserId);
 
     void updateCompanyStatusAsAdmin(Long companyId, CompanyStatus companyStatus);
 

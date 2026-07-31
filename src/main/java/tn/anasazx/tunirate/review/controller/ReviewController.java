@@ -13,6 +13,8 @@ import tn.anasazx.tunirate.review.dto.ProductReviewsResponse;
 import tn.anasazx.tunirate.review.dto.ReviewRequest;
 import tn.anasazx.tunirate.review.dto.ReviewResponse;
 import tn.anasazx.tunirate.review.service.ReviewService;
+import tn.anasazx.tunirate.security.SecurityUtils;
+
 import java.util.List;
 
 @RestController
@@ -36,20 +38,22 @@ public class ReviewController {
 
 	@GetMapping("/product/{productId}")
 	public ResponseEntity<ProductReviewsResponse> getReviewsByProductId(@PathVariable Long productId, Pageable pageable) {
-		System.out.println("get reviews by product id endpoint called!");
-		return ResponseEntity.ok(reviewService.getReviewsByProductId(productId, pageable));
+		Long currentUserId = SecurityUtils.getCurrentUserIdOrNull();
+		return ResponseEntity.ok(reviewService.getReviewsByProductId(productId, pageable, currentUserId));
 	}
 
 	@GetMapping("/my")
 	public ResponseEntity<Page<MinimizedReviewResponse>> getMyReviews(Pageable pageable) {
-		return ResponseEntity.ok(reviewService.getMyReviews(pageable));
+		Long currentUserId = SecurityUtils.getCurrentUserId();
+		return ResponseEntity.ok(reviewService.getMyReviews(pageable, currentUserId));
 	}
 
 	//TODO: Implement pagination
 	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/c/my")
 	public ResponseEntity<List<ReviewResponse>> getMyCompanyReviews() {
-		return ResponseEntity.ok(reviewService.getMyCompanyReviews());
+		Long currentUserId = SecurityUtils.getCurrentUserId();
+		return ResponseEntity.ok(reviewService.getMyCompanyReviews(currentUserId));
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")
@@ -61,17 +65,20 @@ public class ReviewController {
 
 	@PostMapping
 	public ResponseEntity<ReviewResponse> createReview(@Valid @RequestBody ReviewRequest request) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.createReview(request));
+		Long currentUserId = SecurityUtils.getCurrentUserId();
+		return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.createReview(request, currentUserId));
 	}
 
 	@PutMapping("/{id}")
 	public ResponseEntity<ReviewResponse> updateReview(@PathVariable Long id, @Valid @RequestBody ReviewRequest request) {
-		return ResponseEntity.ok(reviewService.updateReview(id, request));
+		Long currentUserId = SecurityUtils.getCurrentUserId();
+		return ResponseEntity.ok(reviewService.updateReview(id, request, currentUserId));
 	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
-		reviewService.deleteReview(id);
+		Long currentUserId = SecurityUtils.getCurrentUserId();
+		reviewService.deleteReview(id, currentUserId);
 		return ResponseEntity.noContent().build();
 	}
 

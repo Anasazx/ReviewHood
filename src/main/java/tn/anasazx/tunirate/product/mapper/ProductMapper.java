@@ -15,8 +15,6 @@ import java.util.Optional;
 @Component
 public class ProductMapper {
 
-
-
     public ProductResponse toResponse(Product product) {
 
         ProductImage mainImage = product.getImages().stream()
@@ -179,7 +177,7 @@ public class ProductMapper {
 
     }
 
-    public ProductDetailsResponse toDetailsResponse(Product product, double avgRating, long reviewsCount) {
+    public ProductDetailsResponse toDetailsResponse(Product product) {
 
         List<ProductImageResponse> images = product.getImages()
                 .stream()
@@ -208,13 +206,13 @@ public class ProductMapper {
                 product.getCompany().getName(),
                 companyIsVerified,
                 product.getCompany().getLogoUrl(),
-                avgRating,
-                reviewsCount,
+                product.getReviewsAvg(),
+                product.getReviewCount(),
                 images
         );
     }
 
-    public AdminProductDetailsResponse toAdminDetailsResponse(Product product, double avgRating, long reviewsCount) {
+    public AdminProductDetailsResponse toAdminDetailsResponse(Product product) {
 
         List<ProductImageResponse> images = product.getImages()
                 .stream()
@@ -256,8 +254,8 @@ public class ProductMapper {
                 product.getCompany().getName(),
                 companyIsVerified,
                 product.getCompany().getLogoUrl(),
-                avgRating,
-                reviewsCount,
+                product.getReviewsAvg(),
+                product.getReviewCount(),
                 images,
                 product.getCreatedBy().getName(),
                 product.getCreatedBy().getId(),

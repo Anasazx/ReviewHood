@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.review.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -16,19 +17,21 @@ public interface ReviewService {
 
     ReviewResponse getReviewById(Long id);
 
-    ReviewResponse createReview(ReviewRequest request);
+    ProductReviewsResponse getReviewsByProductId(Long productId, Pageable pageable, Long currentUserId);
 
-    ReviewResponse updateReview(Long id, ReviewRequest request);
-
-    void deleteReview(Long id);
+    Page<MinimizedReviewResponse> getMyReviews(Pageable pageable, Long currentUserId);
 
     Page<ReviewResponse> getReviewsByUserId(Long userId, Pageable pageable);
 
-    ProductReviewsResponse getReviewsByProductId(Long productId, Pageable pageable);
+    List<ReviewResponse> getMyCompanyReviews(Long currentUserId);
 
-    Page<MinimizedReviewResponse> getMyReviews(Pageable pageable);
+    @Transactional
+    ReviewResponse createReview(ReviewRequest request, Long currentUserId);
 
-    List<ReviewResponse> getMyCompanyReviews();
+    @Transactional
+    ReviewResponse updateReview(Long id, ReviewRequest request, Long currentUserId);
 
+    @Transactional
+    void deleteReview(Long id, Long currentUserId);
 }
 

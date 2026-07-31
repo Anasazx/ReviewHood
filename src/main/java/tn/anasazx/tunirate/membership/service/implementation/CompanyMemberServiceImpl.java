@@ -13,7 +13,6 @@ import tn.anasazx.tunirate.membership.entity.CompanyMember;
 import tn.anasazx.tunirate.membership.mapper.CompanyMemberMapper;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.membership.service.CompanyMemberService;
-import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
@@ -53,7 +52,7 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
         return companyMemberMapper.toResponse(saved);
     }
 
-    //this is for the global admin , normal user shouldn't provide a company id
+    //this is for the global admin, normal user shouldn't provide a company id
     @Override
     public void removeUserFromCompany(Long userId, Long companyId) {
         companyMemberRepository.findByUserIdAndCompanyId(userId, companyId)
@@ -86,9 +85,8 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
     }
 
     @Override
-    public List<CompanyMemberResponse> getMyCompanyMembers() {
-        Long userId = SecurityUtils.getCurrentUserId();
-        CompanyMemberResponse membership = getCompanyByUserId(userId);
+    public List<CompanyMemberResponse> getMyCompanyMembers(Long currentUserId) {
+        CompanyMemberResponse membership = getCompanyByUserId(currentUserId);
         if (membership == null) {
             throw new RuntimeException("User is not in this company");
         }
@@ -120,11 +118,9 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
 
 
     @Override
-    public void removeUserFromMyCompany(Long removedUserId) {
+    public void removeUserFromMyCompany(Long removedUserId, Long currentUserId) {
 
-        Long userId = SecurityUtils.getCurrentUserId();
-
-        CompanyMemberResponse membership = getCompanyByUserId(userId);
+        CompanyMemberResponse membership = getCompanyByUserId(currentUserId);
 
         if (membership == null) {
             throw new RuntimeException("User is not in this company");
