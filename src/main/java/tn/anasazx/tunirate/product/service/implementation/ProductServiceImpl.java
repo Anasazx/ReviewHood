@@ -57,6 +57,29 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.toAdminDetailsResponse(product);
     }
 
+    @Override
+    public Page<ProductAIResponse> getUncategorizedProducts(Pageable pageable) {
+        return productRepository
+                .findAllBySubcategoryIsNull(pageable)
+                .map(productMapper::toProductAIResponse);
+    }
+
+    @Override
+    public void updateSubcategory(Long productId, Long subcategoryId) {
+        if (subcategoryId == null) return;
+        Product product = productRepository
+                .findById(productId)
+                .orElseThrow();
+
+        Subcategory subcategory = subcategoryRepository
+                .findById(subcategoryId)
+                .orElseThrow();
+
+        product.setSubcategory(subcategory);
+        productRepository.save(product);
+    }
+
+    @Override
     public Page<ProductResponse> getAllProducts(Long categoryId, Long subcategoryId, Pageable pageable) {
 
         if (subcategoryId != null) {

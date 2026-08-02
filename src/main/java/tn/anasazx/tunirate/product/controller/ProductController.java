@@ -34,6 +34,21 @@ public class ProductController {
 		);
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
+	@GetMapping("/uncategorized")
+	public ResponseEntity<Page<ProductAIResponse>> getUncategorizedProducts(Pageable pageable) {
+		return ResponseEntity.ok(
+				productService.getUncategorizedProducts(pageable)
+		);
+	}
+
+	@PreAuthorize("hasRole('ADMIN')")
+	@PatchMapping("/{productId}/subcategory")
+	public ResponseEntity<Void> updateProductSubcategory(@PathVariable Long productId, @RequestBody UpdateSubcategoryRequest request) {
+		productService.updateSubcategory(productId, request.subcategoryId());
+		return ResponseEntity.ok().build();
+	}
+
 	//On the public front this is not used, maybe in the future, then I will remove the preAuthorize
 	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/{productId}")

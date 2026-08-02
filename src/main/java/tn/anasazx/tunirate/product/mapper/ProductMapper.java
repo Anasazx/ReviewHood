@@ -265,4 +265,8 @@ public class ProductMapper {
         );
     }
 
+    public ProductAIResponse toProductAIResponse(Product product){
+        return new ProductAIResponse(product.getId(), product.getName(), product.getDescription());
+    }
+
 }

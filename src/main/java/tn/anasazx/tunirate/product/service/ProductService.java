@@ -12,6 +12,11 @@ public interface ProductService {
 
     //Public methods
     ProductDetailsResponse getProductDetailsById(Long productId);
+
+    Page<ProductAIResponse> getUncategorizedProducts(Pageable pageable);
+
+    void updateSubcategory(Long productId, Long subcategoryId);
+
     Page<ProductResponse> getAllProducts(Long categoryId, Long subcategoryId, Pageable pageable);
     ProductResponse getProductById(Long productId);
     Page<ProductResponse> getProductsByCompanyId(Long companyId, Pageable pageable);

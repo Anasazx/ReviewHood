@@ -41,6 +41,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Long countByStatus(ProductStatus status);
 
+    Page<Product> findAllBySubcategoryIsNull(Pageable pageable);
+
 
     // --- review stats maintenance ---
 
