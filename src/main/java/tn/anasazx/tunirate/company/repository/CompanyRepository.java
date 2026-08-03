@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.enums.CompanyStatus;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +23,17 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
 	List<Company> search(@Param("q") String q);
 
 	Long countByStatus(CompanyStatus status);
+
+
+	// CompanyRepository.java
+	@Query(value = """
+    SELECT CAST(created_at AS date) AS day, COUNT(*) AS count
+    FROM companies
+    WHERE created_at >= :startDate
+    GROUP BY CAST(created_at AS date)
+    ORDER BY day
+    """, nativeQuery = true)
+	List<Object[]> countCompaniesByDayRaw(@Param("startDate") LocalDateTime startDate);
 
 }
 

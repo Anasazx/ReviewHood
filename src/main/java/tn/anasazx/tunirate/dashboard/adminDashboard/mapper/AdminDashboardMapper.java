@@ -1,6 +1,9 @@
 package tn.anasazx.tunirate.dashboard.adminDashboard.mapper;
 
 import tn.anasazx.tunirate.dashboard.adminDashboard.dto.AdminDashboardResponse;
+import tn.anasazx.tunirate.dashboard.adminDashboard.dto.TimeSeriesPointDTO;
+
+import java.util.List;
 
 
 public class AdminDashboardMapper {
@@ -11,7 +14,10 @@ public class AdminDashboardMapper {
             Long totalVerifiedCompanies,
             Long totalProducts,
             Long totalReviews,
-            Long totalPendingApprovals
+            Long totalPendingApprovals,
+            List<TimeSeriesPointDTO> usersOverTime,
+            List<TimeSeriesPointDTO> companiesOverTime,
+            List<TimeSeriesPointDTO> reviewsOverTime
     ) {
         return new AdminDashboardResponse(
                 totalUsers,
@@ -19,7 +25,10 @@ public class AdminDashboardMapper {
                 totalVerifiedCompanies,
                 totalProducts,
                 totalReviews,
-                totalPendingApprovals
+                totalPendingApprovals,
+                usersOverTime,
+                companiesOverTime,
+                reviewsOverTime
         );
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import tn.anasazx.tunirate.review.entity.Review;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,5 +58,15 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     """, nativeQuery = true)
     int reconcileAllLikeCounts();
 
+
+
+    @Query(value = """
+    SELECT CAST(created_at AS date) AS day, COUNT(*) AS count
+    FROM reviews
+    WHERE created_at >= :startDate
+    GROUP BY CAST(created_at AS date)
+    ORDER BY day
+    """, nativeQuery = true)
+    List<Object[]> countReviewsByDayRaw(@Param("startDate") LocalDateTime startDate);
 
 }
