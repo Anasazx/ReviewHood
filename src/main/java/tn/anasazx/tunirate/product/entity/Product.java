@@ -26,6 +26,8 @@ import java.util.List;
 )
 public class Product {
 
+    //TODO: Add link to the product, like the link to buy
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

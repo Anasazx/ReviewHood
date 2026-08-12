@@ -1,19 +1,12 @@
 package tn.anasazx.tunirate.search.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.springframework.data.domain.Page;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.product.dto.ProductResponse;
 
-import java.util.List;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class SearchResponseDTO {
-    private List<ProductResponse> products;
-    private List<CompanyResponse> companies;
-}
+
+public record SearchResponseDTO(
+    Page<ProductResponse> products,
+    Page<CompanyResponse> companies
+){}

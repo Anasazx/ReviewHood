@@ -1,6 +1,7 @@
 package tn.anasazx.tunirate.product.repository;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -15,11 +16,12 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("""
-    SELECT p FROM Product p
+    SELECT p
+    FROM Product p
     WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :q, '%'))
-    OR LOWER(p.description) LIKE LOWER(CONCAT('%', :q, '%'))
+       OR LOWER(p.description) LIKE LOWER(CONCAT('%', :q, '%'))
     """)
-    List<Product> search(@Param("q") String q);
+    Page<Product> search(@Param("q") String q, Pageable pageable);
 
     Page<Product> findAllByStatus(ProductStatus status, Pageable pageable);
 
@@ -65,11 +67,24 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         """, nativeQuery = true)
     int reconcileReviewStats();
 
-    @Modifying
-    @Query("UPDATE Product p SET p.reviewCount = p.reviewCount + 1 WHERE p.id = :productId")
-    void incrementReviewCount(@Param("productId") Long productId);
+    List<Product> findAllByOrderByCreatedAtDesc(PageRequest of);
 
-    @Modifying
-    @Query("UPDATE Product p SET p.reviewCount = p.reviewCount - 1 WHERE p.id = :productId AND p.reviewCount > 0")
-    void decrementReviewCount(@Param("productId") Long productId);
+
+    @Query("""
+    SELECT p
+    FROM Product p
+    WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))
+    ORDER BY
+        CASE
+            WHEN LOWER(p.name) = LOWER(:query) THEN 0
+            WHEN LOWER(p.name) LIKE LOWER(CONCAT(:query, '%')) THEN 1
+            ELSE 2
+        END,
+        p.name ASC
+    """)
+    List<Product> findSuggestions(
+            @Param("query") String query,
+            Pageable pageable
+    );
+
 }

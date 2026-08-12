@@ -48,6 +48,7 @@ public class SecurityConfig {
                                 "/comments/**",
                                 "/suggestions/**",
                                 "/test/email",
+                                "/feed",
                                 "/admin/**"
                         ).permitAll()
                         .requestMatchers("/uploads/**").permitAll()

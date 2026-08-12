@@ -2,6 +2,7 @@ package tn.anasazx.tunirate.company.service.implementation;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -246,7 +247,7 @@ public class CompanyServiceImpl implements CompanyService {
             return List.of();
         }
 
-        return companyRepository.search(q)
+        return companyRepository.search(q, PageRequest.of(0, 20))
                 .stream()
                 .map(companyMapper::toResponse)
                 .toList();

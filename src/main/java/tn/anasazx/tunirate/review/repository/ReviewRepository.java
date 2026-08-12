@@ -20,7 +20,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Page<Review> findByUserId(Long userId, Pageable pageable);
     Optional<Review> findByUserIdAndProductId(Long userId, Long productId);
 
-    Long countByProductId(Long productId);
 
     Long countByProductCompanyId(Long companyId);
 
@@ -68,5 +67,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     ORDER BY day
     """, nativeQuery = true)
     List<Object[]> countReviewsByDayRaw(@Param("startDate") LocalDateTime startDate);
+
+    List<Review> findByContentIsNotNullOrderByCreatedAtDesc(Pageable pageable);
+
 
 }
