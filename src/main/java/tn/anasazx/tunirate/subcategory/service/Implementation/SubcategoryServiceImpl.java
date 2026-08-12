@@ -23,7 +23,7 @@ public class SubcategoryServiceImpl implements SubcategoryService {
     private final SubcategoryMapper subcategoryMapper;
     @Override
     public List<SubcategoryResponse> getAll() {
-        return subcategoryRepository.findAll()
+        return subcategoryRepository.findByCategoryName("Beauty")
                 .stream()
                 .map(subcategoryMapper::toResponse)
                 .toList();
