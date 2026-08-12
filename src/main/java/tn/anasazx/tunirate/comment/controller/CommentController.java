@@ -63,7 +63,6 @@ public class CommentController {
     }
 
     //Delete comment
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteComment(@PathVariable Long commentId) {

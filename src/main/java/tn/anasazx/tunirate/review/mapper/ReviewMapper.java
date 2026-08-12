@@ -14,7 +14,7 @@ public class ReviewMapper {
                 review.getId(),
                 review.getRating(),
                 review.getContent(),
-                UserMapper.toMinimizedResponse(review.getUser()),
+                UserMapper.toSecureMinimizedUserResponse(review.getUser()),
                 commentsCount,
                 previewComment,
                 review.getLikeCount(),

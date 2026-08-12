@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,7 @@ import tn.anasazx.tunirate.membership.entity.CompanyMember;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.product.dto.*;
 import tn.anasazx.tunirate.product.entity.ProductImage;
+import tn.anasazx.tunirate.product.repository.ProductSpecifications;
 import tn.anasazx.tunirate.subcategory.entity.Subcategory;
 import tn.anasazx.tunirate.subcategory.repository.SubcategoryRepository;
 import tn.anasazx.tunirate.company.entity.Company;
@@ -244,8 +246,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductResponse> getProductsByCompanyId(Long companyId, Pageable pageable) {
-        return productRepository.findByCompanyIdAndStatus(companyId,  ProductStatus.PUBLISHED, pageable)
+    public Page<ProductResponse> getProductsByCompanyId(Long companyId, String name, Long subcategoryId, Pageable pageable) {
+        Specification<Product> spec = Specification
+                .where(ProductSpecifications.hasCompanyId(companyId))
+                .and(ProductSpecifications.hasStatus(ProductStatus.PUBLISHED))
+                .and(ProductSpecifications.hasNameLike(name))
+                .and(ProductSpecifications.hasSubcategoryId(subcategoryId));
+
+        return productRepository.findAll(spec, pageable)
                 .map(productMapper::toResponse);
     }
 

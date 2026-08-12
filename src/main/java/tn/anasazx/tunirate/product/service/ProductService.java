@@ -19,7 +19,7 @@ public interface ProductService {
 
     Page<ProductResponse> getAllProducts(Long categoryId, Long subcategoryId, Pageable pageable);
     ProductResponse getProductById(Long productId);
-    Page<ProductResponse> getProductsByCompanyId(Long companyId, Pageable pageable);
+    Page<ProductResponse> getProductsByCompanyId(Long companyId, String name, Long subcategoryId, Pageable pageable);
 
     //Admin methods
     AdminProductDetailsResponse getProductDetailsByIdAsAdmin(Long productId);

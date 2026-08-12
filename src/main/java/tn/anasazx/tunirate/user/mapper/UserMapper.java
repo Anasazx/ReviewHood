@@ -1,6 +1,7 @@
 package tn.anasazx.tunirate.user.mapper;
 
 import tn.anasazx.tunirate.user.dto.MinimizedUserResponse;
+import tn.anasazx.tunirate.user.dto.SecureMinimizedUserResponse;
 import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.entity.User;
 
@@ -26,6 +27,14 @@ public class UserMapper {
                 user.getName(),
                 user.getEmail(),
                 user.isEmailVerified(),
+                user.getAvatarUrl()
+        );
+    }
+
+    public static SecureMinimizedUserResponse toSecureMinimizedUserResponse(User user) {
+        return new SecureMinimizedUserResponse(
+                user.getId(),
+                user.getName(),
                 user.getAvatarUrl()
         );
     }

@@ -64,6 +64,9 @@ public class Comment {
     @OneToMany(mappedBy = "repliedTo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> replies = new ArrayList<>();
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

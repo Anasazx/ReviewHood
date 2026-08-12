@@ -128,6 +128,10 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
 
+        if (comment.isDeleted()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found");
+        }
+
         Actor author = comment.getActor();
 
         switch (author.getType()) {
@@ -151,12 +155,12 @@ public class CommentServiceImpl implements CommentService {
                 }
             }
 
-            // any future ActorType that hasn't been handled yet is denied
             default -> throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN, "Delete not supported for this actor type");
         }
 
-        commentRepository.delete(comment);
+        comment.setDeleted(true);
+        commentRepository.save(comment);
     }
 
 }

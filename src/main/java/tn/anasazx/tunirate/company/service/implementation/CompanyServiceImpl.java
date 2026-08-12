@@ -23,6 +23,8 @@ import tn.anasazx.tunirate.membership.entity.CompanyMember;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
+import tn.anasazx.tunirate.subcategory.dto.SubcategoryResponse;
+import tn.anasazx.tunirate.subcategory.mapper.SubcategoryMapper;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
@@ -38,6 +40,7 @@ public class CompanyServiceImpl implements CompanyService {
     private final FileStorageService fileStorageService;
     private final UserRepository userRepository;
     private final CompanyMapper companyMapper;
+    private final SubcategoryMapper subcategoryMapper;
 
 
     @Override
@@ -47,7 +50,11 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public CompanyDetailResponse getCompanyDetailsById(Long id) {
-        return companyMapper.toDetailResponse(findCompany(id));
+        List<SubcategoryResponse> subcategories = productRepository.findDistinctSubcategoriesByCompanyId(id).stream()
+                .map(subcategoryMapper::toResponse)
+                .toList();
+
+        return companyMapper.toDetailResponse(findCompany(id), subcategories);
     }
 
     @Override

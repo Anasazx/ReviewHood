@@ -41,6 +41,10 @@ public class CommentMapper {
             default -> null;
         };
 
+        if (comment.isDeleted()) {
+            comment.setContent("[deleted Comment]");
+        }
+
         return new CommentResponse(
                 comment.getId(),
                 comment.getContent(),
@@ -55,6 +59,7 @@ public class CommentMapper {
                 repliedToActorName,
                 comment.getLikeCount(),
                 liked,
+                comment.isDeleted(),
                 comment.getCreatedAt()
         );
     }

@@ -1,10 +1,12 @@
 package tn.anasazx.tunirate.comment.dto;
 
 
+import lombok.Builder;
 import tn.anasazx.tunirate.enums.ActorType;
 
 import java.time.LocalDateTime;
 
+@Builder
 public record CommentResponse(
         Long id,
         String content,
@@ -19,6 +21,7 @@ public record CommentResponse(
         String repliedToActorName,
         Long likeCount,
         boolean liked,
+        boolean deleted,
         LocalDateTime createdAt
 ) {}
 

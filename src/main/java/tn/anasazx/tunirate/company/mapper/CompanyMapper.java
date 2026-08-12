@@ -9,10 +9,12 @@ import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.membership.mapper.CompanyMemberMapper;
 import tn.anasazx.tunirate.product.mapper.ProductMapper;
+import tn.anasazx.tunirate.subcategory.dto.SubcategoryResponse;
 import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.mapper.UserMapper;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -33,7 +35,7 @@ public class CompanyMapper {
         );
     }
 
-    public CompanyDetailResponse toDetailResponse(Company company) {
+    public CompanyDetailResponse toDetailResponse(Company company, List<SubcategoryResponse> subcategories) {
         return new CompanyDetailResponse(
                 company.getId(),
                 company.getName(),
@@ -44,6 +46,7 @@ public class CompanyMapper {
                 company.getAddress(),
                 company.getCountry(),
                 company.getIndustry(),
+                subcategories,
                 company.getSocialLinks().stream().map(CompanySocialLinkMapper::toResponse).toList(),
                 company.getStatus()
         );

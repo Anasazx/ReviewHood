@@ -4,16 +4,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import tn.anasazx.tunirate.enums.ProductStatus;
 import tn.anasazx.tunirate.product.entity.Product;
+import tn.anasazx.tunirate.subcategory.entity.Subcategory;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
     @Query("""
     SELECT p
@@ -30,8 +32,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findAllByStatusAndSubcategoryCategoryId(ProductStatus status, Long categoryId, Pageable pageable);
 
     List<Product> findByCompanyId(Long companyId);
-
-    Page<Product> findByCompanyIdAndStatus(Long companyId, ProductStatus status, Pageable pageable);
 
     Optional<Product> findByStatusAndId(ProductStatus status, Long id);
 
@@ -86,5 +86,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("query") String query,
             Pageable pageable
     );
+
+
+    @Query("""
+        SELECT DISTINCT p.subcategory
+        FROM Product p
+        WHERE p.company.id = :companyId
+    """)
+    List<Subcategory> findDistinctSubcategoriesByCompanyId(@Param("companyId") Long companyId);
+
 
 }

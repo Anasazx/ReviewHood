@@ -62,8 +62,12 @@ public class ProductController {
 	}
 
 	@GetMapping("/company/{companyId}")
-	public ResponseEntity<Page<ProductResponse>> getProductsByCompanyId(@PathVariable Long companyId, Pageable pageable) {
-		return ResponseEntity.ok(productService.getProductsByCompanyId(companyId, pageable));
+	public ResponseEntity<Page<ProductResponse>> getProductsByCompanyId(
+			@PathVariable Long companyId,
+			@RequestParam(required = false) String name,
+			@RequestParam(required = false) Long subcategoryId,
+			Pageable pageable) {
+		return ResponseEntity.ok(productService.getProductsByCompanyId(companyId, name, subcategoryId, pageable));
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")
