@@ -2,7 +2,9 @@ package tn.anasazx.tunirate.company.service.implementation;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -243,6 +245,12 @@ public class CompanyServiceImpl implements CompanyService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
         return companyMapper.toResponse(product.getCompany());
+    }
+
+    @Override
+    public Page<CompanyResponse> getAllCompanies(Pageable pageable) {
+        return companyRepository.findAll(pageable)
+                .map(companyMapper::toResponse);
     }
 
     @Override

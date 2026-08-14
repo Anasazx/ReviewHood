@@ -1,5 +1,7 @@
 package tn.anasazx.tunirate.company.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 import tn.anasazx.tunirate.company.dto.AdminCompanyRequest;
 import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
@@ -35,5 +37,6 @@ public interface CompanyService {
 
     List<CompanyResponse> search(String query);
 
+    Page<CompanyResponse> getAllCompanies(Pageable pageable);
 }
 

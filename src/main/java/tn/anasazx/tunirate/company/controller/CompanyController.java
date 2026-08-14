@@ -1,6 +1,8 @@
 package tn.anasazx.tunirate.company.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,11 @@ public class CompanyController {
     @GetMapping("/{companyId}")
     public ResponseEntity<CompanyResponse> getCompanyById(@PathVariable Long companyId) {
         return ResponseEntity.ok(companyService.getCompanyById(companyId));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<Page<CompanyResponse>> getAllCompanies(Pageable pageable) {
+        return ResponseEntity.ok(companyService.getAllCompanies(pageable));
     }
 
     @GetMapping("/details/{companyId}")

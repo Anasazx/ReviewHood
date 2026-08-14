@@ -3,6 +3,9 @@ package tn.anasazx.tunirate.feed.service.implementation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import tn.anasazx.tunirate.company.entity.Company;
+import tn.anasazx.tunirate.company.mapper.CompanyMapper;
+import tn.anasazx.tunirate.company.repository.CompanyRepository;
 import tn.anasazx.tunirate.feed.dto.FeedResponse;
 import tn.anasazx.tunirate.feed.service.FeedService;
 import tn.anasazx.tunirate.product.entity.Product;
@@ -24,27 +27,37 @@ public class FeedServiceImpl implements FeedService {
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
     private final SubcategoryRepository subcategoryRepository;
+    private final CompanyRepository companyRepository;
+
 
     private final ProductMapper productMapper;
     private final SubcategoryMapper subcategoryMapper;
+    private final CompanyMapper companyMapper;
 
     private static final int PRODUCT_LIMIT = 24;
     private static final int REVIEW_LIMIT = 18;
+    private static final int COMPANY_LIMIT = 18;
 
     @Override
     public FeedResponse getFeed() {
 
-        List<Product> products =  productRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, PRODUCT_LIMIT));
+        List<Product> products = productRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, PRODUCT_LIMIT));
 
-        List<Review> reviews = reviewRepository.findByContentIsNotNullOrderByCreatedAtDesc( PageRequest.of(0, REVIEW_LIMIT));
-        //this is just for now, we return the subcategories of the cat beauty as our categories
-        //List<Subcategory> subcategories = subcategoryRepository.findAll();
+        List<Review> reviews = reviewRepository.findByContentIsNotNullOrderByCreatedAtDesc(PageRequest.of(0, REVIEW_LIMIT));
+
+        // this is just for now, we return the subcategories of the cat beauty as our categories
+        // List<Subcategory> subcategories = subcategoryRepository.findAll();
         List<Subcategory> subcategories = subcategoryRepository.findByCategoryName("Beauty");
+
+        List<Company> companies = companyRepository.findAll(PageRequest.of(0, COMPANY_LIMIT)).getContent();
 
         return new FeedResponse(
                 products.stream().map(productMapper::toResponse).toList(),
                 reviews.stream().map(ReviewMapper::toMinimizedResponse).toList(),
-                subcategories.stream().map(subcategoryMapper::toResponse).toList()
+                subcategories.stream().map(subcategoryMapper::toResponse).toList(),
+                companies.stream().map(companyMapper::toResponse).toList()
         );
     }
+
+
 }
