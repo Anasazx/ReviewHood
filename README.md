@@ -1,12 +1,12 @@
-# TuniRate
+# Reviewhood
 
-TuniRate is a Spring Boot backend for a product discovery and review platform focused on helping people explore products, compare brands, read authentic feedback, and share their own experiences.
+Reviewhood is a Spring Boot backend for a product discovery and review platform focused on helping people explore products, compare brands, read authentic feedback, and share their own experiences.
 
 This repository contains the core application logic, REST API, authentication, role-based access, product/company management, review workflows, community engagement features, and persistence layer for the platform.
 
-## Why TuniRate?
+## Why Reviewhood?
 
-Consumers often have to gather product information from multiple sources before making a decision. TuniRate brings that information together in one place by combining product data, company profiles, reviews, ratings, and user-generated discussion in a structured platform.
+Consumers often have to gather product information from multiple sources before making a decision. Reviewhood brings that information together in one place by combining product data, company profiles, reviews, ratings, and user-generated discussion in a structured platform.
 
 ## Features
 
@@ -61,7 +61,7 @@ PostgreSQL
 .
 ├── src/
 │   ├── main/
-│   │   ├── java/tn/anasazx/tunirate/
+│   │   ├── java/tn/anasazx/Reviewhood/
 │   │   │   ├── authentication/
 │   │   │   ├── category/
 │   │   │   ├── comment/
@@ -105,8 +105,8 @@ PostgreSQL
 ### 1) Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/TuniRate.git
-cd TuniRate
+git clone https://github.com/<your-username>/Reviewhood.git
+cd Reviewhood
 ```
 
 ### 2) Configure environment variables
@@ -116,7 +116,7 @@ Create a `.env` file in the project root and add the required variables before s
 Example:
 
 ```dotenv
-DB_URL=jdbc:postgresql://localhost:5432/tunirate
+DB_URL=jdbc:postgresql://localhost:5432/Reviewhood
 JWT_SECRET=your-very-long-random-secret
 FILE_UPLOAD_DIR=uploads
 FILE_BASE_URL=http://localhost:8080/uploads
@@ -176,7 +176,7 @@ This repository exposes a backend API for:
 - product suggestion workflows
 - dashboard statistics and admin operations
 
-The exact endpoints are defined in the controllers under `src/main/java/tn/anasazx/tunirate/*`.
+The exact endpoints are defined in the controllers under `src/main/java/tn/anasazx/Reviewhood/*`.
 
 ## Contributing
 
