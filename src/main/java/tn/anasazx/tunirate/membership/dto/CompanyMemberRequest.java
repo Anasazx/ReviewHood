@@ -5,5 +5,7 @@ import tn.anasazx.tunirate.enums.CompanyRole;
 
 public record CompanyMemberRequest(
         @NotNull Long userId,
-        @NotNull Long companyId
+        @NotNull Long companyId,
+        // optional, defaults to WORKER
+        CompanyRole companyRole
 ) {}

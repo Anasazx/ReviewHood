@@ -1,6 +1,7 @@
 package tn.anasazx.tunirate.user.dto;
 
 import tn.anasazx.tunirate.enums.Country;
+import tn.anasazx.tunirate.enums.GlobalRole;
 import tn.anasazx.tunirate.enums.UserStatus;
 
 import java.time.LocalDateTime;
@@ -14,5 +15,6 @@ public record UserResponse(
         String phoneNumber,
         Country country,
         UserStatus status,
+        GlobalRole globalRole,
         LocalDateTime createdAt
 ) {}

@@ -23,7 +23,7 @@ public class CompanyMemberController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/assign")
     public ResponseEntity<CompanyMemberResponse> assignMemberToCompany(@RequestBody CompanyMemberRequest request) {
-        CompanyMemberResponse response = service.assignUserToCompany(request.userId(), request.companyId());
+        CompanyMemberResponse response = service.assignUserToCompany(request.userId(), request.companyId(), request.companyRole());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);

@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface CompanyMemberService {
     CompanyMemberResponse assignUserToCompany(Long userId, Long companyId);
+    CompanyMemberResponse assignUserToCompany(Long userId, Long companyId, CompanyRole companyRole);
     void removeUserFromCompany(Long userId, Long companyId);
     List<CompanyMemberResponse> getMembersByCompanyId(Long companyId);
     CompanyMemberResponse getCompanyByUserId(Long userId);

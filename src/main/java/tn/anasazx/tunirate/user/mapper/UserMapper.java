@@ -17,6 +17,7 @@ public class UserMapper {
                 user.getPhoneNumber(),
                 user.getCountry(),
                 user.getStatus(),
+                user.getGlobalRole(),
                 user.getCreatedAt()
         );
     }

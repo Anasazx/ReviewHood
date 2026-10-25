@@ -29,10 +29,17 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
 
     @Override
     public CompanyMemberResponse assignUserToCompany(Long userId, Long companyId) {
+        return assignUserToCompany(userId, companyId, CompanyRole.WORKER);
+    }
 
-        if (companyMemberRepository.existsByUserIdAndCompanyId(userId, companyId)) {
-            throw new RuntimeException("User already in this company");
-        }
+    @Override
+    public CompanyMemberResponse assignUserToCompany(Long userId, Long companyId, CompanyRole companyRole) {
+
+        // The app works with one company per user (see findFirstByUserId usages)
+        companyMemberRepository.findFirstByUserId(userId).ifPresent(existing -> {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "User already belongs to " + existing.getCompany().getName());
+        });
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User Not Found"));
@@ -44,7 +51,7 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
         CompanyMember member = CompanyMember.builder()
                 .user(user)
                 .company(company)
-                .companyRole(CompanyRole.WORKER)
+                .companyRole(companyRole != null ? companyRole : CompanyRole.WORKER)
                 .build();
 
         CompanyMember saved = companyMemberRepository.save(member);
@@ -107,7 +114,7 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
 
         CompanyMember membership = companyMemberRepository
                 .findByUserIdAndCompanyId(userId, companyId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Member not found"));
 
         membership.setCompanyRole(companyRole);
 
