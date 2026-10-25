@@ -41,6 +41,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     Long countByCompanyId(Long companyId);
 
+    long countByCompanyIdAndStatus(Long companyId, ProductStatus status);
+
     Long countByStatus(ProductStatus status);
 
     Long countBySubcategoryId(Long subcategoryId);

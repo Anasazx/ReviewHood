@@ -35,7 +35,8 @@ public class CompanyMapper {
         );
     }
 
-    public CompanyDetailResponse toDetailResponse(Company company, List<SubcategoryResponse> subcategories) {
+    public CompanyDetailResponse toDetailResponse(Company company, List<SubcategoryResponse> subcategories,
+                                                  double averageRating, long reviewCount, long productCount) {
         return new CompanyDetailResponse(
                 company.getId(),
                 company.getName(),
@@ -48,7 +49,10 @@ public class CompanyMapper {
                 company.getIndustry(),
                 subcategories,
                 company.getSocialLinks().stream().map(CompanySocialLinkMapper::toResponse).toList(),
-                company.getStatus()
+                company.getStatus(),
+                averageRating,
+                reviewCount,
+                productCount
         );
     }
 

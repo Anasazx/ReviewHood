@@ -1,5 +1,8 @@
 package tn.anasazx.tunirate.company.service.implementation;
 
+import java.util.Optional;
+import tn.anasazx.tunirate.enums.ProductStatus;
+import tn.anasazx.tunirate.review.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -47,6 +50,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
     private final ProductRepository productRepository;
+    private final ReviewRepository reviewRepository;
     private final CompanyMemberRepository companyMemberRepository;
     private final FileStorageService fileStorageService;
     private final UserRepository userRepository;
@@ -65,7 +69,13 @@ public class CompanyServiceImpl implements CompanyService {
                 .map(subcategoryMapper::toResponse)
                 .toList();
 
-        return companyMapper.toDetailResponse(findCompany(id), subcategories);
+        return companyMapper.toDetailResponse(
+                findCompany(id),
+                subcategories,
+                Optional.ofNullable(reviewRepository.findAverageRatingByCompanyId(id)).orElse(0.0),
+                reviewRepository.countByProductCompanyId(id),
+                productRepository.countByCompanyIdAndStatus(id, ProductStatus.PUBLISHED)
+        );
     }
 
     @Override

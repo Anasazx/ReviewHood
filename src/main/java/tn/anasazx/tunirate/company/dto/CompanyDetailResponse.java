@@ -20,5 +20,9 @@ public record CompanyDetailResponse(
         Industry industry,
         List<SubcategoryResponse> subcategories,
         List<CompanySocialLinkResponse> socialLinks,
-        CompanyStatus status
+        CompanyStatus status,
+        // Reputation shown on the public company page
+        double averageRating,
+        long reviewCount,
+        long productCount
 ) {}
