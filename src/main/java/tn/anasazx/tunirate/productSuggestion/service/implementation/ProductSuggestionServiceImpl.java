@@ -1,7 +1,9 @@
 package tn.anasazx.tunirate.productSuggestion.service.implementation;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import tn.anasazx.tunirate.enums.SuggestionStatus;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
@@ -55,9 +57,13 @@ public class ProductSuggestionServiceImpl implements ProductSuggestionService {
     }
 
     @Override
-    public List<ProductSuggestionResponse> getAllSuggestions() {
+    public List<ProductSuggestionResponse> getAllSuggestions(SuggestionStatus status) {
 
-        return productSuggestionRepository.findAll()
+        List<ProductSuggestion> suggestions = status == null
+                ? productSuggestionRepository.findAllByOrderByCreatedAtDesc()
+                : productSuggestionRepository.findAllByStatusOrderByCreatedAtDesc(status);
+
+        return suggestions
                 .stream()
                 .map(productSuggestionMapper::toResponse)
                 .toList();
@@ -68,15 +74,15 @@ public class ProductSuggestionServiceImpl implements ProductSuggestionService {
     public ProductSuggestionResponse updateStatus(Long id, UpdateStatusRequest request) {
 
         ProductSuggestion suggestion = productSuggestionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Suggestion not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Suggestion not found"));
 
         if (request.status() == SuggestionStatus.APPROVED) {
             if (request.productId() == null) {
-                throw new RuntimeException("Product id is required when approving a suggestion");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pick the product that matches this suggestion");
             }
 
             Product product = productRepository.findById(request.productId())
-                    .orElseThrow(() -> new RuntimeException("Product not found"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
             suggestion.setProduct(product);
         }
 

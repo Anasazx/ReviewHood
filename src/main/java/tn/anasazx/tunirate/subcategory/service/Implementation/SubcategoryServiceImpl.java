@@ -1,5 +1,10 @@
 package tn.anasazx.tunirate.subcategory.service.Implementation;
 
+import java.util.Map;
+import java.util.HashMap;
+import tn.anasazx.tunirate.subcategory.dto.AdminSubcategoryResponse;
+import tn.anasazx.tunirate.product.repository.ProductRepository;
+import org.springframework.data.domain.Sort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +26,7 @@ public class SubcategoryServiceImpl implements SubcategoryService {
     private final SubcategoryRepository subcategoryRepository;
     private final CategoryRepository categoryRepository;
     private final SubcategoryMapper subcategoryMapper;
+    private final ProductRepository productRepository;
     @Override
     public List<SubcategoryResponse> getAll() {
         return subcategoryRepository.findByCategoryName("Beauty")
@@ -28,6 +34,25 @@ public class SubcategoryServiceImpl implements SubcategoryService {
                 .map(subcategoryMapper::toResponse)
                 .toList();
     }
+    @Override
+    public List<AdminSubcategoryResponse> getAllAsAdmin() {
+        Map<Long, Long> productCounts = new HashMap<>();
+        for (Object[] row : productRepository.countBySubcategoryGrouped()) {
+            productCounts.put((Long) row[0], (Long) row[1]);
+        }
+
+        return subcategoryRepository.findAll(Sort.by("name"))
+                .stream()
+                .map(s -> new AdminSubcategoryResponse(
+                        s.getId(),
+                        s.getName(),
+                        s.getCategory().getId(),
+                        s.getCategory().getName(),
+                        productCounts.getOrDefault(s.getId(), 0L)
+                ))
+                .toList();
+    }
+
     @Override
     public SubcategoryResponse getById(Long id) {
         return subcategoryMapper.toResponse(findSubcategory(id));
@@ -48,6 +73,13 @@ public class SubcategoryServiceImpl implements SubcategoryService {
     @Override
     public void delete(Long id) {
         Subcategory subcategory = findSubcategory(id);
+
+        long products = productRepository.countBySubcategoryId(id);
+        if (products > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    products + " products use this subcategory. Move them to another subcategory first.");
+        }
+
         subcategoryRepository.delete(subcategory);
     }
     @Override

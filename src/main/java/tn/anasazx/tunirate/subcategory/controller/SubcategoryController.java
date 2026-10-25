@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.subcategory.controller;
 
+import tn.anasazx.tunirate.subcategory.dto.AdminSubcategoryResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,13 @@ public class SubcategoryController {
     @GetMapping
     public ResponseEntity<List<SubcategoryResponse>> getAll() {
         return ResponseEntity.ok(subcategoryService.getAll());
+    }
+
+    // Public GET /subcategories only returns the "Beauty" ones; the admin panel needs them all
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/op")
+    public ResponseEntity<List<AdminSubcategoryResponse>> getAllAsAdmin() {
+        return ResponseEntity.ok(subcategoryService.getAllAsAdmin());
     }
 
     @PreAuthorize("hasRole('ADMIN')")

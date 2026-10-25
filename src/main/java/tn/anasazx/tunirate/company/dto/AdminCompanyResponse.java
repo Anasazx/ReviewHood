@@ -5,7 +5,6 @@ import tn.anasazx.tunirate.enums.CompanyStatus;
 import tn.anasazx.tunirate.enums.Country;
 import tn.anasazx.tunirate.enums.Industry;
 import tn.anasazx.tunirate.membership.dto.CompanyMemberResponse;
-import tn.anasazx.tunirate.product.dto.AdminProductResponse;
 import tn.anasazx.tunirate.user.dto.UserResponse;
 
 import java.time.LocalDateTime;
@@ -28,5 +27,6 @@ public record AdminCompanyResponse(
         UserResponse createdBy,
         LocalDateTime createdAt,
         List<CompanyMemberResponse> members,
-        List<AdminProductResponse> products
+        // products are loaded separately and paginated (GET /product/op?companyId=)
+        long productCount
 ) {}

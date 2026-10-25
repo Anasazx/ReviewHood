@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.category.service.implementation;
 
+import tn.anasazx.tunirate.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
+    private final ProductRepository productRepository;
 
     @Override
     public List<CategoryResponse> getAllCategories() {
@@ -54,6 +56,14 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void deleteCategory(Long id) {
         Category category = findCategory(id);
+
+        // Deleting a category also deletes its subcategories, which products may still use
+        long products = productRepository.countBySubcategoryCategoryId(id);
+        if (products > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    products + " products use this category's subcategories. Move them first.");
+        }
+
         categoryRepository.delete(category);
     }
 

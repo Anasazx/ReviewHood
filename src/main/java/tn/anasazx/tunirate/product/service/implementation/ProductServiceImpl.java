@@ -29,7 +29,9 @@ import tn.anasazx.tunirate.product.service.ProductService;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -271,11 +273,31 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<AdminProductResponse> getProductsAsAdmin() {
-        return findAllProductsAsAdmin()
-                .stream()
-                .map(productMapper::toAdminResponse)
-                .toList();
+    public Page<AdminProductResponse> getProductsAsAdmin(String q, ProductStatus status, Long companyId, Long subcategoryId, Boolean uncategorized, Pageable pageable) {
+        // Drafts belong to companies until they submit them, admins never see them
+        Specification<Product> spec = Specification
+                .where(ProductSpecifications.hasStatusNot(ProductStatus.DRAFT))
+                .and(ProductSpecifications.hasStatus(status))
+                .and(ProductSpecifications.hasCompanyId(companyId))
+                .and(ProductSpecifications.hasSubcategoryId(subcategoryId))
+                .and(ProductSpecifications.isUncategorized(uncategorized))
+                .and(ProductSpecifications.matchesQuery(q));
+
+        return productRepository.findAll(spec, pageable)
+                .map(productMapper::toAdminResponse);
+    }
+
+    @Override
+    public Map<ProductStatus, Long> countProductsByStatus(Long companyId) {
+        Map<ProductStatus, Long> counts = new EnumMap<>(ProductStatus.class);
+        for (ProductStatus status : ProductStatus.values()) {
+            counts.put(status, 0L);
+        }
+        for (Object[] row : productRepository.countByStatusGrouped(companyId)) {
+            counts.put((ProductStatus) row[0], (Long) row[1]);
+        }
+        counts.remove(ProductStatus.DRAFT);
+        return counts;
     }
 
     @Override
@@ -335,8 +357,5 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findByCompanyId(companyId);
     }
 
-    List<Product> findAllProductsAsAdmin(){
-        return productRepository.findAllByStatusNot(ProductStatus.DRAFT);
-    }
 
 }

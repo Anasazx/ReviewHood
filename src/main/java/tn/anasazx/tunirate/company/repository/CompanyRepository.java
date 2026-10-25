@@ -3,6 +3,7 @@ package tn.anasazx.tunirate.company.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import tn.anasazx.tunirate.company.entity.Company;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface CompanyRepository extends JpaRepository<Company, Long> {
+public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpecificationExecutor<Company> {
 
 	Optional<Company> findByNameIgnoreCase(String name);
 
@@ -26,6 +27,10 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
 	Page<Company> search(@Param("q") String q, Pageable pageable);
 
 	Long countByStatus(CompanyStatus status);
+
+	// [status, count] rows
+	@Query("SELECT c.status, COUNT(c) FROM Company c GROUP BY c.status")
+	List<Object[]> countByStatusGrouped();
 
 
 	// CompanyRepository.java

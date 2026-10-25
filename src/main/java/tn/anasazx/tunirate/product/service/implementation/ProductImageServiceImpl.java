@@ -1,7 +1,9 @@
 package tn.anasazx.tunirate.product.service.implementation;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import tn.anasazx.tunirate.fileStorage.service.FileStorageService;
@@ -49,8 +51,17 @@ public class ProductImageServiceImpl implements ProductImageService {
     @Override
     public void deleteImage(Long imageId) {
         ProductImage image = productImageRepository.findById(imageId)
-                .orElseThrow(() -> new RuntimeException("Image not found"));
-        productImageRepository.delete(image);
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found"));
+
+        Product product = image.getProduct();
+        product.removeImage(image);
+
+        // Keep a main image as long as the product has images
+        if (image.isMain()) {
+            product.getImages().stream().findFirst().ifPresent(next -> next.setMain(true));
+        }
+
+        productRepository.save(product);
     }
 
     @Override

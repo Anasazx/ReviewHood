@@ -70,5 +70,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     List<Review> findByContentIsNotNullOrderByCreatedAtDesc(Pageable pageable);
 
+    List<Review> findTop5ByOrderByCreatedAtDesc();
+
 
 }

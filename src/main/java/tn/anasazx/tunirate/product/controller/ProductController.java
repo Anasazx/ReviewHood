@@ -4,17 +4,21 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tn.anasazx.tunirate.enums.ProductStatus;
 import tn.anasazx.tunirate.product.dto.*;
 import tn.anasazx.tunirate.product.service.ProductService;
 import tn.anasazx.tunirate.security.SecurityUtils;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/product")
@@ -78,8 +82,21 @@ public class ProductController {
 
 	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/op")
-	public ResponseEntity<List<AdminProductResponse>> getProductsAsAdmin() {
-		return ResponseEntity.ok(productService.getProductsAsAdmin());
+	public ResponseEntity<Page<AdminProductResponse>> getProductsAsAdmin(
+			@RequestParam(required = false) String q,
+			@RequestParam(required = false) ProductStatus status,
+			@RequestParam(required = false) Long companyId,
+			@RequestParam(required = false) Long subcategoryId,
+			@RequestParam(required = false) Boolean uncategorized,
+			@PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+	) {
+		return ResponseEntity.ok(productService.getProductsAsAdmin(q, status, companyId, subcategoryId, uncategorized, pageable));
+	}
+
+	@PreAuthorize("hasRole('ADMIN')")
+	@GetMapping("/op/status-counts")
+	public ResponseEntity<Map<ProductStatus, Long>> countProductsByStatus(@RequestParam(required = false) Long companyId) {
+		return ResponseEntity.ok(productService.countProductsByStatus(companyId));
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")

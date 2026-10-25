@@ -17,7 +17,8 @@ public class ProductSuggestionMapper {
                 suggestion.getStatus() != null ? suggestion.getStatus().name() : null,
                 suggestion.getCreatedAt(),
                 suggestion.getProduct() == null ? null : suggestion.getProduct().getId(),
-                suggestion.getProduct() == null ? null : suggestion.getProduct().getName()
+                suggestion.getProduct() == null ? null : suggestion.getProduct().getName(),
+                suggestion.getUser() == null ? null : suggestion.getUser().getName()
         );
 
     }

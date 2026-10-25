@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import tn.anasazx.tunirate.companySocialLink.mapper.CompanySocialLinkMapper;
 import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
+import tn.anasazx.tunirate.company.dto.AdminCompanySummaryResponse;
 import tn.anasazx.tunirate.company.dto.CompanyDetailResponse;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.entity.Company;
@@ -13,7 +14,6 @@ import tn.anasazx.tunirate.subcategory.dto.SubcategoryResponse;
 import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.mapper.UserMapper;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -52,15 +52,10 @@ public class CompanyMapper {
         );
     }
 
-    public AdminCompanyResponse toAdminResponse(Company company) {
+    public AdminCompanyResponse toAdminResponse(Company company, long productCount) {
 
-        UserResponse verifiedBy = null;
-        LocalDateTime verifiedAt = null;
-
-        if (company.getVerifiedBy() != null) {
-            verifiedBy = UserMapper.toResponse(company.getVerifiedBy());
-            verifiedAt = LocalDateTime.now();
-        }
+        UserResponse verifiedBy = company.getVerifiedBy() != null ? UserMapper.toResponse(company.getVerifiedBy()) : null;
+        UserResponse createdBy = company.getCreatedBy() != null ? UserMapper.toResponse(company.getCreatedBy()) : null;
 
 
         return new AdminCompanyResponse(
@@ -76,11 +71,25 @@ public class CompanyMapper {
                 company.getIndustry(),
                 company.getStatus(),
                 verifiedBy,
-                verifiedAt,
-                UserMapper.toResponse(company.getCreatedBy()),
+                company.getVerifiedAt(),
+                createdBy,
                 company.getCreatedAt(),
                 company.getMembers().stream().map(companyMemberMapper::toResponse).toList(),
-                company.getProducts().stream().map(productMapper::toAdminResponse).toList()
+                productCount
+        );
+    }
+
+    public AdminCompanySummaryResponse toAdminSummaryResponse(Company company, long productCount, long memberCount) {
+        return new AdminCompanySummaryResponse(
+                company.getId(),
+                company.getName(),
+                company.getLogoUrl(),
+                company.getCountry(),
+                company.getIndustry(),
+                company.getStatus(),
+                productCount,
+                memberCount,
+                company.getCreatedAt()
         );
     }
 

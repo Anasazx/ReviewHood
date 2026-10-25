@@ -5,7 +5,14 @@ import org.springframework.stereotype.Service;
 import tn.anasazx.tunirate.company.repository.CompanyRepository;
 import tn.anasazx.tunirate.dashboard.adminDashboard.dto.AdminDashboardResponse;
 import tn.anasazx.tunirate.dashboard.adminDashboard.dto.TimeSeriesPointDTO;
-import tn.anasazx.tunirate.dashboard.adminDashboard.mapper.AdminDashboardMapper;
+import tn.anasazx.tunirate.company.service.CompanyService;
+import tn.anasazx.tunirate.enums.SuggestionStatus;
+import tn.anasazx.tunirate.product.dto.AdminProductResponse;
+import tn.anasazx.tunirate.product.mapper.ProductMapper;
+import tn.anasazx.tunirate.product.service.ProductService;
+import tn.anasazx.tunirate.productSuggestion.repository.ProductSuggestionRepository;
+import tn.anasazx.tunirate.review.dto.MinimizedReviewResponse;
+import tn.anasazx.tunirate.review.mapper.ReviewMapper;
 import tn.anasazx.tunirate.dashboard.adminDashboard.service.AdminDashboardService;
 import tn.anasazx.tunirate.enums.CompanyStatus;
 import tn.anasazx.tunirate.enums.ProductStatus;
@@ -29,6 +36,10 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final CompanyRepository companyRepository;
+    private final ProductSuggestionRepository productSuggestionRepository;
+    private final ProductService productService;
+    private final CompanyService companyService;
+    private final ProductMapper productMapper;
 
     @Override
     public AdminDashboardResponse getMyAdminDashboard() {
@@ -56,7 +67,33 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 startDate.toLocalDate(), days
         );
 
-        return AdminDashboardMapper.toDto(totalUsers, totalCompanies, totalActiveCompanies, totalProducts, totalReviews, totalPendingApprovals, usersOverTime, companiesOverTime, reviewsOverTime);
+        List<MinimizedReviewResponse> recentReviews = reviewRepository.findTop5ByOrderByCreatedAtDesc()
+                .stream()
+                .map(ReviewMapper::toMinimizedResponse)
+                .toList();
+
+        List<AdminProductResponse> pendingProducts = productRepository.findTop5ByStatusOrderByCreatedAtDesc(ProductStatus.PENDING_REVIEW)
+                .stream()
+                .map(productMapper::toAdminResponse)
+                .toList();
+
+        return new AdminDashboardResponse(
+                totalUsers,
+                totalCompanies,
+                totalActiveCompanies,
+                totalProducts,
+                totalReviews,
+                totalPendingApprovals,
+                companyRepository.countByStatus(CompanyStatus.PENDING),
+                productSuggestionRepository.countByStatus(SuggestionStatus.PENDING),
+                productService.countProductsByStatus(null),
+                companyService.countCompaniesByStatus(),
+                usersOverTime,
+                companiesOverTime,
+                reviewsOverTime,
+                recentReviews,
+                pendingProducts
+        );
 
     }
 

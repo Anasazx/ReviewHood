@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,6 +14,8 @@ import tn.anasazx.tunirate.companySocialLink.entity.CompanySocialLink;
 import tn.anasazx.tunirate.companySocialLink.mapper.CompanySocialLinkMapper;
 import tn.anasazx.tunirate.company.dto.AdminCompanyRequest;
 import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
+import tn.anasazx.tunirate.company.dto.AdminCompanySummaryResponse;
+import tn.anasazx.tunirate.company.repository.CompanySpecifications;
 import tn.anasazx.tunirate.company.dto.CompanyDetailResponse;
 import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.entity.Company;
@@ -25,12 +28,16 @@ import tn.anasazx.tunirate.membership.entity.CompanyMember;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
+import tn.anasazx.tunirate.security.SecurityUtils;
 import tn.anasazx.tunirate.subcategory.dto.SubcategoryResponse;
 import tn.anasazx.tunirate.subcategory.mapper.SubcategoryMapper;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -90,7 +97,33 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = companyRepository.findById(companyId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found")
         );
-        return companyMapper.toAdminResponse(company);
+        return companyMapper.toAdminResponse(company, productRepository.countByCompanyId(companyId));
+    }
+
+    @Override
+    public Page<AdminCompanySummaryResponse> getCompaniesAsAdmin(String q, CompanyStatus status, Pageable pageable) {
+        Specification<Company> spec = Specification
+                .where(CompanySpecifications.hasNameLike(q))
+                .and(CompanySpecifications.hasStatus(status));
+
+        return companyRepository.findAll(spec, pageable)
+                .map(company -> companyMapper.toAdminSummaryResponse(
+                        company,
+                        productRepository.countByCompanyId(company.getId()),
+                        companyMemberRepository.countByCompanyId(company.getId())
+                ));
+    }
+
+    @Override
+    public Map<CompanyStatus, Long> countCompaniesByStatus() {
+        Map<CompanyStatus, Long> counts = new EnumMap<>(CompanyStatus.class);
+        for (CompanyStatus status : CompanyStatus.values()) {
+            counts.put(status, 0L);
+        }
+        for (Object[] row : companyRepository.countByStatusGrouped()) {
+            counts.put((CompanyStatus) row[0], (Long) row[1]);
+        }
+        return counts;
     }
 
     @Override
@@ -129,6 +162,10 @@ public class CompanyServiceImpl implements CompanyService {
 
         if (banner != null && !banner.isEmpty()) {
             company.setBannerUrl(fileStorageService.saveFile(banner));
+        }
+
+        if (request.socialLinks() != null) {
+            request.socialLinks().forEach(req -> company.addSocialLink(CompanySocialLinkMapper.toEntity(req)));
         }
 
         companyRepository.save(company);
@@ -183,7 +220,7 @@ public class CompanyServiceImpl implements CompanyService {
 
         // Status validation
         if (request.status() == CompanyStatus.ARCHIVED
-                && !company.getProducts().isEmpty()) {
+                && productRepository.countByCompanyId(companyId) > 0) {
 
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -191,7 +228,9 @@ public class CompanyServiceImpl implements CompanyService {
             );
         }
 
-        company.setStatus(request.status());
+        if (request.status() != null) {
+            applyStatus(company, request.status(), currentUser);
+        }
 
 
 
@@ -233,11 +272,20 @@ public class CompanyServiceImpl implements CompanyService {
     public void updateCompanyStatusAsAdmin(Long companyId, CompanyStatus status) {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
-        if (status == CompanyStatus.ARCHIVED && !company.getProducts().isEmpty()) {
+        if (status == CompanyStatus.ARCHIVED && productRepository.countByCompanyId(companyId) > 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot archive company with products");
         }
-        company.setStatus(status);
+        applyStatus(company, status, findUser(SecurityUtils.getCurrentUserId()));
         companyRepository.save(company);
+    }
+
+    // Activating a company records who verified it and when
+    private void applyStatus(Company company, CompanyStatus status, User admin) {
+        if (status == CompanyStatus.ACTIVE && company.getStatus() != CompanyStatus.ACTIVE) {
+            company.setVerifiedBy(admin);
+            company.setVerifiedAt(LocalDateTime.now());
+        }
+        company.setStatus(status);
     }
 
     @Override

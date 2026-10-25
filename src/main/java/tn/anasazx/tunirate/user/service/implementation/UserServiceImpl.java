@@ -1,5 +1,13 @@
 package tn.anasazx.tunirate.user.service.implementation;
 
+import tn.anasazx.tunirate.user.repository.UserSpecifications;
+import tn.anasazx.tunirate.user.dto.AdminUserResponse;
+import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
+import tn.anasazx.tunirate.enums.UserStatus;
+import tn.anasazx.tunirate.enums.GlobalRole;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -23,6 +31,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
+    private final CompanyMemberRepository companyMemberRepository;
 
 
     @Override
@@ -102,6 +111,33 @@ public class UserServiceImpl implements UserService {
                 .stream()
                 .map(UserMapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    public Page<AdminUserResponse> getUsersAsAdmin(String q, GlobalRole role, UserStatus status, Pageable pageable) {
+        Specification<User> spec = Specification
+                .where(UserSpecifications.matchesQuery(q))
+                .and(UserSpecifications.hasRole(role))
+                .and(UserSpecifications.hasStatus(status));
+
+        return userRepository.findAll(spec, pageable)
+                .map(user -> UserMapper.toAdminResponse(user, companyMemberRepository.findFirstByUserId(user.getId()).orElse(null)));
+    }
+
+    @Override
+    public AdminUserResponse updateUserStatus(Long id, UserStatus status, Long currentUserId) {
+
+        // Prevents an admin from locking themselves out
+        if (id.equals(currentUserId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can't change your own status");
+        }
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        user.setStatus(status);
+
+        return UserMapper.toAdminResponse(userRepository.save(user), companyMemberRepository.findFirstByUserId(id).orElse(null));
     }
 
     @Override

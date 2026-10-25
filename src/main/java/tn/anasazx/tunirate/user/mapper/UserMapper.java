@@ -1,5 +1,7 @@
 package tn.anasazx.tunirate.user.mapper;
 
+import tn.anasazx.tunirate.membership.entity.CompanyMember;
+import tn.anasazx.tunirate.user.dto.AdminUserResponse;
 import tn.anasazx.tunirate.user.dto.MinimizedUserResponse;
 import tn.anasazx.tunirate.user.dto.SecureMinimizedUserResponse;
 import tn.anasazx.tunirate.user.dto.UserResponse;
@@ -18,6 +20,24 @@ public class UserMapper {
                 user.getCountry(),
                 user.getStatus(),
                 user.getGlobalRole(),
+                user.getCreatedAt()
+        );
+    }
+
+    // membership may be null when the user doesn't belong to a company
+    public static AdminUserResponse toAdminResponse(User user, CompanyMember membership) {
+        return new AdminUserResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getAvatarUrl(),
+                user.isEmailVerified(),
+                user.getGlobalRole(),
+                user.getStatus(),
+                user.getProvider(),
+                membership != null ? membership.getCompany().getId() : null,
+                membership != null ? membership.getCompany().getName() : null,
+                membership != null ? membership.getCompanyRole() : null,
                 user.getCreatedAt()
         );
     }

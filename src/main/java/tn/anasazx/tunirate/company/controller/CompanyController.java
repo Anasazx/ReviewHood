@@ -3,6 +3,8 @@ package tn.anasazx.tunirate.company.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,9 +13,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.anasazx.tunirate.company.dto.*;
 import tn.anasazx.tunirate.company.service.CompanyService;
+import tn.anasazx.tunirate.enums.CompanyStatus;
 import tn.anasazx.tunirate.security.SecurityUtils;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/company")
@@ -62,6 +66,23 @@ public class CompanyController {
     @GetMapping
     public ResponseEntity<List<CompanyResponse>> getAllCompaniesAsAdmin() {
         return ResponseEntity.ok(companyService.getAllCompanies());
+    }
+
+    //Admin method: paginated, filterable companies table
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/op")
+    public ResponseEntity<Page<AdminCompanySummaryResponse>> getCompaniesAsAdmin(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) CompanyStatus status,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(companyService.getCompaniesAsAdmin(q, status, pageable));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/op/status-counts")
+    public ResponseEntity<Map<CompanyStatus, Long>> countCompaniesByStatus() {
+        return ResponseEntity.ok(companyService.countCompaniesByStatus());
     }
 
     //Admin method

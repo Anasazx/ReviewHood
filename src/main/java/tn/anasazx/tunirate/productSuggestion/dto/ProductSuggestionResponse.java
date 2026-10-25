@@ -10,6 +10,6 @@ public record ProductSuggestionResponse(
         String status,
         LocalDateTime createdAt,
         Long productId,
-        String productName
-
+        String productName,
+        String userName
 ) {}

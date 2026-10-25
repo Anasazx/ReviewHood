@@ -1,5 +1,7 @@
 package tn.anasazx.tunirate.company.service;
 
+import java.util.Map;
+import tn.anasazx.tunirate.company.dto.AdminCompanySummaryResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,5 +40,9 @@ public interface CompanyService {
     List<CompanyResponse> search(String query);
 
     Page<CompanyResponse> getAllCompanies(Pageable pageable);
-}
 
+    Page<AdminCompanySummaryResponse> getCompaniesAsAdmin(String q, CompanyStatus status, Pageable pageable);
+
+    Map<CompanyStatus, Long> countCompaniesByStatus();
+
+}

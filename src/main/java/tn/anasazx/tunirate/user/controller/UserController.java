@@ -1,5 +1,14 @@
 package tn.anasazx.tunirate.user.controller;
 
+import tn.anasazx.tunirate.user.dto.UserStatusRequest;
+import tn.anasazx.tunirate.user.dto.AdminUserResponse;
+import tn.anasazx.tunirate.enums.UserStatus;
+import tn.anasazx.tunirate.enums.GlobalRole;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +51,26 @@ public class UserController {
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody AdminUpdateUserRequest request) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(userService.updateUser(id, request, currentUserId));
+    }
+
+    // Paginated, filterable users table for the admin panel
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/op")
+    public ResponseEntity<Page<AdminUserResponse>> getUsersAsAdmin(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) GlobalRole role,
+            @RequestParam(required = false) UserStatus status,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(userService.getUsersAsAdmin(q, role, status, pageable));
+    }
+
+    // Suspend or reactivate an account; suspended users are rejected on every request
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<AdminUserResponse> updateUserStatus(@PathVariable Long id, @Valid @RequestBody UserStatusRequest request) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(userService.updateUserStatus(id, request.status(), currentUserId));
     }
 
     @PostMapping("/me/avatar")

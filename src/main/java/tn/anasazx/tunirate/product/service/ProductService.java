@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.product.service;
 
+import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,7 +24,9 @@ public interface ProductService {
 
     //Admin methods
     AdminProductDetailsResponse getProductDetailsByIdAsAdmin(Long productId);
-    List<AdminProductResponse> getProductsAsAdmin();
+    Page<AdminProductResponse> getProductsAsAdmin(String q, ProductStatus status, Long companyId, Long subcategoryId, Boolean uncategorized, Pageable pageable);
+
+    Map<ProductStatus, Long> countProductsByStatus(Long companyId);
     AdminProductResponse createProductAsAdmin(AdminProductRequest request, List<MultipartFile> images, Long currentUserId);
     AdminProductResponse updateProductAsAdmin(Long id, AdminProductRequest request, List<MultipartFile> images);
     void updateProductStatusAsAdmin(Long productId, ProductStatus productStatus);

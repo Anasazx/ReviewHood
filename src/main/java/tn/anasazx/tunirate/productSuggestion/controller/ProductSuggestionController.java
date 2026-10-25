@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.productSuggestion.controller;
 
+import tn.anasazx.tunirate.enums.SuggestionStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,8 +34,8 @@ public class ProductSuggestionController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<List<ProductSuggestionResponse>> getAllSuggestions() {
-        return ResponseEntity.ok(productSuggestionService.getAllSuggestions());
+    public ResponseEntity<List<ProductSuggestionResponse>> getAllSuggestions(@RequestParam(required = false) SuggestionStatus status) {
+        return ResponseEntity.ok(productSuggestionService.getAllSuggestions(status));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
