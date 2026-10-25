@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import tn.anasazx.tunirate.fileStorage.service.FileStorageService;
+import tn.anasazx.tunirate.user.dto.AdminUpdateUserRequest;
 import tn.anasazx.tunirate.user.dto.UpdateUserRequest;
 import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.entity.User;
@@ -40,12 +41,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse updateUser(Long id, User updatedUser) {
+    public UserResponse updateUser(Long id, AdminUpdateUserRequest request, Long currentUserId) {
 
         User existingUser = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        // update allowed fields only
-        existingUser.setName(updatedUser.getName());
+        // update allowed fields only, and only the ones provided
+        if (request.name() != null && !request.name().isBlank()) {
+            existingUser.setName(request.name());
+        }
+
+        if (request.globalRole() != null && request.globalRole() != existingUser.getGlobalRole()) {
+            // Prevents an admin from locking themselves out
+            if (id.equals(currentUserId)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can't change your own role");
+            }
+            existingUser.setGlobalRole(request.globalRole());
+        }
 
         User savedUser = userRepository.save(existingUser);
 
@@ -63,7 +74,13 @@ public class UserServiceImpl implements UserService {
         existingUser.setCountry(request.country());
 
         // Update email only if it changed
-        if (!existingUser.getEmail().equals(request.email())) {
+        if (request.email() != null && !request.email().isBlank()
+                && !existingUser.getEmail().equalsIgnoreCase(request.email())) {
+
+            if (userRepository.existsUserByEmail(request.email())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
+            }
+
             existingUser.setEmail(request.email());
             existingUser.setEmailVerified(false);
 
@@ -108,7 +125,8 @@ public class UserServiceImpl implements UserService {
 
         String fileName = fileStorageService.saveFile(file);
 
-        if (currentUser.getAvatarUrl() != null) {
+        // Google avatars are external URLs, only local files can be deleted
+        if (currentUser.getAvatarUrl() != null && !currentUser.getAvatarUrl().startsWith("http")) {
             fileStorageService.deleteFile(currentUser.getAvatarUrl());
         }
 

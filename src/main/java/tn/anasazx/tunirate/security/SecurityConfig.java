@@ -51,7 +51,8 @@ public class SecurityConfig {
                                 "/feed",
                                 "/admin/**"
                         ).permitAll()
-                        .requestMatchers("/uploads/**").permitAll()
+                        // Error page must be reachable, otherwise every 400/404/409 is turned into a 403
+                        .requestMatchers("/error").permitAll()
 
                         // Everything else requires login
                         .anyRequest().authenticated()

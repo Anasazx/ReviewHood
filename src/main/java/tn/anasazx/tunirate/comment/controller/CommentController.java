@@ -1,6 +1,7 @@
 package tn.anasazx.tunirate.comment.controller;
 
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,15 +34,15 @@ public class CommentController {
     //Create comment
     @PostMapping("/review/{reviewId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentResponse createComment(@PathVariable Long reviewId, @RequestBody CommentRequest request) {
+    public CommentResponse createComment(@PathVariable Long reviewId, @Valid @RequestBody CommentRequest request) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         return commentService.createComment(reviewId, request.content(), currentUserId);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@companyAccess.isMember()")
     @PostMapping("/c/review/{reviewId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentResponse createCommentAsCompany(@PathVariable Long reviewId, @RequestBody CommentRequest request) {
+    public CommentResponse createCommentAsCompany(@PathVariable Long reviewId, @Valid @RequestBody CommentRequest request) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         return commentService.createCommentAsCompany(reviewId, request.content(), currentUserId);
     }
@@ -49,15 +50,15 @@ public class CommentController {
 
     @PostMapping("/reply/{parentCommentId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentResponse replyToComment(@PathVariable Long parentCommentId, @RequestBody CommentRequest request) {
+    public CommentResponse replyToComment(@PathVariable Long parentCommentId, @Valid @RequestBody CommentRequest request) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         return commentService.replyToComment(parentCommentId, request.content(), currentUserId);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@companyAccess.isMember()")
     @PostMapping("/c/reply/{parentCommentId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentResponse replyToCommentAsCompany(@PathVariable Long parentCommentId, @RequestBody CommentRequest request) {
+    public CommentResponse replyToCommentAsCompany(@PathVariable Long parentCommentId, @Valid @RequestBody CommentRequest request) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         return commentService.replyToCommentAsCompany(parentCommentId, request.content(), currentUserId);
     }

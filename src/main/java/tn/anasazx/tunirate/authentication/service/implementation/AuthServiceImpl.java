@@ -2,6 +2,7 @@ package tn.anasazx.tunirate.authentication.service.implementation;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,15 +15,17 @@ import tn.anasazx.tunirate.emailVerification.service.EmailVerificationService;
 import tn.anasazx.tunirate.enums.AuthProvider;
 import tn.anasazx.tunirate.enums.Country;
 import tn.anasazx.tunirate.exception.InvalidPasswordException;
+import tn.anasazx.tunirate.membership.entity.CompanyMember;
+import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
 import tn.anasazx.tunirate.security.JwtService;
 import tn.anasazx.tunirate.user.dto.MinimizedUserResponse;
-import tn.anasazx.tunirate.user.dto.UserResponse;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.mapper.UserMapper;
 import tn.anasazx.tunirate.user.repository.UserRepository;
 
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -32,6 +35,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final GoogleAuthService googleAuthService;
     private final EmailVerificationService emailVerificationService;
+    private final CompanyMemberRepository companyMemberRepository;
 
 
     @Override
@@ -42,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if (userRepository.existsUserByEmail(request.email())) {
-            throw new RuntimeException("Email already exists");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
         
         //Create a user instance
@@ -52,17 +56,25 @@ public class AuthServiceImpl implements AuthService {
                 passwordEncoder.encode(request.password())
         );
 
+        if (request.country() != null) {
+            user.setCountry(request.country());
+        }
+
         User saved = userRepository.save(user);
 
-        // Send verification code
-        emailVerificationService.requestVerificationCode(saved);
-
-        UserResponse savedUser = UserMapper.toResponse(saved);
+        // Send verification code; the account already exists, so a mail failure must not fail the
+        // registration (the user can ask for a new code via /email/request)
+        try {
+            emailVerificationService.requestVerificationCode(saved);
+        } catch (RuntimeException e) {
+            log.warn("Could not send verification email to user {}", saved.getId(), e);
+        }
 
         //Generate token
         String token = jwtService.generateToken(saved);
 
-        return AuthMapper.toAuthResponse(token, savedUser);
+        // A brand new user can't belong to a company yet
+        return AuthMapper.toAuthResponse(token, saved, null);
     }
 
     private boolean isStrongPassword(String password) {
@@ -74,20 +86,18 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(LoginRequest request) {
 
-        //Find the user
-        User user = userRepository.findByEmail(request.email()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
-        );
-
-        //Check password matching
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
-        }
+        //Find the user and check password matching. Same error for both cases so emails can't be enumerated.
+        //Google-only accounts have no password and can't log in this way.
+        User user = userRepository.findByEmail(request.email())
+                .filter(u -> u.getPassword() != null
+                        && request.password() != null
+                        && passwordEncoder.matches(request.password(), u.getPassword()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
 
         //Token generation
         String token = jwtService.generateToken(user);
 
-        return AuthMapper.toAuthResponse(token, user);
+        return toAuthResponse(token, user);
 
     }
 
@@ -149,7 +159,13 @@ public class AuthServiceImpl implements AuthService {
 
         String token = jwtService.generateToken(user);
 
-        return AuthMapper.toAuthResponse(token, user);
+        return toAuthResponse(token, user);
+    }
+
+    // Includes the company membership so the company portal knows the user's company and role
+    private AuthResponse toAuthResponse(String token, User user) {
+        CompanyMember membership = companyMemberRepository.findFirstByUserId(user.getId()).orElse(null);
+        return AuthMapper.toAuthResponse(token, user, membership);
     }
 
 

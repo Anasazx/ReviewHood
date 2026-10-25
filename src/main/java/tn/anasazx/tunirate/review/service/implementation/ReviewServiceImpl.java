@@ -11,6 +11,7 @@ import tn.anasazx.tunirate.comment.dto.CommentResponse;
 import tn.anasazx.tunirate.comment.mapper.CommentMapper;
 import tn.anasazx.tunirate.comment.repository.CommentRepository;
 import tn.anasazx.tunirate.enums.ActorType;
+import tn.anasazx.tunirate.enums.ProductStatus;
 import tn.anasazx.tunirate.like.commentLike.repository.CommentLikeRepository;
 import tn.anasazx.tunirate.like.reviewLike.repository.ReviewLikeRepository;
 import tn.anasazx.tunirate.membership.entity.CompanyMember;
@@ -60,10 +61,10 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewResponse createReview(ReviewRequest request, Long currentUserId) {
 
         User user = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        Product product = productRepository.findById(request.productId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+        Product product = productRepository.findByStatusAndId(ProductStatus.PUBLISHED, request.productId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
         reviewRepository
                 .findByUserIdAndProductId(currentUserId, request.productId())

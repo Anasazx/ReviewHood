@@ -19,7 +19,7 @@ public class CompanyInvitationController {
     private final CompanyInvitationService service;
 
     // CREATE invitation (company sends invite)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@companyAccess.isHead()")
     @PostMapping
     public ResponseEntity<Void> sendInvitation(@RequestBody CompanyInvitationRequest request) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
@@ -28,7 +28,7 @@ public class CompanyInvitationController {
     }
 
     // GET invitations for company (HEAD only handled in service)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@companyAccess.isHead()")
     @GetMapping("/company")
     public ResponseEntity<List<CompanyInvitationResponse>> getCompanyInvitations() {
         Long currentUserId = SecurityUtils.getCurrentUserId();
@@ -57,7 +57,7 @@ public class CompanyInvitationController {
     }
 
     // CANCEL invitation (company head only)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@companyAccess.isHead()")
     @PostMapping("/{invitationId}/cancel")
     public ResponseEntity<CompanyInvitationResponse> cancelInvitation(@PathVariable Long invitationId) {
         Long currentUserId = SecurityUtils.getCurrentUserId();

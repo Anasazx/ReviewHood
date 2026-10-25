@@ -32,7 +32,7 @@ public interface ProductService {
     //Company methods
     List<CompanyProductResponse> getProductsAsCompany(Long currentUserId);
     CompanyProductResponse createProductAsCompany(CompanyProductRequest request, Long currentUserId);
-    CompanyProductResponse getProductByIdAsCompany(Long productId);
+    CompanyProductResponse getProductByIdAsCompany(Long productId, Long currentUserId);
 
 
 

@@ -71,6 +71,8 @@ public class CommentServiceImpl implements CommentService {
         Company company = membership.getCompany( );
         User user = membership.getUser( );
 
+        requireReviewOfCompany(review, company);
+
 
         Comment comment = new Comment();
         comment.setContent(content);
@@ -87,8 +89,7 @@ public class CommentServiceImpl implements CommentService {
         User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        Comment parentComment = commentRepository.findById(parentCommentId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent comment not found"));
+        Comment parentComment = findActiveComment(parentCommentId);
 
         Comment replyComment = new Comment();
         replyComment.setContent(content);
@@ -102,13 +103,14 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentResponse replyToCommentAsCompany(Long parentCommentId, String content, Long currentUserId) {
 
-        Comment parentComment = commentRepository.findById(parentCommentId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent comment not found"));
+        Comment parentComment = findActiveComment(parentCommentId);
 
         CompanyMember membership = companyMemberRepository.findFirstByUserId(currentUserId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not belong to any company"));
 
         Company company = membership.getCompany();
+
+        requireReviewOfCompany(parentComment.getReview(), company);
 
         User user = membership.getUser();
 
@@ -161,6 +163,20 @@ public class CommentServiceImpl implements CommentService {
 
         comment.setDeleted(true);
         commentRepository.save(comment);
+    }
+
+    // -- HELPERS --
+    private Comment findActiveComment(Long commentId) {
+        return commentRepository.findById(commentId)
+                .filter(comment -> !comment.isDeleted())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent comment not found"));
+    }
+
+    // A company may only speak as itself on reviews of its own products
+    private void requireReviewOfCompany(Review review, Company company) {
+        if (!review.getProduct().getCompany().getId().equals(company.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This review is not about one of your products");
+        }
     }
 
 }

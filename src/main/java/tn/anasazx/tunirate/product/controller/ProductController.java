@@ -106,14 +106,14 @@ public class ProductController {
 
 	//Company methods
 	//This is for companies
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("@companyAccess.isMember()")
 	@PostMapping("/c")
 	public ResponseEntity<CompanyProductResponse> createProductAsCompany(@Valid @RequestBody CompanyProductRequest request) {
 		Long currentUserId = SecurityUtils.getCurrentUserId();
 		return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProductAsCompany(request, currentUserId));
 	}
 
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("@companyAccess.isMember()")
 	@GetMapping("/my")
 	public ResponseEntity<List<CompanyProductResponse>> getProductsAsCompany() {
 		Long currentUserId = SecurityUtils.getCurrentUserId();
@@ -121,10 +121,11 @@ public class ProductController {
 	}
 
 
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("@companyAccess.isMember()")
 	@GetMapping("/c/{productId}")
 	public ResponseEntity<CompanyProductResponse> getProductByIdAsCompany(@PathVariable Long productId) {
-		return ResponseEntity.ok(productService.getProductByIdAsCompany(productId));
+		Long currentUserId = SecurityUtils.getCurrentUserId();
+		return ResponseEntity.ok(productService.getProductByIdAsCompany(productId, currentUserId));
 	}
 
 

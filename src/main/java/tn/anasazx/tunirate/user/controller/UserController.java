@@ -7,9 +7,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.anasazx.tunirate.security.SecurityUtils;
+import tn.anasazx.tunirate.user.dto.AdminUpdateUserRequest;
 import tn.anasazx.tunirate.user.dto.UpdateUserRequest;
 import tn.anasazx.tunirate.user.dto.UserResponse;
-import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.service.UserService;
 
 import java.util.List;
@@ -39,8 +39,9 @@ public class UserController {
     // Update user profile
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody User user) {
-        return ResponseEntity.ok(userService.updateUser(id, user));
+    public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody AdminUpdateUserRequest request) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(userService.updateUser(id, request, currentUserId));
     }
 
     @PostMapping("/me/avatar")

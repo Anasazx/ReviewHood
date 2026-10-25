@@ -49,7 +49,7 @@ public class ReviewController {
 	}
 
 	//TODO: Implement pagination
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("@companyAccess.isMember()")
 	@GetMapping("/c/my")
 	public ResponseEntity<List<ReviewResponse>> getMyCompanyReviews() {
 		Long currentUserId = SecurityUtils.getCurrentUserId();

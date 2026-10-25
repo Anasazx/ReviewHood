@@ -3,6 +3,7 @@ package tn.anasazx.tunirate.product.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.anasazx.tunirate.product.dto.ProductImageResponse;
@@ -21,6 +22,7 @@ public class ProductImageController {
     ResponseEntity<List<ProductImageResponse>> getImagesByProductId(@PathVariable Long productId){
         return ResponseEntity.ok(productImageService.getImagesByProductId(productId));
     }
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{productId}")
     ResponseEntity<ProductImageResponse> addImage(@PathVariable Long productId, @RequestParam("file") MultipartFile file){
         return ResponseEntity
@@ -28,6 +30,7 @@ public class ProductImageController {
                 .body(productImageService.addImage(productId, file));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{imageId}")
     public ResponseEntity<Void> deleteImage(@PathVariable Long imageId){
         productImageService.deleteImage(imageId);
@@ -37,6 +40,7 @@ public class ProductImageController {
 
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{imageId}/main")
     ResponseEntity<Void> setMainImage(@PathVariable Long imageId, @RequestParam Long productId){
         productImageService.setMainImage(productId,  imageId);

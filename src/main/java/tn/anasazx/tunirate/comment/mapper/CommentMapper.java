@@ -41,13 +41,12 @@ public class CommentMapper {
             default -> null;
         };
 
-        if (comment.isDeleted()) {
-            comment.setContent("[deleted Comment]");
-        }
+        // Never mutate the entity here: inside a transaction the placeholder would be persisted
+        String content = comment.isDeleted() ? "[deleted Comment]" : comment.getContent();
 
         return new CommentResponse(
                 comment.getId(),
-                comment.getContent(),
+                content,
                 actorName,
                 actor.getType(),
                 actor.getId(),

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.company.mapper.CompanyMapper;
 import tn.anasazx.tunirate.company.repository.CompanyRepository;
+import tn.anasazx.tunirate.enums.ProductStatus;
 import tn.anasazx.tunirate.feed.dto.FeedResponse;
 import tn.anasazx.tunirate.feed.service.FeedService;
 import tn.anasazx.tunirate.product.entity.Product;
@@ -41,7 +42,7 @@ public class FeedServiceImpl implements FeedService {
     @Override
     public FeedResponse getFeed() {
 
-        List<Product> products = productRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, PRODUCT_LIMIT));
+        List<Product> products = productRepository.findAllByStatusOrderByCreatedAtDesc(ProductStatus.PUBLISHED, PageRequest.of(0, PRODUCT_LIMIT));
 
         List<Review> reviews = reviewRepository.findByContentIsNotNullOrderByCreatedAtDesc(PageRequest.of(0, REVIEW_LIMIT));
 

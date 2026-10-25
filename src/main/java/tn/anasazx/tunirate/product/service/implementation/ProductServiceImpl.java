@@ -279,9 +279,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public CompanyProductResponse getProductByIdAsCompany(Long productId) {
+    public CompanyProductResponse getProductByIdAsCompany(Long productId, Long currentUserId) {
 
-        Product product = findProductByIdStatusPublished(productId);
+        CompanyMember membership = findMembershipByUserId(currentUserId);
+
+        Product product = findProductById(productId);
+
+        if (!product.getCompany().getId().equals(membership.getCompany().getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
 
         return productMapper.toCompanyResponse(product);
 

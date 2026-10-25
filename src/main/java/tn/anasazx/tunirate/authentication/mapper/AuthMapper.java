@@ -1,23 +1,20 @@
 package tn.anasazx.tunirate.authentication.mapper;
 
 import tn.anasazx.tunirate.authentication.dto.AuthResponse;
-import tn.anasazx.tunirate.user.dto.UserResponse;
+import tn.anasazx.tunirate.membership.entity.CompanyMember;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.mapper.UserMapper;
 
 public class AuthMapper {
 
-    public static AuthResponse toAuthResponse(String token, User user) {
+    // membership may be null when the user doesn't belong to a company
+    public static AuthResponse toAuthResponse(String token, User user, CompanyMember membership) {
         return new AuthResponse(
                 token,
-                UserMapper.toMinimizedResponse(user)
-        );
-    }
-
-    public static AuthResponse toAuthResponse(String token, UserResponse user) {
-        return new AuthResponse(
-                token,
-                UserMapper.toMinimizedResponse(user)
+                UserMapper.toMinimizedResponse(user),
+                user.getGlobalRole(),
+                membership != null ? membership.getCompany().getId() : null,
+                membership != null ? membership.getCompanyRole() : null
         );
     }
 

@@ -9,6 +9,7 @@ import tn.anasazx.tunirate.company.dto.CompanyResponse;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.company.mapper.CompanyMapper;
 import tn.anasazx.tunirate.company.repository.CompanyRepository;
+import tn.anasazx.tunirate.enums.ProductStatus;
 import tn.anasazx.tunirate.product.dto.ProductResponse;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.mapper.ProductMapper;
@@ -58,7 +59,7 @@ public class SearchServiceImpl implements SearchService {
         }
 
         return productRepository
-                .search(q, page)
+                .search(q, ProductStatus.PUBLISHED, page)
                 .map(productMapper::toResponse);
     }
 
@@ -85,7 +86,7 @@ public class SearchServiceImpl implements SearchService {
         }
 
         List<Product> products =
-                productRepository.findSuggestions(q, PageRequest.of(0, 7));
+                productRepository.findSuggestions(q, ProductStatus.PUBLISHED, PageRequest.of(0, 7));
 
         List<Company> companies =
                 companyRepository.findSuggestions(q, PageRequest.of(0, 7));
@@ -134,7 +135,7 @@ public class SearchServiceImpl implements SearchService {
         }
 
         return productRepository
-                .search(q, page)
+                .search(q, ProductStatus.PUBLISHED, page)
                 .map(productMapper::toResponse);
     }
 

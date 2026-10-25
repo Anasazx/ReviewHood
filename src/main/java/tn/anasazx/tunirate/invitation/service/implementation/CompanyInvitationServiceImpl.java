@@ -48,6 +48,11 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
             return;
         }
 
+        if (membership.companyRole() != CompanyRole.HEAD) {
+            log.warn("INVITATION_BLOCKED: user {} is not head of company {}", currentUserId, membership.companyId());
+            return;
+        }
+
         Long companyId = membership.companyId();
 
         Optional<Company> companyOpt = companyRepository.findById(companyId);
@@ -64,7 +69,7 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
         User inviter = inviterOpt.get();
         User invitedUser = invitedUserOpt.get();
 
-        if (inviter.getEmail().equals(email)) {
+        if (inviter.getEmail().equalsIgnoreCase(email)) {
             log.warn("INVITATION_BLOCKED: self-invitation inviterId={}", currentUserId);
             return;
         }

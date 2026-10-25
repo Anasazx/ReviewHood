@@ -1,7 +1,6 @@
 package tn.anasazx.tunirate.product.repository;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -20,10 +19,11 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query("""
     SELECT p
     FROM Product p
-    WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :q, '%'))
-       OR LOWER(p.description) LIKE LOWER(CONCAT('%', :q, '%'))
+    WHERE p.status = :status
+      AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :q, '%'))
+       OR LOWER(p.description) LIKE LOWER(CONCAT('%', :q, '%')))
     """)
-    Page<Product> search(@Param("q") String q, Pageable pageable);
+    Page<Product> search(@Param("q") String q, @Param("status") ProductStatus status, Pageable pageable);
 
     Page<Product> findAllByStatus(ProductStatus status, Pageable pageable);
 
@@ -67,13 +67,14 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
         """, nativeQuery = true)
     int reconcileReviewStats();
 
-    List<Product> findAllByOrderByCreatedAtDesc(PageRequest of);
+    List<Product> findAllByStatusOrderByCreatedAtDesc(ProductStatus status, Pageable pageable);
 
 
     @Query("""
     SELECT p
     FROM Product p
-    WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))
+    WHERE p.status = :status
+      AND LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))
     ORDER BY
         CASE
             WHEN LOWER(p.name) = LOWER(:query) THEN 0
@@ -84,6 +85,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     """)
     List<Product> findSuggestions(
             @Param("query") String query,
+            @Param("status") ProductStatus status,
             Pageable pageable
     );
 

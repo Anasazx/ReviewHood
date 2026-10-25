@@ -2,6 +2,7 @@ package tn.anasazx.tunirate.dashboard.companyDashboard.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +17,7 @@ public class CompanyDashboardController {
 
     private final CompanyDashboardService companyDashboardService;
 
+    @PreAuthorize("@companyAccess.isMember()")
     @GetMapping
     public ResponseEntity<CompanyDashboardResponse> getMyCompanyDashboard() {
         Long currentUserId = SecurityUtils.getCurrentUserId();

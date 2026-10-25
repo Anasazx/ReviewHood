@@ -14,17 +14,21 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import tn.anasazx.tunirate.enums.GlobalRole;
+import tn.anasazx.tunirate.enums.UserStatus;
+import tn.anasazx.tunirate.user.repository.UserRepository;
 
 
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
@@ -48,8 +52,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         //Extract USER ID
         Long currentUserId = jwtService.extractUserId(token);
 
-        //Extract Role
-        GlobalRole role = GlobalRole.valueOf(jwtService.extractUserRole(token));
+        //Role comes from the database, not the token, so demotions and suspensions apply immediately
+        Optional<GlobalRole> currentRole = userRepository.findGlobalRoleByIdAndStatus(currentUserId, UserStatus.ACTIVE);
+        if (currentRole.isEmpty()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        GlobalRole role = currentRole.get();
 
         List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
 

@@ -38,7 +38,7 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.getCompanyDetailsById(companyId));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@companyAccess.isMember()")
     @GetMapping("/my")
     public ResponseEntity<CompanyResponse> getMyCompany() {
         Long currentUserId = SecurityUtils.getCurrentUserId();
