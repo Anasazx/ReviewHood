@@ -67,6 +67,22 @@ public class CompanyMemberController {
         return ResponseEntity.ok(service.getMyCompanyMembers(currentUserId));
     }
 
+    // The current user's own membership (company and role), for the company portal
+    @PreAuthorize("@companyAccess.isMember()")
+    @GetMapping("/me")
+    public ResponseEntity<CompanyMemberResponse> getMyMembership() {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(service.getCompanyByUserId(currentUserId));
+    }
+
+    // The company head changes the role of someone in their own company
+    @PreAuthorize("@companyAccess.isHead()")
+    @PatchMapping("/my/role")
+    public ResponseEntity<CompanyMemberResponse> updateRoleInMyCompany(@RequestBody UpdateMemberRoleRequest request) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(service.updateRoleInMyCompany(request.userId(), request.companyRole(), currentUserId));
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/role")
     public ResponseEntity<CompanyMemberResponse> updateRole(@RequestBody UpdateMemberRoleRequest request) {

@@ -14,6 +14,8 @@ import tn.anasazx.tunirate.companySocialLink.entity.CompanySocialLink;
 import tn.anasazx.tunirate.companySocialLink.mapper.CompanySocialLinkMapper;
 import tn.anasazx.tunirate.company.dto.AdminCompanyRequest;
 import tn.anasazx.tunirate.company.dto.AdminCompanyResponse;
+import tn.anasazx.tunirate.enums.CompanyRole;
+import tn.anasazx.tunirate.company.dto.CompanyProfileRequest;
 import tn.anasazx.tunirate.company.dto.AdminCompanySummaryResponse;
 import tn.anasazx.tunirate.company.repository.CompanySpecifications;
 import tn.anasazx.tunirate.company.dto.CompanyDetailResponse;
@@ -67,17 +69,52 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public CompanyResponse getMyCompany(Long currentUserId) {
-        CompanyMember membership = companyMemberRepository.findFirstByUserId(currentUserId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User doesn't belong to any company!")
-        );
-
-        //Extract company entity from the membership response
-        Company company = membership.getCompany();
-
-        return companyMapper.toResponse(company);
+    public CompanyDetailResponse getMyCompany(Long currentUserId) {
+        Company company = findMyMembership(currentUserId).getCompany();
+        return getCompanyDetailsById(company.getId());
     }
 
+    @Override
+    @Transactional
+    public CompanyDetailResponse updateMyCompany(CompanyProfileRequest request, MultipartFile logo, MultipartFile banner, Long currentUserId) {
+        CompanyMember membership = findMyMembership(currentUserId);
+        if (membership.getCompanyRole() != CompanyRole.HEAD) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the company head can edit the company profile");
+        }
+
+        Company company = membership.getCompany();
+        company.setDescription(request.description());
+        company.setPhoneNumber(request.phoneNumber());
+        company.setAddress(request.address());
+        company.setCountry(request.country());
+        company.setIndustry(request.industry());
+        company.setUpdatedBy(membership.getUser());
+
+        if (request.socialLinks() != null) {
+            company.clearSocialLinks();
+            request.socialLinks().forEach(req -> company.addSocialLink(CompanySocialLinkMapper.toEntity(req)));
+        }
+
+        if (logo != null && !logo.isEmpty()) {
+            String old = company.getLogoUrl();
+            company.setLogoUrl(fileStorageService.saveFile(logo));
+            if (old != null) fileStorageService.deleteFile(old);
+        }
+        if (banner != null && !banner.isEmpty()) {
+            String old = company.getBannerUrl();
+            company.setBannerUrl(fileStorageService.saveFile(banner));
+            if (old != null) fileStorageService.deleteFile(old);
+        }
+
+        companyRepository.save(company);
+        return getCompanyDetailsById(company.getId());
+    }
+
+    private CompanyMember findMyMembership(Long currentUserId) {
+        return companyMemberRepository.findFirstByUserId(currentUserId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't belong to any company")
+        );
+    }
 
     @Override
     public CompanyResponse getCompanyByName(String name) {

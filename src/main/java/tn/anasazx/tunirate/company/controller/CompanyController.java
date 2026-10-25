@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.company.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,9 +45,21 @@ public class CompanyController {
 
     @PreAuthorize("@companyAccess.isMember()")
     @GetMapping("/my")
-    public ResponseEntity<CompanyResponse> getMyCompany() {
+    public ResponseEntity<CompanyDetailResponse> getMyCompany() {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(companyService.getMyCompany(currentUserId));
+    }
+
+    // The company head edits their own company profile (not its name or status)
+    @PreAuthorize("@companyAccess.isHead()")
+    @PutMapping(value = "/my", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CompanyDetailResponse> updateMyCompany(
+            @Valid @RequestPart("data") CompanyProfileRequest request,
+            @RequestPart(value = "logo", required = false) MultipartFile logo,
+            @RequestPart(value = "banner", required = false) MultipartFile banner
+    ) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(companyService.updateMyCompany(request, logo, banner, currentUserId));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

@@ -131,16 +131,34 @@ public class ProductController {
 	}
 
 	@PreAuthorize("@companyAccess.isMember()")
-	@GetMapping("/my")
-	public ResponseEntity<List<CompanyProductResponse>> getProductsAsCompany() {
+	@PutMapping("/c/{productId}")
+	public ResponseEntity<CompanyProductResponse> updateProductAsCompany(@PathVariable Long productId, @Valid @RequestBody CompanyProductRequest request) {
 		Long currentUserId = SecurityUtils.getCurrentUserId();
-		return ResponseEntity.ok(productService.getProductsAsCompany(currentUserId));
+		return ResponseEntity.ok(productService.updateProductAsCompany(productId, request, currentUserId));
 	}
 
+	// The current user's company products, paginated (drafts included)
+	@PreAuthorize("@companyAccess.isMember()")
+	@GetMapping("/my")
+	public ResponseEntity<Page<CompanyProductResponse>> getProductsAsCompany(
+			@RequestParam(required = false) String q,
+			@RequestParam(required = false) ProductStatus status,
+			@PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+	) {
+		Long currentUserId = SecurityUtils.getCurrentUserId();
+		return ResponseEntity.ok(productService.getProductsAsCompany(currentUserId, q, status, pageable));
+	}
+
+	@PreAuthorize("@companyAccess.isMember()")
+	@GetMapping("/my/status-counts")
+	public ResponseEntity<Map<ProductStatus, Long>> countProductsByStatusAsCompany() {
+		Long currentUserId = SecurityUtils.getCurrentUserId();
+		return ResponseEntity.ok(productService.countProductsByStatusAsCompany(currentUserId));
+	}
 
 	@PreAuthorize("@companyAccess.isMember()")
 	@GetMapping("/c/{productId}")
-	public ResponseEntity<CompanyProductResponse> getProductByIdAsCompany(@PathVariable Long productId) {
+	public ResponseEntity<AdminProductDetailsResponse> getProductByIdAsCompany(@PathVariable Long productId) {
 		Long currentUserId = SecurityUtils.getCurrentUserId();
 		return ResponseEntity.ok(productService.getProductByIdAsCompany(productId, currentUserId));
 	}

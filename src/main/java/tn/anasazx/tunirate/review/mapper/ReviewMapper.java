@@ -19,7 +19,9 @@ public class ReviewMapper {
                 previewComment,
                 review.getLikeCount(),
                 liked,
-                review.getCreatedAt()
+                review.getCreatedAt(),
+                review.getProduct().getId(),
+                review.getProduct().getName()
         );
     }
 

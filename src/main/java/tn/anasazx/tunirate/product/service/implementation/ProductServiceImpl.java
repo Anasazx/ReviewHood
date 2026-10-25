@@ -160,24 +160,76 @@ public class ProductServiceImpl implements ProductService {
         User currentUser = membership.getUser();
         Company company = membership.getCompany();
 
-        Subcategory subcategory = findSubcategoryById(request.subcategoryId());
-
-
+        Subcategory subcategory = request.subcategoryId() == null ? null : findSubcategoryById(request.subcategoryId());
 
         Product product =  new Product();
 
-        product.setName(request.name());
+        product.setName(request.name().trim());
         product.setDescription(request.description());
         product.setCompany(company);
         product.setSubcategory(subcategory);
         product.setCreatedBy(currentUser);
-        if (request.status() == ProductStatus.DRAFT) product.setStatus(ProductStatus.DRAFT);
+        product.setStatus(companyStatus(request.status()));
 
         return productMapper.toCompanyResponse(productRepository.save(product));
 
     }
 
-    //TODO: we need an update product for the company
+    // Companies edit their own products; any change to a submitted or published product goes (back) to review
+    @Override
+    @Transactional
+    public CompanyProductResponse updateProductAsCompany(Long productId, CompanyProductRequest request, Long currentUserId) {
+
+        CompanyMember membership = findMembershipByUserId(currentUserId);
+        Product product = findProductById(productId);
+
+        if (!product.getCompany().getId().equals(membership.getCompany().getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
+        }
+        if (product.getStatus() == ProductStatus.ARCHIVED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Archived products can't be edited. Contact ReviewHood to restore it.");
+        }
+
+        product.setName(request.name().trim());
+        product.setDescription(request.description());
+        product.setSubcategory(request.subcategoryId() == null ? null : findSubcategoryById(request.subcategoryId()));
+        product.setUpdatedBy(membership.getUser());
+        product.setStatus(companyStatus(request.status()));
+
+        return productMapper.toCompanyResponse(productRepository.save(product));
+    }
+
+    // Companies can only keep a product as a draft or submit it for review
+    private ProductStatus companyStatus(ProductStatus requested) {
+        return requested == ProductStatus.DRAFT ? ProductStatus.DRAFT : ProductStatus.PENDING_REVIEW;
+    }
+
+    @Override
+    public Page<CompanyProductResponse> getProductsAsCompany(Long currentUserId, String q, ProductStatus status, Pageable pageable) {
+        Long companyId = findMembershipByUserId(currentUserId).getCompany().getId();
+
+        Specification<Product> spec = Specification
+                .where(ProductSpecifications.hasCompanyId(companyId))
+                .and(ProductSpecifications.hasStatus(status))
+                .and(ProductSpecifications.hasNameLike(q));
+
+        return productRepository.findAll(spec, pageable)
+                .map(productMapper::toCompanyResponse);
+    }
+
+    @Override
+    public Map<ProductStatus, Long> countProductsByStatusAsCompany(Long currentUserId) {
+        Long companyId = findMembershipByUserId(currentUserId).getCompany().getId();
+        Map<ProductStatus, Long> counts = new EnumMap<>(ProductStatus.class);
+        for (ProductStatus s : ProductStatus.values()) {
+            counts.put(s, 0L);
+        }
+        for (Object[] row : productRepository.countByStatusGrouped(companyId)) {
+            counts.put((ProductStatus) row[0], (Long) row[1]);
+        }
+        return counts;
+    }
+
     @Override
     @Transactional
     public AdminProductResponse updateProductAsAdmin(Long productId, AdminProductRequest request, List<MultipartFile> images) {
@@ -259,18 +311,6 @@ public class ProductServiceImpl implements ProductService {
                 .map(productMapper::toResponse);
     }
 
-    @Override
-    public List<CompanyProductResponse> getProductsAsCompany(Long currentUserId) {
-
-        CompanyMember membership = findMembershipByUserId(currentUserId);
-
-        Long companyId = membership.getCompany().getId();
-
-        return findProductsByCompanyIdAsCompany(companyId)
-                .stream()
-                .map(productMapper::toCompanyResponse)
-                .toList();
-    }
 
     @Override
     public Page<AdminProductResponse> getProductsAsAdmin(String q, ProductStatus status, Long companyId, Long subcategoryId, Boolean uncategorized, Pageable pageable) {
@@ -301,7 +341,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public CompanyProductResponse getProductByIdAsCompany(Long productId, Long currentUserId) {
+    public AdminProductDetailsResponse getProductByIdAsCompany(Long productId, Long currentUserId) {
 
         CompanyMember membership = findMembershipByUserId(currentUserId);
 
@@ -311,7 +351,7 @@ public class ProductServiceImpl implements ProductService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
-        return productMapper.toCompanyResponse(product);
+        return productMapper.toAdminDetailsResponse(product);
 
     }
 
@@ -353,9 +393,6 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
-    List<Product> findProductsByCompanyIdAsCompany(Long companyId){
-        return productRepository.findByCompanyId(companyId);
-    }
 
 
 }

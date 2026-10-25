@@ -21,4 +21,6 @@ public interface CompanyMemberService {
 
     void removeUserFromMyCompany(Long removedUserId, Long currentUserId);
 
+    CompanyMemberResponse updateRoleInMyCompany(Long userId, CompanyRole companyRole, Long currentUserId);
+
 }

@@ -3,6 +3,7 @@ package tn.anasazx.tunirate.dashboard.adminDashboard.service.implementation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tn.anasazx.tunirate.company.repository.CompanyRepository;
+import tn.anasazx.tunirate.dashboard.TimeSeries;
 import tn.anasazx.tunirate.dashboard.adminDashboard.dto.AdminDashboardResponse;
 import tn.anasazx.tunirate.dashboard.adminDashboard.dto.TimeSeriesPointDTO;
 import tn.anasazx.tunirate.company.service.CompanyService;
@@ -54,18 +55,9 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         int days = 30;
         LocalDateTime startDate = LocalDateTime.now().minusDays(days);
 
-        List<TimeSeriesPointDTO> usersOverTime = fillGaps(
-                mapToTimeSeries(userRepository.countUsersByDayRaw(startDate)),
-                startDate.toLocalDate(), days
-        );
-        List<TimeSeriesPointDTO> companiesOverTime = fillGaps(
-                mapToTimeSeries(companyRepository.countCompaniesByDayRaw(startDate)),
-                startDate.toLocalDate(), days
-        );
-        List<TimeSeriesPointDTO> reviewsOverTime = fillGaps(
-                mapToTimeSeries(reviewRepository.countReviewsByDayRaw(startDate)),
-                startDate.toLocalDate(), days
-        );
+        List<TimeSeriesPointDTO> usersOverTime = TimeSeries.daily(userRepository.countUsersByDayRaw(startDate), startDate.toLocalDate(), days);
+        List<TimeSeriesPointDTO> companiesOverTime = TimeSeries.daily(companyRepository.countCompaniesByDayRaw(startDate), startDate.toLocalDate(), days);
+        List<TimeSeriesPointDTO> reviewsOverTime = TimeSeries.daily(reviewRepository.countReviewsByDayRaw(startDate), startDate.toLocalDate(), days);
 
         List<MinimizedReviewResponse> recentReviews = reviewRepository.findTop5ByOrderByCreatedAtDesc()
                 .stream()
@@ -96,42 +88,5 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         );
 
     }
-
-
-    private List<TimeSeriesPointDTO> mapToTimeSeries(List<Object[]> rows) {
-        return rows.stream()
-                .map(row -> new TimeSeriesPointDTO(
-                        toLocalDate(row[0]),
-                        ((Number) row[1]).longValue()
-                ))
-                .toList();
-    }
-
-    private LocalDate toLocalDate(Object value) {
-        if (value instanceof LocalDate localDate) {
-            return localDate;
-        }
-        if (value instanceof java.sql.Date sqlDate) {
-            return sqlDate.toLocalDate();
-        }
-        if (value instanceof java.sql.Timestamp timestamp) {
-            return timestamp.toLocalDateTime().toLocalDate();
-        }
-        throw new IllegalStateException("Unexpected date type: " + value.getClass());
-    }
-
-    private List<TimeSeriesPointDTO> fillGaps(List<TimeSeriesPointDTO> raw, LocalDate startDate, int days) {
-        Map<LocalDate, Long> countsByDate = raw.stream()
-                .collect(Collectors.toMap(TimeSeriesPointDTO::date, TimeSeriesPointDTO::count));
-
-        List<TimeSeriesPointDTO> filled = new ArrayList<>();
-        for (int i = 0; i <= days; i++) {
-            LocalDate date = startDate.plusDays(i);
-            filled.add(new TimeSeriesPointDTO(date, countsByDate.getOrDefault(date, 0L)));
-        }
-        return filled;
-    }
-
-
 
 }

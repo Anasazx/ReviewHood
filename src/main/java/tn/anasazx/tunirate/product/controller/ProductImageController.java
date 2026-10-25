@@ -22,7 +22,8 @@ public class ProductImageController {
     ResponseEntity<List<ProductImageResponse>> getImagesByProductId(@PathVariable Long productId){
         return ResponseEntity.ok(productImageService.getImagesByProductId(productId));
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    // Admins, or members of the company that owns the product
+    @PreAuthorize("hasRole('ADMIN') or @companyAccess.ownsProduct(#productId)")
     @PostMapping("/{productId}")
     ResponseEntity<ProductImageResponse> addImage(@PathVariable Long productId, @RequestParam("file") MultipartFile file){
         return ResponseEntity
@@ -30,7 +31,7 @@ public class ProductImageController {
                 .body(productImageService.addImage(productId, file));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or @companyAccess.ownsImage(#imageId)")
     @DeleteMapping("/{imageId}")
     public ResponseEntity<Void> deleteImage(@PathVariable Long imageId){
         productImageService.deleteImage(imageId);
@@ -40,7 +41,7 @@ public class ProductImageController {
 
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or @companyAccess.ownsImage(#imageId)")
     @PostMapping("/{imageId}/main")
     ResponseEntity<Void> setMainImage(@PathVariable Long imageId, @RequestParam Long productId){
         productImageService.setMainImage(productId,  imageId);

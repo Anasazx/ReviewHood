@@ -14,6 +14,8 @@ public record ReviewResponse(
         CommentResponse previewComment,
         Long likeCount,
         boolean liked,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        Long productId,
+        String productName
 ) {}
 

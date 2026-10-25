@@ -23,7 +23,7 @@ public interface ReviewService {
 
     Page<ReviewResponse> getReviewsByUserId(Long userId, Pageable pageable);
 
-    List<ReviewResponse> getMyCompanyReviews(Long currentUserId);
+    Page<ReviewResponse> getMyCompanyReviews(Long currentUserId, Integer rating, Long productId, Boolean unanswered, Pageable pageable);
 
     @Transactional
     ReviewResponse createReview(ReviewRequest request, Long currentUserId);

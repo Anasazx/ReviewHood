@@ -25,6 +25,12 @@ public class SubcategoryController {
         return ResponseEntity.ok(subcategoryService.getAll());
     }
 
+    // Every subcategory, grouped by category on the client (GET /subcategories is limited to "Beauty" for the public feed)
+    @GetMapping("/all")
+    public ResponseEntity<List<SubcategoryResponse>> getAllCategoriesSubcategories() {
+        return ResponseEntity.ok(subcategoryService.getAllCategoriesSubcategories());
+    }
+
     // Public GET /subcategories only returns the "Beauty" ones; the admin panel needs them all
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/op")

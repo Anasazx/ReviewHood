@@ -45,6 +45,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     Long countBySubcategoryId(Long subcategoryId);
 
+    boolean existsByIdAndCompanyId(Long id, Long companyId);
+
     Long countBySubcategoryCategoryId(Long categoryId);
 
     // [status, count] rows, optionally for one company

@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.company.service;
 
+import tn.anasazx.tunirate.company.dto.CompanyProfileRequest;
 import java.util.Map;
 import tn.anasazx.tunirate.company.dto.AdminCompanySummaryResponse;
 import org.springframework.data.domain.Page;
@@ -19,7 +20,9 @@ public interface CompanyService {
 
     CompanyDetailResponse getCompanyDetailsById(Long companyId);
 
-    CompanyResponse getMyCompany(Long currentUserId);
+    CompanyDetailResponse getMyCompany(Long currentUserId);
+
+    CompanyDetailResponse updateMyCompany(CompanyProfileRequest request, MultipartFile logo, MultipartFile banner, Long currentUserId);
 
     CompanyResponse getCompanyByName(String companyName);
 

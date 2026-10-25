@@ -17,6 +17,8 @@ public interface ProductImageRepository extends JpaRepository<ProductImage, Long
 
     boolean existsByProductId(Long productId);
 
+    boolean existsByIdAndProductCompanyId(Long id, Long companyId);
+
     @Modifying
     @Query("UPDATE ProductImage p SET p.isMain = false WHERE p.product.id = :productId")
     void clearMainImages(@Param("productId") Long productId);

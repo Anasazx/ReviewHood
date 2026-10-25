@@ -35,6 +35,14 @@ public class SubcategoryServiceImpl implements SubcategoryService {
                 .toList();
     }
     @Override
+    public List<SubcategoryResponse> getAllCategoriesSubcategories() {
+        return subcategoryRepository.findAll(Sort.by("name"))
+                .stream()
+                .map(subcategoryMapper::toResponse)
+                .toList();
+    }
+
+    @Override
     public List<AdminSubcategoryResponse> getAllAsAdmin() {
         Map<Long, Long> productCounts = new HashMap<>();
         for (Object[] row : productRepository.countBySubcategoryGrouped()) {

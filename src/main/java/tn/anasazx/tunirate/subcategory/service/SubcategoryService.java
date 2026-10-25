@@ -10,6 +10,8 @@ import java.util.List;
 public interface SubcategoryService {
     List<SubcategoryResponse> getAll();
 
+    List<SubcategoryResponse> getAllCategoriesSubcategories();
+
     // Every subcategory of every category, with how many products use it
     List<AdminSubcategoryResponse> getAllAsAdmin();
     SubcategoryResponse getById(Long id);

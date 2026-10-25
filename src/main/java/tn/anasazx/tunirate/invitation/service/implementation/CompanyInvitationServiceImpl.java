@@ -2,7 +2,9 @@ package tn.anasazx.tunirate.invitation.service.implementation;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.company.repository.CompanyRepository;
@@ -37,20 +39,15 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
     @Override
     public void sendInvitation(CompanyInvitationRequest request, Long currentUserId) {
 
-        String email = request.getInvitedUserEmail();
+        String email = request.getInvitedUserEmail() == null ? "" : request.getInvitedUserEmail().trim();
 
         log.info("INVITATION_ATTEMPT inviterId={} email={}", currentUserId, email);
 
         CompanyMemberResponse membership = companyMemberService.getCompanyByUserId(currentUserId);
 
-        if (membership == null) {
-            log.warn("INVITATION_BLOCKED: user {} not in any company", currentUserId);
-            return;
-        }
-
-        if (membership.companyRole() != CompanyRole.HEAD) {
-            log.warn("INVITATION_BLOCKED: user {} is not head of company {}", currentUserId, membership.companyId());
-            return;
+        if (membership == null || membership.companyRole() != CompanyRole.HEAD) {
+            log.warn("INVITATION_BLOCKED: user {} is not a company head", currentUserId);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the company head can invite people");
         }
 
         Long companyId = membership.companyId();
@@ -59,10 +56,12 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
         Optional<User> inviterOpt = userRepository.findById(currentUserId);
         Optional<User> invitedUserOpt = userRepository.findByEmail(email);
 
-        if (companyOpt.isEmpty() || inviterOpt.isEmpty() || invitedUserOpt.isEmpty()) {
-            log.warn("INVITATION_BLOCKED: missing data company={}, inviter={}, invitedEmail={}",
-                    companyId, currentUserId, email);
-            return;
+        if (companyOpt.isEmpty() || inviterOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found");
+        }
+        if (invitedUserOpt.isEmpty()) {
+            log.info("INVITATION_BLOCKED: no account for invited email, companyId={}", companyId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No ReviewHood account uses this email. Ask them to sign up first, then invite them.");
         }
 
         Company company = companyOpt.get();
@@ -70,8 +69,7 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
         User invitedUser = invitedUserOpt.get();
 
         if (inviter.getEmail().equalsIgnoreCase(email)) {
-            log.warn("INVITATION_BLOCKED: self-invitation inviterId={}", currentUserId);
-            return;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can't invite yourself");
         }
 
         boolean exists = invitationRepository.existsByCompanyAndUserAndStatusIn(
@@ -81,15 +79,11 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
         );
 
         if (exists) {
-            log.info("INVITATION_BLOCKED: already exists companyId={} userId={}",
-                    companyId, invitedUser.getId());
-            return;
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "This person already has a pending invitation");
         }
 
         if (companyMemberService.isUserInCompany(invitedUser.getId(), companyId)) {
-            log.info("INVITATION_BLOCKED: user already member userId={} companyId={}",
-                    invitedUser.getId(), companyId);
-            return;
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "This person is already in your team");
         }
 
         CompanyInvitation invitation = CompanyInvitation.builder()
@@ -112,13 +106,13 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
 
         CompanyInvitation invitation = invitationRepository
                 .findById(invitationId)
-                .orElseThrow(() -> new RuntimeException("Invitation not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invitation not found"));
 
-        if (!invitation.getUser().getId().equals(currentUserId)) throw new RuntimeException("Not allowed");
+        if (!invitation.getUser().getId().equals(currentUserId)) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
 
-        if (invitation.getStatus() != InvitationStatus.PENDING) throw new RuntimeException("Invitation is not pending");
+        if (invitation.getStatus() != InvitationStatus.PENDING) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invitation is not pending");
 
-        if (invitation.isExpired()) throw new RuntimeException("Invitation expired");
+        if (invitation.isExpired()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invitation expired");
 
         companyMemberService.assignUserToCompany(invitation.getUser().getId(), invitation.getCompany().getId());
 
@@ -134,21 +128,21 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
     public CompanyInvitationResponse rejectInvitation(Long invitationId, Long currentUserId) {
 
         CompanyInvitation invitation = invitationRepository.findById(invitationId)
-                .orElseThrow(() -> new RuntimeException("Invitation not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invitation not found"));
 
         // 1. Security check
         if (!invitation.getUser().getId().equals(currentUserId)) {
-            throw new RuntimeException("Not allowed");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
         }
 
         // 2. Expiration check
         if (invitation.isExpired()) {
-            throw new RuntimeException("Invitation expired");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invitation expired");
         }
 
         // 3. State check
         if (invitation.getStatus() != InvitationStatus.PENDING) {
-            throw new RuntimeException("Invitation is not pending");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invitation is not pending");
         }
 
         // 4. Apply rejection
@@ -162,19 +156,19 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
     public CompanyInvitationResponse cancelInvitation(Long invitationId, Long currentUserId) {
 
         CompanyInvitation invitation = invitationRepository.findById(invitationId)
-                .orElseThrow(() -> new RuntimeException("Invitation not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invitation not found"));
 
         Long companyId = invitation.getCompany().getId();
 
         // 1. Verify caller belongs to company (or is allowed role)
         if (!companyMemberService.isUserHeadInCompany(currentUserId, companyId)) {
-            throw new RuntimeException("Not allowed");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
         }
 
 
         // 2. Optional but recommended: prevent canceling non-pending invitations
         if (invitation.getStatus() != InvitationStatus.PENDING) {
-            throw new RuntimeException("Only pending invitations can be cancelled");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only pending invitations can be cancelled");
         }
 
         // 3. Apply cancel
@@ -190,13 +184,13 @@ public class CompanyInvitationServiceImpl implements CompanyInvitationService {
         CompanyMemberResponse membership = companyMemberService.getCompanyByUserId(currentUserId);
 
         if (membership == null) {
-            throw new RuntimeException("User is not part of any company");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is not part of any company");
         }
 
         Long companyId = membership.companyId();
 
         if (membership.companyRole() != CompanyRole.HEAD) {
-            throw new RuntimeException("Not allowed");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
         }
 
         return invitationRepository.findAllByCompanyId(companyId)

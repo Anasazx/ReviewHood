@@ -79,7 +79,7 @@ public class ProductMapper {
         String createdByName = product.getCreatedBy().getName();
 
         if (product.getCreatedBy().getGlobalRole() == GlobalRole.ADMIN) {
-            createdByName = "TunisiaRate Admin";
+            createdByName = "ReviewHood";
         }
 
 
@@ -87,7 +87,7 @@ public class ProductMapper {
 
         if (product.getUpdatedBy() != null){
             if (product.getUpdatedBy().getGlobalRole() == GlobalRole.ADMIN) {
-                updatedByName = "TunisiaRate Admin";
+                updatedByName = "ReviewHood";
             }
             else {
                 updatedByName = product.getUpdatedBy().getName();

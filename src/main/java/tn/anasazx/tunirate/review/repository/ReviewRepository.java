@@ -3,6 +3,7 @@ package tn.anasazx.tunirate.review.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface ReviewRepository extends JpaRepository<Review, Long> {
+public interface ReviewRepository extends JpaRepository<Review, Long>, JpaSpecificationExecutor<Review> {
     Page<Review> findByProductId(Long productId, Pageable pageable);
 
     List<Review> findAllByProductId(Long productId);
@@ -32,7 +33,21 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     """)
     Double findAverageRatingByCompanyId(Long companyId);
 
-    List<Review> findTop3ByProductCompanyIdOrderByCreatedAtDesc(Long productCompanyId);
+    List<Review> findTop5ByProductCompanyIdOrderByCreatedAtDesc(Long productCompanyId);
+
+    // [rating, count] rows for one company
+    @Query("SELECT r.rating, COUNT(r) FROM Review r WHERE r.product.company.id = :companyId GROUP BY r.rating")
+    List<Object[]> countByRatingForCompany(@Param("companyId") Long companyId);
+
+    @Query(value = """
+    SELECT CAST(r.created_at AS date) AS day, COUNT(*) AS count
+    FROM reviews r
+    JOIN products p ON p.id = r.product_id
+    WHERE p.company_id = :companyId AND r.created_at >= :startDate
+    GROUP BY CAST(r.created_at AS date)
+    ORDER BY day
+    """, nativeQuery = true)
+    List<Object[]> countCompanyReviewsByDayRaw(@Param("companyId") Long companyId, @Param("startDate") LocalDateTime startDate);
 
 
     Page<Review> findReviewsByUserId(Long userId, Pageable pageable);

@@ -25,6 +25,8 @@ import tn.anasazx.tunirate.review.dto.ReviewResponse;
 import tn.anasazx.tunirate.review.entity.Review;
 import tn.anasazx.tunirate.review.mapper.ReviewMapper;
 import tn.anasazx.tunirate.review.repository.ReviewRepository;
+import tn.anasazx.tunirate.review.repository.ReviewSpecifications;
+import org.springframework.data.jpa.domain.Specification;
 import tn.anasazx.tunirate.review.service.ReviewService;
 import tn.anasazx.tunirate.user.entity.User;
 import tn.anasazx.tunirate.user.repository.UserRepository;
@@ -156,7 +158,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewResponse> getMyCompanyReviews(Long currentUserId) {
+    public Page<ReviewResponse> getMyCompanyReviews(Long currentUserId, Integer rating, Long productId, Boolean unanswered, Pageable pageable) {
 
         Optional<CompanyMember> membershipOpt = companyMemberRepository.findFirstByUserId(currentUserId);
 
@@ -164,9 +166,14 @@ public class ReviewServiceImpl implements ReviewService {
 
         Long companyId = membershipOpt.get().getCompany().getId();
 
-        return reviewRepository.findByProductCompanyId(companyId).stream()
-                .map(r -> mapReview(r, currentUserId))
-                .toList();
+        Specification<Review> spec = Specification
+                .where(ReviewSpecifications.forCompany(companyId))
+                .and(ReviewSpecifications.hasRating(rating))
+                .and(ReviewSpecifications.hasProductId(productId))
+                .and(ReviewSpecifications.notAnsweredBy(companyId, unanswered));
+
+        return reviewRepository.findAll(spec, pageable)
+                .map(r -> mapReview(r, currentUserId));
     }
 
     private Review findReviewEntity(Long id) {

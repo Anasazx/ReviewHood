@@ -33,9 +33,11 @@ public interface ProductService {
 
 
     //Company methods
-    List<CompanyProductResponse> getProductsAsCompany(Long currentUserId);
+    Page<CompanyProductResponse> getProductsAsCompany(Long currentUserId, String q, ProductStatus status, Pageable pageable);
+    Map<ProductStatus, Long> countProductsByStatusAsCompany(Long currentUserId);
     CompanyProductResponse createProductAsCompany(CompanyProductRequest request, Long currentUserId);
-    CompanyProductResponse getProductByIdAsCompany(Long productId, Long currentUserId);
+    CompanyProductResponse updateProductAsCompany(Long productId, CompanyProductRequest request, Long currentUserId);
+    AdminProductDetailsResponse getProductByIdAsCompany(Long productId, Long currentUserId);
 
 
 

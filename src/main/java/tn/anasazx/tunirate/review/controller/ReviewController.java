@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -48,12 +50,16 @@ public class ReviewController {
 		return ResponseEntity.ok(reviewService.getMyReviews(pageable, currentUserId));
 	}
 
-	//TODO: Implement pagination
 	@PreAuthorize("@companyAccess.isMember()")
 	@GetMapping("/c/my")
-	public ResponseEntity<List<ReviewResponse>> getMyCompanyReviews() {
+	public ResponseEntity<Page<ReviewResponse>> getMyCompanyReviews(
+			@RequestParam(required = false) Integer rating,
+			@RequestParam(required = false) Long productId,
+			@RequestParam(required = false) Boolean unanswered,
+			@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+	) {
 		Long currentUserId = SecurityUtils.getCurrentUserId();
-		return ResponseEntity.ok(reviewService.getMyCompanyReviews(currentUserId));
+		return ResponseEntity.ok(reviewService.getMyCompanyReviews(currentUserId, rating, productId, unanswered, pageable));
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")

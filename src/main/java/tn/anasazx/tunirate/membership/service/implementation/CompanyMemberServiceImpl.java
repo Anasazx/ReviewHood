@@ -92,14 +92,31 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
     }
 
     @Override
-    public List<CompanyMemberResponse> getMyCompanyMembers(Long currentUserId) {
+    public CompanyMemberResponse updateRoleInMyCompany(Long userId, CompanyRole companyRole, Long currentUserId) {
+
+        CompanyMemberResponse membership = requireHead(currentUserId);
+
+        if (userId.equals(currentUserId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can't change your own role");
+        }
+
+        return updateRole(userId, membership.companyId(), companyRole);
+    }
+
+    private CompanyMemberResponse requireHead(Long currentUserId) {
         CompanyMemberResponse membership = getCompanyByUserId(currentUserId);
         if (membership == null) {
-            throw new RuntimeException("User is not in this company");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't belong to any company");
         }
         if (membership.companyRole() != CompanyRole.HEAD) {
-            throw new RuntimeException("Not allowed");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the company head can manage the team");
         }
+        return membership;
+    }
+
+    @Override
+    public List<CompanyMemberResponse> getMyCompanyMembers(Long currentUserId) {
+        CompanyMemberResponse membership = requireHead(currentUserId);
 
         return companyMemberRepository
                 .findByCompanyId(membership.companyId())
@@ -127,13 +144,10 @@ public class CompanyMemberServiceImpl implements CompanyMemberService {
     @Override
     public void removeUserFromMyCompany(Long removedUserId, Long currentUserId) {
 
-        CompanyMemberResponse membership = getCompanyByUserId(currentUserId);
+        CompanyMemberResponse membership = requireHead(currentUserId);
 
-        if (membership == null) {
-            throw new RuntimeException("User is not in this company");
-        }
-        if (membership.companyRole() != CompanyRole.HEAD) {
-            throw new RuntimeException("Not allowed");
+        if (removedUserId.equals(currentUserId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can't remove yourself from the company");
         }
 
 
