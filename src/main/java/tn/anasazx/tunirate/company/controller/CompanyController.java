@@ -133,6 +133,14 @@ public class CompanyController {
         );
     }
 
+    // Mark a company as checked by ReviewHood (shows the "Verified" badge publicly), or remove it
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{companyId}/verification")
+    public ResponseEntity<Void> setVerified(@PathVariable Long companyId, @RequestBody Map<String, Boolean> body) {
+        companyService.setVerified(companyId, Boolean.TRUE.equals(body.get("verified")), SecurityUtils.getCurrentUserId());
+        return ResponseEntity.noContent().build();
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{companyId}/status")
     public ResponseEntity<Void> updateCompanyStatusAsAdmin(@PathVariable Long companyId, @RequestBody CompanyStatusRequest request) {

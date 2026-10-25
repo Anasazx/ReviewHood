@@ -21,6 +21,7 @@ public record CompanyDetailResponse(
         List<SubcategoryResponse> subcategories,
         List<CompanySocialLinkResponse> socialLinks,
         CompanyStatus status,
+        boolean verified,
         // Reputation shown on the public company page
         double averageRating,
         long reviewCount,

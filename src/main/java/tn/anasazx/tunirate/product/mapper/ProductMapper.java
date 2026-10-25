@@ -44,7 +44,7 @@ public class ProductMapper {
                 .orElse(null);
 
         boolean companyIsVerified =
-                product.getCompany().getStatus() == CompanyStatus.ACTIVE;
+                product.getCompany().isVerified();
 
         return new ProductResponse(
                 product.getId(),
@@ -102,7 +102,7 @@ public class ProductMapper {
         }
 
 
-        boolean companyIsVerified =  product.getCompany().getStatus() == CompanyStatus.ACTIVE;
+        boolean companyIsVerified =  product.getCompany().isVerified();
 
 
         return new CompanyProductResponse(
@@ -158,7 +158,7 @@ public class ProductMapper {
         }
 
 
-        boolean companyIsVerified =  product.getCompany().getStatus() == CompanyStatus.ACTIVE;
+        boolean companyIsVerified =  product.getCompany().isVerified();
 
 
 
@@ -201,7 +201,7 @@ public class ProductMapper {
                 .map(Subcategory::getName)
                 .orElse(null);
 
-        boolean companyIsVerified =  product.getCompany().getStatus() == CompanyStatus.ACTIVE;
+        boolean companyIsVerified =  product.getCompany().isVerified();
 
         return new ProductDetailsResponse(
                 product.getId(),
@@ -261,7 +261,7 @@ public class ProductMapper {
             updatedById = product.getUpdatedBy().getId();
         }
 
-        boolean companyIsVerified =  product.getCompany().getStatus() == CompanyStatus.ACTIVE;
+        boolean companyIsVerified =  product.getCompany().isVerified();
 
 
         return new AdminProductDetailsResponse(

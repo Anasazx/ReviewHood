@@ -326,6 +326,18 @@ public class CompanyServiceImpl implements CompanyService {
         companyRepository.save(company);
     }
 
+    @Override
+    @Transactional
+    public void setVerified(Long companyId, boolean verified, Long adminId) {
+        Company company = findCompany(companyId);
+        if (verified && company.getStatus() != CompanyStatus.ACTIVE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only active companies can be verified");
+        }
+        company.setVerifiedBy(verified ? findUser(adminId) : null);
+        company.setVerifiedAt(verified ? LocalDateTime.now() : null);
+        companyRepository.save(company);
+    }
+
     // Activating a company records who verified it and when
     private void applyStatus(Company company, CompanyStatus status, User admin) {
         if (status == CompanyStatus.ACTIVE && company.getStatus() != CompanyStatus.ACTIVE) {

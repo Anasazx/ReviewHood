@@ -48,4 +48,6 @@ public interface CompanyService {
 
     Map<CompanyStatus, Long> countCompaniesByStatus();
 
+    void setVerified(Long companyId, boolean verified, Long adminId);
+
 }

@@ -117,4 +117,10 @@ public class Company extends Actor {
         }
     }
 
+
+    // Verified means an admin checked the company (not just that it is active)
+    public boolean isVerified() {
+        return verifiedAt != null;
+    }
+
 }

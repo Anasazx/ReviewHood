@@ -10,6 +10,7 @@ public record CompanyResponse(
         String logoUrl,
         String bannerUrl,
         Country country,
-        CompanyStatus status
+        CompanyStatus status,
+        boolean verified
 ) {
 }

@@ -31,7 +31,8 @@ public class CompanyMapper {
                 company.getLogoUrl(),
                 company.getBannerUrl(),
                 company.getCountry(),
-                company.getStatus()
+                company.getStatus(),
+                company.isVerified()
         );
     }
 
@@ -50,6 +51,7 @@ public class CompanyMapper {
                 subcategories,
                 company.getSocialLinks().stream().map(CompanySocialLinkMapper::toResponse).toList(),
                 company.getStatus(),
+                company.isVerified(),
                 averageRating,
                 reviewCount,
                 productCount
