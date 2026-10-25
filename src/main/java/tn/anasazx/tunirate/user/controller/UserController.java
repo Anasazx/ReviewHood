@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.user.controller;
 
+import tn.anasazx.tunirate.user.dto.ChangePasswordRequest;
 import tn.anasazx.tunirate.user.dto.UserStatusRequest;
 import tn.anasazx.tunirate.user.dto.AdminUserResponse;
 import tn.anasazx.tunirate.enums.UserStatus;
@@ -90,6 +91,13 @@ public class UserController {
     public ResponseEntity<UserResponse> getMyProfile() {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(userService.getCurrentUser(currentUserId));
+    }
+
+    @PutMapping("/me/password")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        userService.changePassword(request, currentUserId);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/me")

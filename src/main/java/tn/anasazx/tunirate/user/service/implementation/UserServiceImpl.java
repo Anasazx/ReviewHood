@@ -1,5 +1,7 @@
 package tn.anasazx.tunirate.user.service.implementation;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import tn.anasazx.tunirate.user.dto.ChangePasswordRequest;
 import tn.anasazx.tunirate.user.repository.UserSpecifications;
 import tn.anasazx.tunirate.user.dto.AdminUserResponse;
 import tn.anasazx.tunirate.membership.repository.CompanyMemberRepository;
@@ -32,6 +34,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final CompanyMemberRepository companyMemberRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Override
@@ -138,6 +141,24 @@ public class UserServiceImpl implements UserService {
         user.setStatus(status);
 
         return UserMapper.toAdminResponse(userRepository.save(user), companyMemberRepository.findFirstByUserId(id).orElse(null));
+    }
+
+    @Override
+    public void changePassword(ChangePasswordRequest request, Long currentUserId) {
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        // Accounts created with Google have no password yet and can set one; everyone else proves the current one
+        if (user.getPassword() != null
+                && (request.currentPassword() == null || !passwordEncoder.matches(request.currentPassword(), user.getPassword()))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your current password is not correct");
+        }
+        if (request.newPassword().length() < 8) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Use at least 8 characters");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
     }
 
     @Override

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import tn.anasazx.tunirate.actor.entity.Actor;
 import tn.anasazx.tunirate.comment.dto.CommentResponse;
+import tn.anasazx.tunirate.comment.dto.MyCommentResponse;
 import tn.anasazx.tunirate.comment.entity.Comment;
 import tn.anasazx.tunirate.comment.mapper.CommentMapper;
 import tn.anasazx.tunirate.comment.repository.CommentRepository;
@@ -39,6 +40,27 @@ public class CommentServiceImpl implements CommentService {
                     boolean liked = currentUserId != null && commentLikeRepository.existsByComment_IdAndUser_Id(comment.getId(), currentUserId);
                     return CommentMapper.toResponse(comment, liked);
                 });
+    }
+
+    @Override
+    public Page<MyCommentResponse> getMyComments(Long currentUserId, Pageable pageable) {
+        return commentRepository.findByActor_IdAndDeletedFalse(currentUserId, pageable)
+                .map(c -> new MyCommentResponse(
+                        c.getId(),
+                        c.getContent(),
+                        c.getCreatedAt(),
+                        c.getLikeCount(),
+                        c.getReview().getId(),
+                        c.getReview().getProduct().getId(),
+                        c.getReview().getProduct().getName(),
+                        c.getRepliedTo() != null ? actorName(c.getRepliedTo().getActor()) : null
+                ));
+    }
+
+    private String actorName(Actor actor) {
+        if (actor instanceof User user) return user.getName();
+        if (actor instanceof Company company) return company.getName();
+        return null;
     }
 
     @Override

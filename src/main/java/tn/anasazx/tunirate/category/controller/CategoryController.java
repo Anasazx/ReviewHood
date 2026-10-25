@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tn.anasazx.tunirate.category.dto.CategoryRequest;
 import tn.anasazx.tunirate.category.dto.CategoryResponse;
+import tn.anasazx.tunirate.category.dto.CategoryTreeResponse;
 import tn.anasazx.tunirate.category.service.CategoryService;
 
 import java.util.List;
@@ -22,6 +23,12 @@ public class CategoryController {
     @GetMapping
     public ResponseEntity<List<CategoryResponse>> getAll() {
         return ResponseEntity.ok(categoryService.getAllCategories());
+    }
+
+    // Public navigation: every category with its subcategories and live product counts
+    @GetMapping("/tree")
+    public ResponseEntity<List<CategoryTreeResponse>> getTree() {
+        return ResponseEntity.ok(categoryService.getCategoryTree());
     }
 
     @PreAuthorize("hasRole('ADMIN')")

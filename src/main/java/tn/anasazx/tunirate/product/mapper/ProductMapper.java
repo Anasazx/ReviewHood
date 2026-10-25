@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.product.mapper;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import tn.anasazx.tunirate.category.entity.Category;
 import tn.anasazx.tunirate.enums.CompanyStatus;
@@ -8,12 +9,18 @@ import tn.anasazx.tunirate.product.dto.*;
 import tn.anasazx.tunirate.subcategory.entity.Subcategory;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.product.entity.ProductImage;
+import tn.anasazx.tunirate.product.repository.ProductRepository;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class ProductMapper {
+
+    private final ProductRepository productRepository;
 
     public ProductResponse toResponse(Product product) {
 
@@ -208,8 +215,22 @@ public class ProductMapper {
                 product.getCompany().getLogoUrl(),
                 product.getReviewsAvg(),
                 product.getReviewCount(),
-                images
+                images,
+                Optional.ofNullable(product.getSubcategory()).map(Subcategory::getCategory).map(Category::getId).orElse(null),
+                Optional.ofNullable(product.getSubcategory()).map(Subcategory::getId).orElse(null),
+                ratingDistribution(product.getId())
         );
+    }
+
+    private Map<Integer, Long> ratingDistribution(Long productId) {
+        Map<Integer, Long> distribution = new LinkedHashMap<>();
+        for (int stars = 5; stars >= 1; stars--) {
+            distribution.put(stars, 0L);
+        }
+        for (Object[] row : productRepository.countReviewsByRating(productId)) {
+            distribution.put((Integer) row[0], (Long) row[1]);
+        }
+        return distribution;
     }
 
     public AdminProductDetailsResponse toAdminDetailsResponse(Product product) {

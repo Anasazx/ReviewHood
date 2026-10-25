@@ -5,11 +5,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tn.anasazx.tunirate.comment.dto.CommentRequest;
 import tn.anasazx.tunirate.comment.dto.CommentResponse;
+import tn.anasazx.tunirate.comment.dto.MyCommentResponse;
 import tn.anasazx.tunirate.comment.service.CommentService;
 import tn.anasazx.tunirate.security.SecurityUtils;
 
@@ -29,7 +32,12 @@ public class CommentController {
         return commentService.getCommentsByReviewId(reviewId, pageable, currentUserId);
     }
 
-    //TODO: Add get my comments endpoint - ofc with pagination
+    // The signed-in user's own comments, newest first
+    @GetMapping("/my")
+    public Page<MyCommentResponse> getMyComments(@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return commentService.getMyComments(currentUserId, pageable);
+    }
 
     //Create comment
     @PostMapping("/review/{reviewId}")

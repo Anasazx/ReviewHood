@@ -1,5 +1,6 @@
 package tn.anasazx.tunirate.user.service;
 
+import tn.anasazx.tunirate.user.dto.ChangePasswordRequest;
 import tn.anasazx.tunirate.user.dto.AdminUserResponse;
 import tn.anasazx.tunirate.enums.UserStatus;
 import tn.anasazx.tunirate.enums.GlobalRole;
@@ -23,5 +24,7 @@ public interface UserService {
     Page<AdminUserResponse> getUsersAsAdmin(String q, GlobalRole role, UserStatus status, Pageable pageable);
 
     AdminUserResponse updateUserStatus(Long id, UserStatus status, Long currentUserId);
+
+    void changePassword(ChangePasswordRequest request, Long currentUserId);
     UserResponse uploadAvatar(MultipartFile file, Long currentUserId);
 }

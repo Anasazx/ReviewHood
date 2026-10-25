@@ -1,5 +1,11 @@
 package tn.anasazx.tunirate.category.service.implementation;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Comparator;
+import tn.anasazx.tunirate.subcategory.entity.Subcategory;
+import tn.anasazx.tunirate.enums.ProductStatus;
+import tn.anasazx.tunirate.category.dto.CategoryTreeResponse;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,6 +33,26 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryRepository.findAllByOrderByNameAsc()
                 .stream()
                 .map(categoryMapper::toResponse)
+                .toList();
+    }
+
+    // Categories with their subcategories (alphabetical) and published product counts, for public navigation
+    @Override
+    public List<CategoryTreeResponse> getCategoryTree() {
+        Map<Long, Long> counts = new HashMap<>();
+        for (Object[] row : productRepository.countBySubcategoryGroupedWithStatus(ProductStatus.PUBLISHED)) {
+            counts.put((Long) row[0], (Long) row[1]);
+        }
+
+        return categoryRepository.findAllByOrderByNameAsc().stream()
+                .map(category -> {
+                    List<CategoryTreeResponse.Node> subs = category.getSubcategories().stream()
+                            .sorted(Comparator.comparing(Subcategory::getName, String.CASE_INSENSITIVE_ORDER))
+                            .map(s -> new CategoryTreeResponse.Node(s.getId(), s.getName(), counts.getOrDefault(s.getId(), 0L)))
+                            .toList();
+                    long total = subs.stream().mapToLong(CategoryTreeResponse.Node::productCount).sum();
+                    return new CategoryTreeResponse(category.getId(), category.getName(), total, subs);
+                })
                 .toList();
     }
 

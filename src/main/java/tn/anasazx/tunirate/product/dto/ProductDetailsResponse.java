@@ -1,6 +1,7 @@
 package tn.anasazx.tunirate.product.dto;
 
 import java.util.List;
+import java.util.Map;
 
 public record ProductDetailsResponse(
         Long id,
@@ -14,6 +15,9 @@ public record ProductDetailsResponse(
         String companyLogoUrl,
         double averageRating,
         long reviewsCount,
-        List<ProductImageResponse> images
-
+        List<ProductImageResponse> images,
+        Long categoryId,
+        Long subcategoryId,
+        // star rating (1-5) -> number of reviews
+        Map<Integer, Long> ratingDistribution
 ) {}

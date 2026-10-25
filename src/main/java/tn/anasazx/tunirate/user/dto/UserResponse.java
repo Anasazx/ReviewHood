@@ -16,5 +16,7 @@ public record UserResponse(
         Country country,
         UserStatus status,
         GlobalRole globalRole,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        // false for accounts created with Google that never set a password
+        boolean hasPassword
 ) {}

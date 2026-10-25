@@ -20,7 +20,8 @@ public class UserMapper {
                 user.getCountry(),
                 user.getStatus(),
                 user.getGlobalRole(),
-                user.getCreatedAt()
+                user.getCreatedAt(),
+                user.getPassword() != null
         );
     }
 

@@ -17,6 +17,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     Long countByReview_Id(Long reviewId);
 
+    Page<Comment> findByActor_IdAndDeletedFalse(Long actorId, Pageable pageable);
+
     Optional<Comment> findFirstByReview_IdAndActor_TypeAndActor_IdOrderByCreatedAtDesc(Long reviewId, ActorType actorType, Long actorId);
 
     @Modifying

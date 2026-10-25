@@ -62,6 +62,14 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query("SELECT p.subcategory.id, COUNT(p) FROM Product p WHERE p.subcategory IS NOT NULL GROUP BY p.subcategory.id")
     List<Object[]> countBySubcategoryGrouped();
 
+    // [subcategoryId, count] rows, only products with the given status
+    @Query("SELECT p.subcategory.id, COUNT(p) FROM Product p WHERE p.subcategory IS NOT NULL AND p.status = :status GROUP BY p.subcategory.id")
+    List<Object[]> countBySubcategoryGroupedWithStatus(@Param("status") ProductStatus status);
+
+    // [rating, count] rows for one product
+    @Query("SELECT r.rating, COUNT(r) FROM Review r WHERE r.product.id = :productId GROUP BY r.rating")
+    List<Object[]> countReviewsByRating(@Param("productId") Long productId);
+
     List<Product> findTop5ByStatusOrderByCreatedAtDesc(ProductStatus status);
 
     Page<Product> findAllBySubcategoryIsNull(Pageable pageable);
