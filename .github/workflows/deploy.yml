@@ -1,55 +1,33 @@
 name: Deploy TuniRate Backend
 
+# The server (Azure VM) builds the Docker image itself and restarts the api container.
+# All the logic lives in ~/bin/deploy-tunirate.sh on the server; the SSH key in
+# VPS_SSH_KEY is only allowed to run that script.
+
 on:
   push:
     branches:
       - master
+  workflow_dispatch:   # "Run workflow" button in the Actions tab
 
+# Never run two deploys at once; a newer push waits for the current one
+concurrency:
+  group: deploy
+  cancel-in-progress: false
 
 jobs:
 
-  build:
+  deploy:
 
     runs-on: ubuntu-latest
 
-
     steps:
 
-      - name: Checkout
-        uses: actions/checkout@v4
-
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-
-      - name: Build Spring Boot
-        run: |
-          mvn clean package -DskipTests
-
-
-      - name: Copy JAR to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ubuntu
-          key: ${{ secrets.VPS_SSH_KEY }}
-          source: target/*.jar
-          target: /home/ubuntu/
-
-
-      - name: Restart backend
+      - name: Deploy on VPS
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
-          username: ubuntu
+          username: azureuser
           key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            sudo systemctl restart tunirate
-            sleep 5
-            sudo systemctl is-active tunirate
-            sudo systemctl status tunirate
-            
+          command_timeout: 20m
+          script: /home/azureuser/bin/deploy-tunirate.sh

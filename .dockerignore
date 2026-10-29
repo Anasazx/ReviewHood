@@ -1,0 +1,26 @@
+# Build output and IDE files: rebuilt inside the image anyway
+target/
+.idea/
+.vscode/
+*.iml
+
+# Git history and CI config: not needed to build
+.git/
+.github/
+
+# Secrets: must NEVER end up in an image
+.env
+*.env
+
+# Runtime data
+uploads/
+logs/
+
+# Docker files themselves
+Dockerfile
+docker-compose*.yml
+Caddyfile
+
+# Docs
+*.md
+LICENSE

@@ -1,0 +1,66 @@
+# Local development stack (Mac / Apple Silicon or any machine).
+#   docker compose -f docker-compose.dev.yml up --build
+# Builds the image from source (native arm64 on an M-series Mac), no Caddy/HTTPS.
+# Reads secrets from the same .env file (see .env.example); API_IMAGE / API_DOMAIN are not used here.
+
+name: tunirate-dev   # separate project name => separate containers & volumes from prod
+
+services:
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5432:5432"   # reachable from your Mac (DBeaver, IntelliJ), not from your network
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .                    # build from the Dockerfile in this folder
+    image: tunirate-api:dev
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      # Emails go to Mailpit instead of a real inbox: open http://localhost:8025
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      FILE_UPLOAD_DIR: /app/uploads
+      FILE_BASE_URL: http://localhost:8080/uploads
+      LOGGING_FILE_NAME: ""
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75
+    ports:
+      - "127.0.0.1:8080:8080"   # localhost only
+    volumes:
+      - api_uploads:/app/uploads
+    deploy:
+      resources:
+        limits:
+          memory: 1536m           # same limit as prod, so you notice memory problems locally first
+
+  mailpit:
+    image: axllent/mailpit
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1        # accept whatever MAIL_USERNAME/PASSWORD the app sends
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    ports:
+      - "127.0.0.1:8025:8025"   # web inbox
+
+volumes:
+  db_data:
+  api_uploads:

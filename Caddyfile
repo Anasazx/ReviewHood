@@ -1,0 +1,12 @@
+# Caddy gets and renews the HTTPS certificate for this domain automatically.
+# {$API_DOMAIN} comes from the container environment (see docker-compose.yml).
+{$API_DOMAIN} {
+	encode zstd gzip
+
+	# Uploads are capped at 10MB in Spring; allow a little headroom here
+	request_body {
+		max_size 12MB
+	}
+
+	reverse_proxy api:8080
+}

@@ -1,0 +1,96 @@
+# Production stack: Postgres + Spring Boot API + Caddy (HTTPS).
+# Values like ${POSTGRES_PASSWORD} are read from the .env file next to this file.
+# ${VAR:?msg} makes compose refuse to start if VAR is missing, instead of running with a blank secret.
+
+x-logging: &default-logging
+  # Keep container logs from filling the VM disk
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    # No "ports:" on purpose: only containers on this network can reach Postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    logging: *default-logging
+
+  api:
+    image: ${API_IMAGE:?set API_IMAGE in .env}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy   # wait until pg_isready succeeds
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?set GOOGLE_CLIENT_ID in .env}
+      MAIL_HOST: ${MAIL_HOST:?set MAIL_HOST in .env}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:?set MAIL_USERNAME in .env}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:?set MAIL_PASSWORD in .env}
+      FILE_UPLOAD_DIR: /app/uploads
+      FILE_BASE_URL: https://${API_DOMAIN}/uploads
+      # Behind Caddy: trust X-Forwarded-* headers so the app knows it's on https
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+      # Log to stdout only (read with `docker compose logs`), and drop the DEBUG noise
+      LOGGING_FILE_NAME: ""
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB_MULTIPART: INFO
+      # JVM uses at most 75% of the container's 1.5 GB limit for heap.
+      # ExitOnOutOfMemoryError: crash cleanly so Docker restarts it, instead of limping along.
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError
+    volumes:
+      - api_uploads:/app/uploads
+    # No "ports:" either: only Caddy talks to the API (on api:8080)
+    deploy:
+      resources:
+        limits:
+          memory: 1536m
+    logging: *default-logging
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"       # needed for Let's Encrypt + http->https redirect
+      - "443:443"
+      - "443:443/udp" # HTTP/3
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?set API_DOMAIN in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data       # TLS certificates: keep them, or you'll hit Let's Encrypt rate limits
+      - caddy_config:/config
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+    logging: *default-logging
+
+volumes:
+  db_data:
+  api_uploads:
+  caddy_data:
+  caddy_config:
