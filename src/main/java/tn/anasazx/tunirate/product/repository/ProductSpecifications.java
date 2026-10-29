@@ -1,6 +1,7 @@
 package tn.anasazx.tunirate.product.repository;
 
 import org.springframework.data.jpa.domain.Specification;
+import tn.anasazx.tunirate.enums.CompanyStatus;
 import tn.anasazx.tunirate.enums.ProductStatus;
 import tn.anasazx.tunirate.product.entity.Product;
 
@@ -37,6 +38,11 @@ public class ProductSpecifications {
     public static Specification<Product> hasStatusNot(ProductStatus status) {
         return (root, query, cb) ->
                 status == null ? null : cb.notEqual(root.get("status"), status);
+    }
+
+    public static Specification<Product> hasCompanyStatusNot(CompanyStatus status) {
+        return (root, query, cb) ->
+                status == null ? null : cb.notEqual(root.get("company").get("status"), status);
     }
 
     public static Specification<Product> isUncategorized(Boolean uncategorized) {

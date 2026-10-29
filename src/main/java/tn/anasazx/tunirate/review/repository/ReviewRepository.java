@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import tn.anasazx.tunirate.enums.CompanyStatus;
+import tn.anasazx.tunirate.enums.ProductStatus;
 import tn.anasazx.tunirate.review.entity.Review;
 
 import java.time.LocalDateTime;
@@ -83,7 +85,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long>, JpaSpecif
     """, nativeQuery = true)
     List<Object[]> countReviewsByDayRaw(@Param("startDate") LocalDateTime startDate);
 
-    List<Review> findByContentIsNotNullOrderByCreatedAtDesc(Pageable pageable);
+    List<Review> findByContentIsNotNullAndProductStatusAndProductCompanyStatusNotOrderByCreatedAtDesc(ProductStatus productStatus, CompanyStatus companyStatus, Pageable pageable);
 
     List<Review> findTop5ByOrderByCreatedAtDesc();
 

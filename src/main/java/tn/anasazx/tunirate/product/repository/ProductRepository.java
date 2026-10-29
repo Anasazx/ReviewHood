@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import tn.anasazx.tunirate.enums.CompanyStatus;
 import tn.anasazx.tunirate.enums.ProductStatus;
 import tn.anasazx.tunirate.product.entity.Product;
 import tn.anasazx.tunirate.subcategory.entity.Subcategory;
@@ -20,20 +21,21 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     SELECT p
     FROM Product p
     WHERE p.status = :status
+      AND p.company.status <> :hiddenCompanyStatus
       AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :q, '%'))
        OR LOWER(p.description) LIKE LOWER(CONCAT('%', :q, '%')))
     """)
-    Page<Product> search(@Param("q") String q, @Param("status") ProductStatus status, Pageable pageable);
+    Page<Product> search(@Param("q") String q, @Param("status") ProductStatus status, @Param("hiddenCompanyStatus") CompanyStatus hiddenCompanyStatus, Pageable pageable);
 
-    Page<Product> findAllByStatus(ProductStatus status, Pageable pageable);
+    Page<Product> findAllByStatusAndCompanyStatusNot(ProductStatus status, CompanyStatus companyStatus, Pageable pageable);
 
-    Page<Product> findAllByStatusAndSubcategoryId(ProductStatus status, Long subcategoryId, Pageable pageable);
+    Page<Product> findAllByStatusAndCompanyStatusNotAndSubcategoryId(ProductStatus status, CompanyStatus companyStatus, Long subcategoryId, Pageable pageable);
 
-    Page<Product> findAllByStatusAndSubcategoryCategoryId(ProductStatus status, Long categoryId, Pageable pageable);
+    Page<Product> findAllByStatusAndCompanyStatusNotAndSubcategoryCategoryId(ProductStatus status, CompanyStatus companyStatus, Long categoryId, Pageable pageable);
 
     List<Product> findByCompanyId(Long companyId);
 
-    Optional<Product> findByStatusAndId(ProductStatus status, Long id);
+    Optional<Product> findByStatusAndCompanyStatusNotAndId(ProductStatus status, CompanyStatus companyStatus, Long id);
 
     Optional<Product> findByStatusNotAndId(ProductStatus status, Long id);
 
@@ -64,9 +66,9 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query("SELECT p.subcategory.id, COUNT(p) FROM Product p WHERE p.subcategory IS NOT NULL GROUP BY p.subcategory.id")
     List<Object[]> countBySubcategoryGrouped();
 
-    // [subcategoryId, count] rows, only products with the given status
-    @Query("SELECT p.subcategory.id, COUNT(p) FROM Product p WHERE p.subcategory IS NOT NULL AND p.status = :status GROUP BY p.subcategory.id")
-    List<Object[]> countBySubcategoryGroupedWithStatus(@Param("status") ProductStatus status);
+    // [subcategoryId, count] rows, only products with the given status whose company isn't in the hidden status
+    @Query("SELECT p.subcategory.id, COUNT(p) FROM Product p WHERE p.subcategory IS NOT NULL AND p.status = :status AND p.company.status <> :hiddenCompanyStatus GROUP BY p.subcategory.id")
+    List<Object[]> countBySubcategoryGroupedWithStatus(@Param("status") ProductStatus status, @Param("hiddenCompanyStatus") CompanyStatus hiddenCompanyStatus);
 
     // [rating, count] rows for one product
     @Query("SELECT r.rating, COUNT(r) FROM Review r WHERE r.product.id = :productId GROUP BY r.rating")
@@ -98,13 +100,14 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
         """, nativeQuery = true)
     int reconcileReviewStats();
 
-    List<Product> findAllByStatusOrderByCreatedAtDesc(ProductStatus status, Pageable pageable);
+    List<Product> findAllByStatusAndCompanyStatusNotOrderByCreatedAtDesc(ProductStatus status, CompanyStatus companyStatus, Pageable pageable);
 
 
     @Query("""
     SELECT p
     FROM Product p
     WHERE p.status = :status
+      AND p.company.status <> :hiddenCompanyStatus
       AND LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))
     ORDER BY
         CASE
@@ -117,6 +120,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     List<Product> findSuggestions(
             @Param("query") String query,
             @Param("status") ProductStatus status,
+            @Param("hiddenCompanyStatus") CompanyStatus hiddenCompanyStatus,
             Pageable pageable
     );
 

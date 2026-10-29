@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import tn.anasazx.tunirate.enums.CompanyStatus;
 import tn.anasazx.tunirate.enums.ProductStatus;
 import tn.anasazx.tunirate.fileStorage.service.FileStorageService;
 import tn.anasazx.tunirate.membership.entity.CompanyMember;
@@ -88,17 +89,17 @@ public class ProductServiceImpl implements ProductService {
 
         if (subcategoryId != null) {
             return productRepository
-                    .findAllByStatusAndSubcategoryId(ProductStatus.PUBLISHED, subcategoryId, pageable)
+                    .findAllByStatusAndCompanyStatusNotAndSubcategoryId(ProductStatus.PUBLISHED, CompanyStatus.SUSPENDED, subcategoryId, pageable)
                     .map(productMapper::toResponse);
         }
         else if (categoryId != null) {
             return productRepository
-                    .findAllByStatusAndSubcategoryCategoryId(ProductStatus.PUBLISHED, categoryId, pageable)
+                    .findAllByStatusAndCompanyStatusNotAndSubcategoryCategoryId(ProductStatus.PUBLISHED, CompanyStatus.SUSPENDED, categoryId, pageable)
                     .map(productMapper::toResponse);
         }
 
         return productRepository
-                .findAllByStatus(ProductStatus.PUBLISHED, pageable)
+                .findAllByStatusAndCompanyStatusNot(ProductStatus.PUBLISHED, CompanyStatus.SUSPENDED, pageable)
                 .map(productMapper::toResponse);
     }
 
@@ -304,6 +305,7 @@ public class ProductServiceImpl implements ProductService {
         Specification<Product> spec = Specification
                 .where(ProductSpecifications.hasCompanyId(companyId))
                 .and(ProductSpecifications.hasStatus(ProductStatus.PUBLISHED))
+                .and(ProductSpecifications.hasCompanyStatusNot(CompanyStatus.SUSPENDED))
                 .and(ProductSpecifications.hasNameLike(name))
                 .and(ProductSpecifications.hasSubcategoryId(subcategoryId));
 
@@ -384,7 +386,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     Product findProductByIdStatusPublished(Long productId){
-        return productRepository.findByStatusAndId(ProductStatus.PUBLISHED, productId)
+        return productRepository.findByStatusAndCompanyStatusNotAndId(ProductStatus.PUBLISHED, CompanyStatus.SUSPENDED, productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 

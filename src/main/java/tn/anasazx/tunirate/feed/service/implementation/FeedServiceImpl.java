@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import tn.anasazx.tunirate.company.entity.Company;
 import tn.anasazx.tunirate.company.mapper.CompanyMapper;
 import tn.anasazx.tunirate.company.repository.CompanyRepository;
+import tn.anasazx.tunirate.enums.CompanyStatus;
 import tn.anasazx.tunirate.enums.ProductStatus;
 import tn.anasazx.tunirate.feed.dto.FeedResponse;
 import tn.anasazx.tunirate.feed.service.FeedService;
@@ -42,9 +43,9 @@ public class FeedServiceImpl implements FeedService {
     @Override
     public FeedResponse getFeed() {
 
-        List<Product> products = productRepository.findAllByStatusOrderByCreatedAtDesc(ProductStatus.PUBLISHED, PageRequest.of(0, PRODUCT_LIMIT));
+        List<Product> products = productRepository.findAllByStatusAndCompanyStatusNotOrderByCreatedAtDesc(ProductStatus.PUBLISHED, CompanyStatus.SUSPENDED, PageRequest.of(0, PRODUCT_LIMIT));
 
-        List<Review> reviews = reviewRepository.findByContentIsNotNullOrderByCreatedAtDesc(PageRequest.of(0, REVIEW_LIMIT));
+        List<Review> reviews = reviewRepository.findByContentIsNotNullAndProductStatusAndProductCompanyStatusNotOrderByCreatedAtDesc(ProductStatus.PUBLISHED, CompanyStatus.SUSPENDED, PageRequest.of(0, REVIEW_LIMIT));
 
         // this is just for now, we return the subcategories of the cat beauty as our categories
         // List<Subcategory> subcategories = subcategoryRepository.findAll();

@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Comparator;
 import tn.anasazx.tunirate.subcategory.entity.Subcategory;
+import tn.anasazx.tunirate.enums.CompanyStatus;
 import tn.anasazx.tunirate.enums.ProductStatus;
 import tn.anasazx.tunirate.category.dto.CategoryTreeResponse;
 import tn.anasazx.tunirate.product.repository.ProductRepository;
@@ -40,7 +41,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<CategoryTreeResponse> getCategoryTree() {
         Map<Long, Long> counts = new HashMap<>();
-        for (Object[] row : productRepository.countBySubcategoryGroupedWithStatus(ProductStatus.PUBLISHED)) {
+        for (Object[] row : productRepository.countBySubcategoryGroupedWithStatus(ProductStatus.PUBLISHED, CompanyStatus.SUSPENDED)) {
             counts.put((Long) row[0], (Long) row[1]);
         }
 
