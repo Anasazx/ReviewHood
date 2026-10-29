@@ -51,7 +51,7 @@ public class FeedServiceImpl implements FeedService {
         // List<Subcategory> subcategories = subcategoryRepository.findAll();
         List<Subcategory> subcategories = subcategoryRepository.findByCategoryName("Beauty");
 
-        List<Company> companies = companyRepository.findAll(PageRequest.of(0, COMPANY_LIMIT)).getContent();
+        List<Company> companies = companyRepository.findAllByStatusNot(CompanyStatus.SUSPENDED, PageRequest.of(0, COMPANY_LIMIT)).getContent();
 
         return new FeedResponse(
                 products.stream().map(productMapper::toResponse).toList(),

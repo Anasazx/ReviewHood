@@ -73,7 +73,7 @@ public class SearchServiceImpl implements SearchService {
         }
 
         return companyRepository
-                .search(q, page)
+                .search(q, CompanyStatus.SUSPENDED, page)
                 .map(companyMapper::toResponse);
     }
 
@@ -90,7 +90,7 @@ public class SearchServiceImpl implements SearchService {
                 productRepository.findSuggestions(q, ProductStatus.PUBLISHED, CompanyStatus.SUSPENDED, PageRequest.of(0, 7));
 
         List<Company> companies =
-                companyRepository.findSuggestions(q, PageRequest.of(0, 7));
+                companyRepository.findSuggestions(q, CompanyStatus.SUSPENDED, PageRequest.of(0, 7));
 
         List<SearchSuggestionDTO> result = new ArrayList<>(7);
 
@@ -149,7 +149,7 @@ public class SearchServiceImpl implements SearchService {
         }
 
         return companyRepository
-                .search(q, page)
+                .search(q, CompanyStatus.SUSPENDED, page)
                 .map(companyMapper::toResponse);
     }
 

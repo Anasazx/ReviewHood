@@ -65,12 +65,20 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public CompanyDetailResponse getCompanyDetailsById(Long id) {
+        // Public page: suspended companies are hidden
+        Company company = companyRepository.findByIdAndStatusNot(id, CompanyStatus.SUSPENDED)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
+        return toDetailResponse(company);
+    }
+
+    private CompanyDetailResponse toDetailResponse(Company company) {
+        Long id = company.getId();
         List<SubcategoryResponse> subcategories = productRepository.findDistinctSubcategoriesByCompanyId(id).stream()
                 .map(subcategoryMapper::toResponse)
                 .toList();
 
         return companyMapper.toDetailResponse(
-                findCompany(id),
+                company,
                 subcategories,
                 Optional.ofNullable(reviewRepository.findAverageRatingByCompanyId(id)).orElse(0.0),
                 reviewRepository.countByProductCompanyId(id),
@@ -80,8 +88,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public CompanyDetailResponse getMyCompany(Long currentUserId) {
-        Company company = findMyMembership(currentUserId).getCompany();
-        return getCompanyDetailsById(company.getId());
+        return toDetailResponse(findMyMembership(currentUserId).getCompany());
     }
 
     @Override
@@ -117,7 +124,7 @@ public class CompanyServiceImpl implements CompanyService {
         }
 
         companyRepository.save(company);
-        return getCompanyDetailsById(company.getId());
+        return toDetailResponse(company);
     }
 
     private CompanyMember findMyMembership(Long currentUserId) {
@@ -356,7 +363,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public Page<CompanyResponse> getAllCompanies(Pageable pageable) {
-        return companyRepository.findAll(pageable)
+        return companyRepository.findAllByStatusNot(CompanyStatus.SUSPENDED, pageable)
                 .map(companyMapper::toResponse);
     }
 
@@ -369,7 +376,7 @@ public class CompanyServiceImpl implements CompanyService {
             return List.of();
         }
 
-        return companyRepository.search(q, PageRequest.of(0, 20))
+        return companyRepository.search(q, CompanyStatus.SUSPENDED, PageRequest.of(0, 20))
                 .stream()
                 .map(companyMapper::toResponse)
                 .toList();

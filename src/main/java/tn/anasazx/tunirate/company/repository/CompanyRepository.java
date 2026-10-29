@@ -17,14 +17,19 @@ public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpec
 
 	Optional<Company> findByNameIgnoreCase(String name);
 
+	Optional<Company> findByIdAndStatusNot(Long id, CompanyStatus status);
+
+	Page<Company> findAllByStatusNot(CompanyStatus status, Pageable pageable);
+
 	@Query("""
     SELECT DISTINCT c
     FROM Company c
     LEFT JOIN Product p ON p.company = c
-    WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :q, '%'))
-       OR LOWER(p.name) LIKE LOWER(CONCAT('%', :q, '%'))
+    WHERE c.status <> :hiddenStatus
+      AND (LOWER(c.name) LIKE LOWER(CONCAT('%', :q, '%'))
+       OR LOWER(p.name) LIKE LOWER(CONCAT('%', :q, '%')))
     """)
-	Page<Company> search(@Param("q") String q, Pageable pageable);
+	Page<Company> search(@Param("q") String q, @Param("hiddenStatus") CompanyStatus hiddenStatus, Pageable pageable);
 
 	Long countByStatus(CompanyStatus status);
 
@@ -46,7 +51,8 @@ public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpec
 	@Query("""
     SELECT c
     FROM Company c
-    WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%'))
+    WHERE c.status <> :hiddenStatus
+      AND LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%'))
     ORDER BY
         CASE
             WHEN LOWER(c.name) = LOWER(:query) THEN 0
@@ -57,6 +63,7 @@ public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpec
     """)
 	List<Company> findSuggestions(
 			@Param("query") String query,
+			@Param("hiddenStatus") CompanyStatus hiddenStatus,
 			Pageable pageable
 	);
 }
